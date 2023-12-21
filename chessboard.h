@@ -37,6 +37,7 @@ namespace chess
     bool coord_int(std::string s, short &y, short &x);
     bool in_range(short y, short x);
     bool is_color(unsigned char cell, color_e color);
+
     color_e other(color_e c);
 
     typedef struct move_s
@@ -90,10 +91,12 @@ namespace chess
         move_s user_move(color_e col, short y0, short x0, short y1, short x1);
         // Best Move
         move_s computer_move(color_e col, int rec, bool root = true);
+        move_s is_game_over(color_e color);
 
         // Check?
         std::string check_state();
         color_e turn_color();
+        std::string cache_stats();
 
     protected:
         unsigned char m_cells[8][8];
@@ -115,7 +118,8 @@ namespace chess
         // Move
         move_s move(short y0, short x0, short y1, short x1, short cy, short cx);
         move_s move(const move_s &m);
-        move_s computer_move(color_e col, short y0, short x0, int rec, bool root = true);
+        move_s computer_move(std::vector<move_s> &possible, color_e col, short y0, short x0, int rec, bool root = true);
+
         std::vector<move_s> possible_moves(color_e col);
         void possible_moves(std::vector<move_s> &possible, short y0, short x0);
         void update_kill_bits(color_e col);

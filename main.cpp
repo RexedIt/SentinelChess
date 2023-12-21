@@ -51,7 +51,7 @@ bool save_game(std::string cmd, chessboard &board)
 bool is_game_over(color_e col, move_s &m)
 {
     color_e winner_col = col == c_white ? c_black : c_white;
-    if ((m.check == false) && (m.mate == false))
+    if (!m.is_valid())
     {
         std::cout << "\t" + color_str(winner_col) << " wins, Stalemate!" << std::endl;
         return true;
@@ -119,7 +119,9 @@ int main(void)
         if (turn_col != my_col)
         {
             std::cout << "\tComputer Turn" << std::endl;
+            stopwatch s;
             move_s m = board.computer_move(turn_col, 4);
+            std::cout << "\tElapsed: " << s.elapsed_str() << " " << board.cache_stats() << std::endl;
             game_over = is_game_over(turn_col, m);
             if (game_over)
                 break;
@@ -128,6 +130,11 @@ int main(void)
             std::cout << std::endl;
             turn_col = my_col;
         }
+        // Is the user's game over?
+        move_s m = board.is_game_over(my_col);
+        game_over = is_game_over(my_col, m);
+        if (game_over)
+            break;
         std::cout << "\t" << coll << " Move > ";
         std::getline(std::cin, cmd);
         std::string cmdu = uppercase(cmd);
@@ -196,14 +203,11 @@ int main(void)
                 std::cout << "ERROR - Invalid Move" << std::endl;
                 continue;
             }
-            if ((m.check) || (!m.mate))
+            if ((m.check) && (!m.mate))
             {
                 std::cout << "ERROR - You are in Check, try again" << std::endl;
                 continue;
             }
-            game_over = is_game_over(my_col, m);
-            if (game_over)
-                break;
             board_to_console(board);
             move_to_console(m, color_str(turn_col));
             std::cout << std::endl;

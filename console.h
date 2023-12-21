@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <windows.h>
+#include <chrono>
 
 namespace chess
 {
@@ -32,6 +33,18 @@ typedef enum ansicolor
     ansi_light_cyan = 97,
     ansi_white = 97
 } ansicolor;
+
+class stopwatch
+{
+public:
+    stopwatch();
+    long elapsed_ms();
+    long elapsed_sec();
+    std::string elapsed_str();
+
+private:
+    std::chrono::steady_clock::time_point start;
+};
 
 void board_to_console(chess::chessboard &b);
 void move_to_console(chess::move_s &m, std::string s);

@@ -197,12 +197,64 @@ namespace chess
             possible.push_back(new_move(y0, x0, y, x));
     }
 
+    void chesspiece::calc_king_move(std::vector<move_s> &possible, short y0, short x0, short y, short x, unsigned char (&cells)[8][8])
+    {
+        if (!in_range(y, x))
+            return;
+        if ((cells[y][x] & kill_mask) == kill_mask)
+            return;
+        color_e cell_color = (color_e)(cells[y][x] & color_mask);
+        if (cell_color != color)
+            possible.push_back(new_move(y0, x0, y, x));
+    }
+
     void chesspiece::bishop_moves(std::vector<move_s> &possible, short y0, short x0, unsigned char (&cells)[8][8])
     {
         calc_direction_moves(possible, y0, x0, -1, -1, 8, cells);
         calc_direction_moves(possible, y0, x0, -1, 1, 8, cells);
         calc_direction_moves(possible, y0, x0, 1, -1, 8, cells);
         calc_direction_moves(possible, y0, x0, 1, 1, 8, cells);
+    }
+
+    void chesspiece::calc_direction_kills(short y0, short x0, short dy, short dx, short max, unsigned char (&cells)[8][8])
+    {
+        short y = y0 + dy;
+        short x = x0 + dx;
+        short moved = 0;
+        while (in_range(y, x) && (moved < max))
+        {
+            color_e cell_color = (color_e)(cells[y][x] & color_mask);
+            if (cell_color == c_none)
+            {
+                cells[y][x] |= kill_mask;
+            }
+            else
+            {
+                if (cell_color != color)
+                    cells[y][x] |= kill_mask;
+                break;
+            }
+            y += dy;
+            x += dx;
+            moved++;
+        }
+    }
+
+    void chesspiece::bishop_kills(short y0, short x0, unsigned char (&cells)[8][8])
+    {
+        calc_direction_kills(y0, x0, -1, -1, 8, cells);
+        calc_direction_kills(y0, x0, -1, 1, 8, cells);
+        calc_direction_kills(y0, x0, 1, -1, 8, cells);
+        calc_direction_kills(y0, x0, 1, 1, 8, cells);
+    }
+
+    void chesspiece::calc_single_kill(short y0, short x0, short y, short x, unsigned char (&cells)[8][8])
+    {
+        if (!in_range(y, x))
+            return;
+        color_e cell_color = (color_e)(cells[y][x] & color_mask);
+        if (cell_color != color)
+            cells[y][x] |= kill_mask;
     }
 
     void chesspiece::knight_moves(std::vector<move_s> &possible, short y0, short x0, unsigned char (&cells)[8][8])
@@ -217,12 +269,32 @@ namespace chess
         calc_single_move(possible, y0, x0, y0 + 2, x0 + 1, cells);
     }
 
+    void chesspiece::knight_kills(short y0, short x0, unsigned char (&cells)[8][8])
+    {
+        calc_single_kill(y0, x0, y0 - 1, x0 - 2, cells);
+        calc_single_kill(y0, x0, y0 - 1, x0 + 2, cells);
+        calc_single_kill(y0, x0, y0 - 2, x0 - 1, cells);
+        calc_single_kill(y0, x0, y0 - 2, x0 + 1, cells);
+        calc_single_kill(y0, x0, y0 + 1, x0 - 2, cells);
+        calc_single_kill(y0, x0, y0 + 1, x0 + 2, cells);
+        calc_single_kill(y0, x0, y0 + 2, x0 - 1, cells);
+        calc_single_kill(y0, x0, y0 + 2, x0 + 1, cells);
+    }
+
     void chesspiece::rook_moves(std::vector<move_s> &possible, short y0, short x0, unsigned char (&cells)[8][8])
     {
         calc_direction_moves(possible, y0, x0, -1, 0, 8, cells);
         calc_direction_moves(possible, y0, x0, 0, -1, 8, cells);
         calc_direction_moves(possible, y0, x0, 1, 0, 8, cells);
         calc_direction_moves(possible, y0, x0, 0, 1, 8, cells);
+    }
+
+    void chesspiece::rook_kills(short y0, short x0, unsigned char (&cells)[8][8])
+    {
+        calc_direction_kills(y0, x0, -1, 0, 8, cells);
+        calc_direction_kills(y0, x0, 0, -1, 8, cells);
+        calc_direction_kills(y0, x0, 1, 0, 8, cells);
+        calc_direction_kills(y0, x0, 0, 1, 8, cells);
     }
 
     void chesspiece::queen_moves(std::vector<move_s> &possible, short y0, short x0, unsigned char (&cells)[8][8])
@@ -237,16 +309,42 @@ namespace chess
         calc_direction_moves(possible, y0, x0, 1, 1, 8, cells);
     }
 
+    void chesspiece::queen_kills(short y0, short x0, unsigned char (&cells)[8][8])
+    {
+        calc_direction_kills(y0, x0, -1, 0, 8, cells);
+        calc_direction_kills(y0, x0, 0, -1, 8, cells);
+        calc_direction_kills(y0, x0, 1, 0, 8, cells);
+        calc_direction_kills(y0, x0, 0, 1, 8, cells);
+        calc_direction_kills(y0, x0, -1, -1, 8, cells);
+        calc_direction_kills(y0, x0, -1, 1, 8, cells);
+        calc_direction_kills(y0, x0, 1, -1, 8, cells);
+        calc_direction_kills(y0, x0, 1, 1, 8, cells);
+    }
+
     void chesspiece::king_moves(std::vector<move_s> &possible, short y0, short x0, unsigned char (&cells)[8][8])
     {
-        calc_single_move(possible, y0, x0, y0 - 1, x0 - 1, cells);
-        calc_single_move(possible, y0, x0, y0 - 1, x0, cells);
-        calc_single_move(possible, y0, x0, y0 - 1, x0 + 1, cells);
-        calc_single_move(possible, y0, x0, y0, x0 - 1, cells);
-        calc_single_move(possible, y0, x0, y0, x0 + 1, cells);
-        calc_single_move(possible, y0, x0, y0 + 1, x0 - 1, cells);
-        calc_single_move(possible, y0, x0, y0 + 1, x0, cells);
-        calc_single_move(possible, y0, x0, y0 + 1, x0 + 1, cells);
+        // kill mask should be set so that should dictate
+        // if this call returns a possible move (check)
+        calc_king_move(possible, y0, x0, y0 - 1, x0 - 1, cells);
+        calc_king_move(possible, y0, x0, y0 - 1, x0, cells);
+        calc_king_move(possible, y0, x0, y0 - 1, x0 + 1, cells);
+        calc_king_move(possible, y0, x0, y0, x0 - 1, cells);
+        calc_king_move(possible, y0, x0, y0, x0 + 1, cells);
+        calc_king_move(possible, y0, x0, y0 + 1, x0 - 1, cells);
+        calc_king_move(possible, y0, x0, y0 + 1, x0, cells);
+        calc_king_move(possible, y0, x0, y0 + 1, x0 + 1, cells);
+    }
+
+    void chesspiece::king_kills(short y0, short x0, unsigned char (&cells)[8][8])
+    {
+        calc_single_kill(y0, x0, y0 - 1, x0 - 1, cells);
+        calc_single_kill(y0, x0, y0 - 1, x0, cells);
+        calc_single_kill(y0, x0, y0 - 1, x0 + 1, cells);
+        calc_single_kill(y0, x0, y0, x0 - 1, cells);
+        calc_single_kill(y0, x0, y0, x0 + 1, cells);
+        calc_single_kill(y0, x0, y0 + 1, x0 - 1, cells);
+        calc_single_kill(y0, x0, y0 + 1, x0, cells);
+        calc_single_kill(y0, x0, y0 + 1, x0 + 1, cells);
     }
 
     void chesspiece::update_kill_bits(short y0, short x0, unsigned char (&cells)[8][8])
@@ -272,26 +370,6 @@ namespace chess
             king_kills(y0, x0, cells);
             break;
         }
-    }
-
-    void chesspiece::bishop_kills(short y0, short x0, unsigned char (&cells)[8][8])
-    {
-    }
-
-    void chesspiece::knight_kills(short y0, short x0, unsigned char (&cells)[8][8])
-    {
-    }
-
-    void chesspiece::rook_kills(short y0, short x0, unsigned char (&cells)[8][8])
-    {
-    }
-
-    void chesspiece::queen_kills(short y0, short x0, unsigned char (&cells)[8][8])
-    {
-    }
-
-    void chesspiece::king_kills(short y0, short x0, unsigned char (&cells)[8][8])
-    {
     }
 
 }

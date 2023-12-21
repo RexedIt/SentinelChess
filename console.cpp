@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include <string>
 #include <windows.h>
 #include "console.h"
@@ -62,4 +64,50 @@ void board_to_console(chess::chessboard &b)
 void move_to_console(chess::move_s &m, std::string s)
 {
     std::cout << "\t" << s << " move " << m.to_string() << std::endl;
+}
+
+stopwatch::stopwatch()
+{
+    start = std::chrono::high_resolution_clock::now();
+}
+
+long stopwatch::elapsed_ms()
+{
+    std::chrono::steady_clock::time_point finish = std::chrono::high_resolution_clock::now();
+    std::chrono::microseconds ms = std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
+    return (long)ms.count();
+}
+
+long stopwatch::elapsed_sec()
+{
+    std::chrono::steady_clock::time_point finish = std::chrono::high_resolution_clock::now();
+    std::chrono::seconds secs = std::chrono::duration_cast<std::chrono::seconds>(finish - start);
+    return (long)secs.count();
+}
+
+std::string stopwatch::elapsed_str()
+{
+    long ms = elapsed_ms();
+    std::stringstream s;
+    long sec = ms / 1000000;
+    long min = 0;
+    long hr = 0;
+    long mic = (ms / 1000) % 1000;
+
+    if (sec > 60)
+    {
+        min = sec / 60;
+        sec = sec % 60;
+    }
+    if (min > 0)
+    {
+        hr = min / 60;
+        min = min % 60;
+    }
+
+    s << hr << ":";
+    s << std::setfill('0') << std::setw(2) << min << ":";
+    s << std::setfill('0') << std::setw(2) << sec << ":";
+    s << std::setfill('0') << std::setw(4) << mic;
+    return s.str();
 }

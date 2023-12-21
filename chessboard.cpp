@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <fstream>
 #include <cstring>
+#include <sstream>
 
 namespace chess
 {
@@ -84,25 +85,6 @@ namespace chess
     color_e other(color_e t)
     {
         return t == c_white ? c_black : c_white;
-    }
-
-    bool target_move(std::vector<move_s> possible_moves, short y, short x)
-    {
-        for (size_t i = 0; i < possible_moves.size(); i++)
-        {
-            if (possible_moves[i].y1 = y)
-                if (possible_moves[i].x1 == x)
-                    return true;
-        }
-        return false;
-    }
-
-    bool target_move(move_s enemy_move, short y, short x)
-    {
-        if (enemy_move.y1 = y)
-            if (enemy_move.x1 == x)
-                return true;
-        return false;
     }
 
     bool contains_move(std::vector<move_s> possible_moves, move_s m)
@@ -294,17 +276,37 @@ namespace chess
     {
         // 1. determine opponent moves.
         color_e enemy_color = other(turn_col);
-        std::vector<move_s> enemy_moves = possible_moves(enemy_color);
         // 2. Are we in check?  If so let's see if mate.
         short ky = 0;
         short kx = 0;
         find_piece(p_king, turn_col, ky, kx);
-        bool ret = target_move(enemy_moves, ky, kx);
+        bool ret = (m_cells[ky][kx] & kill_mask) == kill_mask;
         if (ret)
             m_check |= turn_col;
-        if (!ret)
+        else
             m_check &= 255 - turn_col;
         return ret;
+    }
+
+    move_s chessboard::is_game_over(color_e col)
+    {
+        move_s m;
+        std::vector<move_s> possible = possible_moves(col);
+        if (find_check(col))
+            m.check = true;
+        m.mate = true;
+        for (size_t i = 0; i < possible.size(); i++)
+        {
+            chessboard b(*this);
+            b.move(possible[i]);
+            if (!b.find_check(col))
+            {
+                m = possible[i];
+                m.mate = false;
+                break;
+            }
+        }
+        return m;
     }
 
     void chessboard::evaluate_check_and_mate(color_e col, std::vector<move_s> &possible, move_s &m)
@@ -318,7 +320,7 @@ namespace chess
         for (size_t i = 0; i < possible.size(); i++)
         {
             chessboard b(*this);
-            b.move(m);
+            b.move(possible[i]);
             if (!b.find_check(col))
             {
                 m.mate = false;
@@ -373,6 +375,7 @@ namespace chess
         if (rec <= 0)
             return best;
         m_turn = turn_col;
+        std::vector<move_s> possible;
         if (!best.is_valid())
         {
             for (short y = 0; y < 8; y++)
@@ -385,7 +388,7 @@ namespace chess
                         color_e content_col = (color_e)(content & color_mask);
                         if (content_col == turn_col)
                         {
-                            move_s candidate = computer_move(turn_col, y, x, rec, root);
+                            move_s candidate = computer_move(possible, turn_col, y, x, rec, root);
                             if (candidate.is_valid())
                             {
                                 if (candidate.weight > best.weight)
@@ -405,7 +408,8 @@ namespace chess
         }
         if (best.is_valid())
         {
-
+            if (root)
+                evaluate_check_and_mate(turn_col, possible, best);
             cache_move(m_turn, best);
             m_turn = other(m_turn);
             return move(best);
@@ -413,12 +417,11 @@ namespace chess
         return best;
     }
 
-    move_s chessboard::computer_move(color_e turn_col, short y0, short x0, int rec, bool root)
+    move_s chessboard::computer_move(std::vector<move_s> &possible, color_e turn_col, short y0, short x0, int rec, bool root)
     {
         move_s best;
         if (rec <= 0)
             return best;
-        std::vector<move_s> possible;
         color_e enemy_col = other(turn_col);
         possible_moves(possible, y0, x0);
         for (size_t i = 0; i < possible.size(); i++)
@@ -473,8 +476,12 @@ namespace chess
 
     void chessboard::update_kill_bits(color_e turn_col)
     {
+        // Clear all of the bits
         for (short y = 0; y < 8; y++)
-        {
+            for (short x = 0; x < 8; x++)
+                m_cells[y][x] &= 127;
+        // Set the ones of our color
+        for (short y = 0; y < 8; y++)
             for (short x = 0; x < 8; x++)
             {
                 unsigned char content = m_cells[y][x];
@@ -488,7 +495,6 @@ namespace chess
                     }
                 }
             }
-        }
     }
 
     move_s chessboard::move(short y0, short x0, short y1, short x1, short cy, short cx)
@@ -524,15 +530,19 @@ namespace chess
         return m_hash;
     }
 
+    int m_move_hits = 0;
+    int m_move_misses = 0;
     std::map<color_e, std::map<uint32_t, move_s>> m_move_cache;
     move_s chessboard::cached_move(color_e col)
     {
         move_s best;
-        if (m_move_cache.size() == 0)
-            return best;
         std::map<uint32_t, move_s>::iterator it = m_move_cache[col].find(hash());
         if (it != m_move_cache[col].end())
+        {
+            m_move_hits++;
             return it->second;
+        }
+        m_move_misses++;
         return best;
     }
 
@@ -545,6 +555,19 @@ namespace chess
             m_move_cache[c_black] = empty;
         }
         m_move_cache[col][hash()] = m;
+    }
+
+    std::string chessboard::cache_stats()
+    {
+        std::stringstream s;
+        if (m_move_cache.size() == 0)
+            return "No Cache";
+        s << "Hits: " << m_move_hits << " Misses: " << m_move_misses;
+        double pct = 100.0;
+        if (m_move_misses > 0)
+            pct = (double)m_move_hits * 100.0 / (double)m_move_misses;
+        s << " " << pct << "%";
+        return s.str();
     }
 
 }
