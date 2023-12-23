@@ -33,17 +33,18 @@ namespace chess
 
     std::string
     color_str(color_e col);
-    std::string coord_str(short y, short x);
-    bool coord_int(std::string s, short &y, short &x);
-    bool in_range(short y, short x);
+    std::string coord_str(int8_t y, int8_t x);
+    bool coord_int(std::string s, int8_t &y, int8_t &x);
+    bool in_range(int8_t y, int8_t x);
     bool is_color(unsigned char cell, color_e color);
 
     color_e other(color_e c);
 
+#pragma pack(1)
     typedef struct move_s
     {
         move_s() { ; }
-        move_s(short _y0, short _x0, short _y1, short _x1, short _cy = -1, short _cx = -1)
+        move_s(int8_t _y0, int8_t _x0, int8_t _y1, int8_t _x1, int8_t _cy = -1, int8_t _cx = -1)
         {
             y0 = _y0;
             x0 = _x0;
@@ -53,12 +54,12 @@ namespace chess
             cx = _cx;
         }
 
-        short y0 = -1;
-        short x0 = -1;
-        short y1 = -1;
-        short x1 = -1;
-        short cy = -1; // castle
-        short cx = -1; // castle
+        int8_t y0 = -1;
+        int8_t x0 = -1;
+        int8_t y1 = -1;
+        int8_t x1 = -1;
+        int8_t cy = -1; // castle
+        int8_t cx = -1; // castle
         short weight = -999;
         bool check = false;
         bool mate = false;
@@ -83,12 +84,12 @@ namespace chess
 
         // The board weight or value for the supplied color
         short weight(color_e col);
-        unsigned char get(short y0, short x0);
-        piece_e get_piece(short y0, short x0);
-        bool find_piece(piece_e pc, color_e col, short &y, short &x);
+        unsigned char get(int8_t y0, int8_t x0);
+        piece_e get_piece(int8_t y0, int8_t x0);
+        bool find_piece(piece_e pc, color_e col, int8_t &y, int8_t &x);
 
         // User Move
-        move_s user_move(color_e col, short y0, short x0, short y1, short x1);
+        move_s user_move(color_e col, int8_t y0, int8_t x0, int8_t y1, int8_t x1);
         // Best Move
         move_s computer_move(color_e col, int rec, bool root = true);
         move_s is_game_over(color_e color);
@@ -107,8 +108,8 @@ namespace chess
 
     private:
         // Initialization
-        void set_kings_row(short y, color_e col);
-        void set_pawns_row(short y, color_e col);
+        void set_kings_row(int8_t y, color_e col);
+        void set_pawns_row(int8_t y, color_e col);
         void set_empty_rows();
 
         // Special
@@ -116,12 +117,12 @@ namespace chess
         void evaluate_check_and_mate(color_e col, std::vector<move_s> &possible, move_s &m);
 
         // Move
-        move_s move(short y0, short x0, short y1, short x1, short cy, short cx);
+        move_s move(int8_t y0, int8_t x0, int8_t y1, int8_t x1, int8_t cy, int8_t cx);
         move_s move(const move_s &m);
-        move_s computer_move(std::vector<move_s> &possible, color_e col, short y0, short x0, int rec, bool root = true);
+        move_s computer_move(std::vector<move_s> &possible, color_e col, int8_t y0, int8_t x0, int rec, bool root = true);
 
         std::vector<move_s> possible_moves(color_e col);
-        void possible_moves(std::vector<move_s> &possible, short y0, short x0);
+        void possible_moves(std::vector<move_s> &possible, int8_t y0, int8_t x0);
         void update_kill_bits(color_e col);
 
         uint32_t hash();

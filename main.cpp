@@ -187,10 +187,10 @@ int main(void)
                 std::cout << "ERROR - Move must be in the form XX-XX" << std::endl;
                 continue;
             }
-            short y0 = 0;
-            short x0 = 0;
-            short y1 = 0;
-            short x1 = 0;
+            int8_t y0 = 0;
+            int8_t x0 = 0;
+            int8_t y1 = 0;
+            int8_t x1 = 0;
             if ((!coord_int(cmdu.substr(0, pos), y0, x0)) ||
                 (!coord_int(cmdu.substr(pos + 1), y1, x1)))
             {
