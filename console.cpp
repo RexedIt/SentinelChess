@@ -108,6 +108,6 @@ std::string stopwatch::elapsed_str()
     s << hr << ":";
     s << std::setfill('0') << std::setw(2) << min << ":";
     s << std::setfill('0') << std::setw(2) << sec << ":";
-    s << std::setfill('0') << std::setw(4) << mic;
+    s << std::setfill('0') << std::setw(3) << mic;
     return s.str();
 }

@@ -93,12 +93,12 @@ namespace chess
         }
     }
 
-    void chesspiece::possible_moves(std::vector<move_s> &possible, int8_t y0, int8_t x0, unsigned char (&cells)[8][8])
+    void chesspiece::possible_moves(std::vector<move_s> &possible, int8_t y0, int8_t x0, unsigned char (&cells)[8][8], unsigned char castled_left, unsigned char castled_right, int8_t ep_y, int8_t ep_x)
     {
         switch (ptype)
         {
         case p_pawn:
-            pawn_moves(possible, y0, x0, cells);
+            pawn_moves(possible, y0, x0, cells, ep_y, ep_x);
             break;
         case p_bishop:
             bishop_moves(possible, y0, x0, cells);
@@ -113,43 +113,60 @@ namespace chess
             queen_moves(possible, y0, x0, cells);
             break;
         case p_king:
-            king_moves(possible, y0, x0, cells);
+            king_moves(possible, y0, x0, cells, castled_left, castled_right);
             break;
         }
     }
 
-    move_s new_move(int8_t y0, int8_t x0, int8_t y1, int8_t x1, int8_t cy = -1, int8_t cx = -1)
+    move_s new_move(int8_t y0, int8_t x0, int8_t y1, int8_t x1, int8_t cx = -1, bool en_passant = false)
     {
-        move_s m(y0, x0, y1, x1, cy, cx);
+        move_s m(y0, x0, y1, x1, cx, en_passant);
         return m;
     }
 
-    void chesspiece::pawn_moves(std::vector<move_s> &possible, int8_t y0, int8_t x0, unsigned char (&cells)[8][8])
+    move_s new_move(int8_t y0, int8_t x0, int8_t y1, int8_t x1, piece_e promote)
+    {
+        move_s m(y0, x0, y1, x1, promote);
+        return m;
+    }
+
+    void chesspiece::pawn_moves(std::vector<move_s> &possible, int8_t y0, int8_t x0, unsigned char (&cells)[8][8], int8_t ep_y, int8_t ep_x)
     {
         // black is on top so dy =  1;
         int8_t dy = color == c_black ? -1 : 1;
         int8_t hy = color == c_black ? 6 : 1;
+        int8_t opp_y = color == c_black ? 0 : 7;
 
         if (in_range(y0 + dy, x0))
         {
-            if (cells[y0 + dy][x0] == 0)
+            if ((cells[y0 + dy][x0]&piece_mask) == 0)
             {
-                possible.push_back(new_move(y0, x0, y0 + dy, x0));
+                possible_pawn_move(possible, y0, x0, y0 + dy, x0);
                 // what about + 2 now
                 if (y0 == hy) // home row
                     if (in_range(y0 + dy * 2, x0))
-                        if (cells[y0 + dy * 2][x0] == 0)
+                        if ((cells[y0 + dy * 2][x0]&piece_mask) == 0)
                             possible.push_back(new_move(y0, x0, y0 + dy * 2, x0));
             }
         }
         // Now, what about kills
         color_e enemy_col = color == c_black ? c_white : c_black;
         if (in_range(y0 + dy, x0 - 1))
+        {
             if (is_color(cells[y0 + dy][x0 - 1], enemy_col))
-                possible.push_back(new_move(y0, x0, y0 + dy, x0 - 1));
+                possible_pawn_move(possible, y0, x0, y0 + dy, x0 - 1);
+            // en passant
+            else if ((ep_y == y0) && (ep_x == x0 - 1) && (is_color(cells[y0 + dy][x0 - 1], c_none)))
+                possible.push_back(new_move(y0, x0, y0 + dy, x0 - 1, -1, true));
+        }
         if (in_range(y0 + dy, x0 + 1))
+        {
             if (is_color(cells[y0 + dy][x0 + 1], enemy_col))
-                possible.push_back(new_move(y0, x0, y0 + dy, x0 + 1));
+                possible_pawn_move(possible, y0, x0, y0 + dy, x0 + 1);
+            // en passant
+            else if ((ep_y == y0) && (ep_x == x0 + 1) && (is_color(cells[y0 + dy][x0 + 1], c_none)))
+                possible.push_back(new_move(y0, x0, y0 + dy, x0 + 1, -1, true));
+        }
     }
 
     void chesspiece::pawn_kills(int8_t y0, int8_t x0, unsigned char (&cells)[8][8])
@@ -191,17 +208,6 @@ namespace chess
     void chesspiece::calc_single_move(std::vector<move_s> &possible, int8_t y0, int8_t x0, int8_t y, int8_t x, unsigned char (&cells)[8][8])
     {
         if (!in_range(y, x))
-            return;
-        color_e cell_color = (color_e)(cells[y][x] & color_mask);
-        if (cell_color != color)
-            possible.push_back(new_move(y0, x0, y, x));
-    }
-
-    void chesspiece::calc_king_move(std::vector<move_s> &possible, int8_t y0, int8_t x0, int8_t y, int8_t x, unsigned char (&cells)[8][8])
-    {
-        if (!in_range(y, x))
-            return;
-        if ((cells[y][x] & kill_mask) == kill_mask)
             return;
         color_e cell_color = (color_e)(cells[y][x] & color_mask);
         if (cell_color != color)
@@ -321,18 +327,27 @@ namespace chess
         calc_direction_kills(y0, x0, 1, 1, 8, cells);
     }
 
-    void chesspiece::king_moves(std::vector<move_s> &possible, int8_t y0, int8_t x0, unsigned char (&cells)[8][8])
+    void chesspiece::king_moves(std::vector<move_s> &possible, int8_t y0, int8_t x0, unsigned char (&cells)[8][8], unsigned char castled_left, unsigned char castled_right)
     {
         // kill mask should be set so that should dictate
         // if this call returns a possible move (check)
-        calc_king_move(possible, y0, x0, y0 - 1, x0 - 1, cells);
-        calc_king_move(possible, y0, x0, y0 - 1, x0, cells);
-        calc_king_move(possible, y0, x0, y0 - 1, x0 + 1, cells);
-        calc_king_move(possible, y0, x0, y0, x0 - 1, cells);
-        calc_king_move(possible, y0, x0, y0, x0 + 1, cells);
-        calc_king_move(possible, y0, x0, y0 + 1, x0 - 1, cells);
-        calc_king_move(possible, y0, x0, y0 + 1, x0, cells);
-        calc_king_move(possible, y0, x0, y0 + 1, x0 + 1, cells);
+        calc_single_move(possible, y0, x0, y0 - 1, x0 - 1, cells);
+        calc_single_move(possible, y0, x0, y0 - 1, x0, cells);
+        calc_single_move(possible, y0, x0, y0 - 1, x0 + 1, cells);
+        calc_single_move(possible, y0, x0, y0, x0 - 1, cells);
+        calc_single_move(possible, y0, x0, y0, x0 + 1, cells);
+        calc_single_move(possible, y0, x0, y0 + 1, x0 - 1, cells);
+        calc_single_move(possible, y0, x0, y0 + 1, x0, cells);
+        calc_single_move(possible, y0, x0, y0 + 1, x0 + 1, cells);
+        // Can we castle left?
+        if ((castled_left & color) == 0)
+            if (castle_path(y0, x0, y0, 2, cells))
+                possible.push_back(new_move(y0, x0, y0, 2, 0));
+        // How about right?
+        if ((castled_right & color) == 0)
+            if (castle_path(y0, x0, y0, 6, cells))
+                possible.push_back(new_move(y0, x0, y0, 6, 7));
+
     }
 
     void chesspiece::king_kills(int8_t y0, int8_t x0, unsigned char (&cells)[8][8])
@@ -345,6 +360,42 @@ namespace chess
         calc_single_kill(y0, x0, y0 + 1, x0 - 1, cells);
         calc_single_kill(y0, x0, y0 + 1, x0, cells);
         calc_single_kill(y0, x0, y0 + 1, x0 + 1, cells);
+    }
+
+    bool chesspiece::castle_path(int8_t y0, int8_t x0, int8_t y1, int8_t x1, unsigned char (&cells)[8][8])
+    {
+        int8_t dx = x1 - x0;
+        int8_t dy = y1 - y0;
+        int8_t x = x0;
+        int8_t y = y0;
+        // Check for check
+        if ((cells[y][x] & kill_mask) == kill_mask)
+            return false;
+        while (true)
+        {
+            if (cells[y][x] != 0)
+                return false;
+            x += dx;
+            y += dy;
+            if ((x == x1) && (y == y1))
+                break;
+        }
+        return true;
+    }
+
+    void chesspiece::possible_pawn_move(std::vector<move_s>& possible, int8_t y0, int8_t x0, int8_t y1, int8_t x1)
+    {
+        if ((y1 == 0) || (y1 == 7)) // promote
+        {
+            possible.push_back(new_move(y0, x0, y1, x1, p_knight));
+            possible.push_back(new_move(y0, x0, y1, x1, p_bishop));
+            possible.push_back(new_move(y0, x0, y1, x1, p_rook));
+            possible.push_back(new_move(y0, x0, y1, x1, p_queen));
+        }
+        else
+        {
+            possible.push_back(new_move(y0, x0, y1, x1));
+        }
     }
 
     void chesspiece::update_kill_bits(int8_t y0, int8_t x0, unsigned char (&cells)[8][8])

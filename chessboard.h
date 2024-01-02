@@ -29,6 +29,7 @@ namespace chess
 
     const unsigned char piece_mask = 31;
     const unsigned char color_mask = 96;
+    const unsigned char piece_and_color_mask = 127;
     const unsigned char kill_mask = 128;
 
     std::string
@@ -40,33 +41,42 @@ namespace chess
 
     color_e other(color_e c);
 
-#pragma pack(1)
+#pragma pack(push, 1)
     typedef struct move_s
     {
         move_s() { ; }
-        move_s(int8_t _y0, int8_t _x0, int8_t _y1, int8_t _x1, int8_t _cy = -1, int8_t _cx = -1)
+        move_s(int8_t _y0, int8_t _x0, int8_t _y1, int8_t _x1, int8_t _cx = -1, bool _en_passant = false)
         {
             y0 = _y0;
             x0 = _x0;
             y1 = _y1;
             x1 = _x1;
-            cy = _cy;
             cx = _cx;
+            en_passant = _en_passant;
         }
-
+        move_s(int8_t _y0, int8_t _x0, int8_t _y1, int8_t _x1, piece_e _promote)
+        {
+            y0 = _y0;
+            x0 = _x0;
+            y1 = _y1;
+            x1 = _x1;
+            promote = _promote;
+        }
         int8_t y0 = -1;
         int8_t x0 = -1;
         int8_t y1 = -1;
         int8_t x1 = -1;
-        int8_t cy = -1; // castle
         int8_t cx = -1; // castle
-        short weight = -999;
+        bool en_passant = false;
+        piece_e promote = p_none;
+        float weight = -999;
         bool check = false;
         bool mate = false;
         std::string to_string();
         bool is_valid();
 
     } move_s;
+#pragma pack(pop)
 
     class chessboard
     {
@@ -83,7 +93,7 @@ namespace chess
         bool load_game(std::string filename);
 
         // The board weight or value for the supplied color
-        short weight(color_e col);
+        float weight(color_e col);
         unsigned char get(int8_t y0, int8_t x0);
         piece_e get_piece(int8_t y0, int8_t x0);
         bool find_piece(piece_e pc, color_e col, int8_t &y, int8_t &x);
@@ -103,6 +113,8 @@ namespace chess
         unsigned char m_cells[8][8];
         unsigned char m_castled_left;
         unsigned char m_castled_right;
+        int8_t m_ep_y;
+        int8_t m_ep_x;
         unsigned char m_check;
         color_e m_turn;
 
@@ -117,7 +129,7 @@ namespace chess
         void evaluate_check_and_mate(color_e col, std::vector<move_s> &possible, move_s &m);
 
         // Move
-        move_s move(int8_t y0, int8_t x0, int8_t y1, int8_t x1, int8_t cy, int8_t cx);
+        move_s move(int8_t y0, int8_t x0, int8_t y1, int8_t x1, int8_t cx);
         move_s move(const move_s &m);
         move_s computer_move(std::vector<move_s> &possible, color_e col, int8_t y0, int8_t x0, int rec, bool root = true);
 

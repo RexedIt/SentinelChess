@@ -48,20 +48,30 @@ bool save_game(std::string cmd, chessboard &board)
     return true;
 }
 
-bool is_game_over(color_e col, move_s &m)
+typedef enum game_state_e
+{
+    play_e = 0,
+    checkmate_e = 1,
+    stalemate_e = 2
+} game_state_e;
+
+game_state_e is_game_over(color_e col, move_s &m)
 {
     color_e winner_col = col == c_white ? c_black : c_white;
-    if (!m.is_valid())
+    if (m.mate)
     {
-        std::cout << "\t" + color_str(winner_col) << " wins, Stalemate!" << std::endl;
-        return true;
+        if (m.check)
+        {
+            std::cout << "\t" + color_str(winner_col) << " wins, Checkmate!" << std::endl;
+            return stalemate_e;
+        }
+        else
+        {
+            std::cout << "\t" + color_str(other(winner_col)) << " in Stalemate, Draw!" << std::endl;
+            return checkmate_e;
+        }
     }
-    else if (m.check && m.mate)
-    {
-        std::cout << "\t" + color_str(winner_col) << " wins, Stalemate!" << std::endl;
-        return true;
-    }
-    return false;
+    return play_e;
 }
 
 int main(void)
@@ -112,9 +122,10 @@ int main(void)
     color_e comp_col = c_white;
     if (my_col == c_white)
         comp_col = c_black;
-    bool game_over = false;
 
-    while (!game_over)
+    game_state_e game_state = play_e;
+
+    while (game_state == play_e)
     {
         if (turn_col != my_col)
         {
@@ -122,8 +133,8 @@ int main(void)
             stopwatch s;
             move_s m = board.computer_move(turn_col, 4);
             std::cout << "\tElapsed: " << s.elapsed_str() << " " << board.cache_stats() << std::endl;
-            game_over = is_game_over(turn_col, m);
-            if (game_over)
+            game_state = is_game_over(turn_col, m);
+            if (game_state != play_e)
                 break;
             board_to_console(board);
             move_to_console(m, color_str(turn_col));
@@ -132,8 +143,8 @@ int main(void)
         }
         // Is the user's game over?
         move_s m = board.is_game_over(my_col);
-        game_over = is_game_over(my_col, m);
-        if (game_over)
+        game_state = is_game_over(my_col, m);
+        if (game_state != play_e)
             break;
         std::cout << "\t" << coll << " Move > ";
         std::getline(std::cin, cmd);
