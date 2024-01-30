@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <thread>
 
 namespace chess
 {
@@ -18,10 +19,10 @@ namespace chess
     public:
         chessgame();
         void new_game(color_e user_color, int level);
-        bool load_game(std::string filename);
-        bool save_game(std::string filename);
+        error_e load_game(std::string filename);
+        error_e save_game(std::string filename);
 
-        bool load_xfen(std::string contents);
+        error_e load_xfen(std::string contents);
         std::string save_xfen();
 
         game_state_e state();
@@ -31,12 +32,17 @@ namespace chess
 
         int level();
 
-        bool computer_move(color_e col);
-        bool user_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
-        bool suggest_move(coord_s p0, coord_s p1, int cx = -1, bool en_passant = false, piece_e promote = p_none);
-        bool rewind_game(int move_no);
-        bool remove_piece(coord_s p0);
-        bool add_piece(coord_s p0, chesspiece &p1);
+        error_e computer_move(color_e col);
+        error_e computer_move_async(color_e col);
+        void computer_move_cancel();
+        bool computer_moving();
+        error_e forfeit();
+
+        error_e user_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
+        error_e suggest_move(coord_s p0, coord_s p1, int cx = -1, bool en_passant = false, piece_e promote = p_none);
+        error_e rewind_game(int move_no);
+        error_e remove_piece(coord_s p0);
+        error_e add_piece(coord_s p0, chesspiece &p1);
 
         // Check?
         bool check_state(color_e col);
@@ -52,6 +58,9 @@ namespace chess
         std::vector<chessturn_s> m_turn;
         color_e m_user_color;
         color_e m_win_color;
+        std::thread::id m_thread_id;
+        bool m_thread_running;
+        chessturn_s m_thread_result;
 
         int m_level;
         int m_trace_level;
@@ -63,6 +72,7 @@ namespace chess
         void draw_move(int n, move_s &m, color_e c);
         void draw_turn(int n, chessboard &b, move_s &m, color_e c);
 
+        void computer_move_background(color_e col);
         game_state_e is_game_over(color_e col, move_s &m);
 
         draw_board_callback mp_cb_draw_board;

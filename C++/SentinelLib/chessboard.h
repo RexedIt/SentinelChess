@@ -13,7 +13,7 @@ namespace chess
 
     class chesspiece;
 
-    typedef void (*thinking_callback)(int);
+    typedef void (*thinking_callback)(move_s, int);
     typedef void (*traces_callback)(std::string);
 
     class chessboard
@@ -27,12 +27,12 @@ namespace chess
         chessboard(chessboard &other);
 
         void copy(chessboard &other);
-        bool load(std::ifstream &is);
-        bool save(std::ofstream &os);
+        error_e load(std::ifstream &is);
+        error_e save(std::ofstream &os);
 
         void new_board();
         std::string save_xfen();
-        bool load_xfen(std::string);
+        error_e load_xfen(std::string);
 
         // The board weight or value for the supplied color
         weight_metric_s weight(color_e col);
@@ -45,12 +45,12 @@ namespace chess
         move_s user_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
         // Best Move
         move_s computer_move(color_e col, int rec);
-        bool suggest_move(move_s m);
+        error_e suggest_move(move_s m);
 
         move_s is_game_over(color_e color);
         // Remove a piece
-        bool remove(coord_s p0);
-        bool add(coord_s p0, chesspiece &p1);
+        error_e remove(coord_s p0);
+        error_e add(coord_s p0, chesspiece &p1);
 
         // Check?
         bool check_state(color_e col);
@@ -59,6 +59,7 @@ namespace chess
         uint32_t hash(int rec);
 
         void set_callbacks(thinking_callback _thinking, traces_callback _traces);
+        void cancel(bool c) { m_cancel = c; }
 
     protected:
         unsigned char m_cells[8][8];
@@ -93,9 +94,10 @@ namespace chess
         void possible_moves(std::vector<move_s> &possible, coord_s c);
         void update_kill_bits();
         void update_check(color_e col);
-        void thinking(int pct);
+        void thinking(move_s, int pct);
         uint32_t m_hash;
         bool m_kill_updated;
+        volatile bool m_cancel;
         thinking_callback mp_cb_thinking;
         traces_callback mp_cb_traces;
     };

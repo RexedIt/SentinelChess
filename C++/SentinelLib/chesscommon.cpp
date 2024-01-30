@@ -10,6 +10,66 @@
 namespace chess
 {
 
+    std::string errorstr(error_e num)
+    {
+        switch (num)
+        {
+        case e_busy:
+            return "Engine Busy";
+        case e_out_of_turn:
+            return "Out of Turn";
+        case e_invalid_game_state:
+            return "Invalid Game State";
+        case e_invalid_range:
+            return "Invalid Range";
+        case e_missing_move:
+            return "Must include move";
+        case e_invalid_move:
+            return "Invalid Move, should be in form XX-XX with first digit A-H, second 1-8 in each";
+        case e_failed_move:
+            return "Move generation failed";
+        case e_missing_filename:
+            return "Must include filename";
+        case e_loading:
+            return "Loading";
+        case e_saving:
+            return "Saving";
+        case e_removing:
+            return "Removing";
+        case e_adding:
+            return "Adding";
+        case e_rewind_missing:
+            return "Rewind needs move number";
+        case e_rewind_failed:
+            return "Engine failed to rewind to position";
+        case e_missing_coord:
+            return "Must include coordinate";
+        case e_invalid_coord:
+            return "Invalid Move, should be in form XX with first digit A-H, second 1-8";
+        case e_missing_piece:
+            return "Must include piece";
+        case e_missing_coord_piece:
+            return "Require coordinate XX and piece P arguments";
+        case e_invalid_piece:
+            return "Invalid Piece, must be single digit in prnbkqPRNBQK";
+        case e_xfen_read:
+            return "Invalid XFEN format board";
+        case e_check:
+            return "You are in Check";
+        case e_no_piece_there:
+            return "There is no piece there";
+        case e_piece_undefined:
+            return "Piece is undefined";
+        case e_cannot_add_another_king:
+            return "Cannot add another king";
+        case e_cannot_remove_a_king:
+            return "Cannot remove a king";
+        case e_cannot_add_over_king:
+            return "Cannot add over an existing king";
+        default:
+            return "Unknown Error";
+        }
+    }
     std::string move_s::to_string()
     {
         std::string s = "";

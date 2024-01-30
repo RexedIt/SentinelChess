@@ -68,7 +68,7 @@ namespace chess
         m_hash = 0;
     }
 
-    bool chessboard::save(std::ofstream &os)
+    error_e chessboard::save(std::ofstream &os)
     {
         os.write((char *)&m_cells, sizeof(m_cells));
         os.write((char *)&m_castled_left, sizeof(m_castled_left));
@@ -79,7 +79,7 @@ namespace chess
         os.write((char *)&black_check, sizeof(black_check));
         os.write((char *)&m_turn, sizeof(m_turn));
         os.write((char *)&m_ep, sizeof(m_ep));
-        return true;
+        return e_none;
     }
 
     std::string chessboard::save_xfen()
@@ -135,7 +135,7 @@ namespace chess
         return ss.str();
     }
 
-    bool chessboard::load(std::ifstream &is)
+    error_e chessboard::load(std::ifstream &is)
     {
         is.read((char *)&m_cells, sizeof(m_cells));
         is.read((char *)&m_castled_left, sizeof(m_castled_left));
@@ -148,15 +148,14 @@ namespace chess
         m_check[c_black] = black_check;
         is.read((char *)&m_turn, sizeof(m_turn));
         is.read((char *)&m_ep, sizeof(m_ep));
-        return true;
+        return e_none;
     }
 
-    bool chessboard::load_xfen(std::string contents)
+    error_e chessboard::load_xfen(std::string contents)
     {
         std::vector<std::string> args = split_string(contents, ' ');
         if (args.size() < 4)
-            return false;
-
+            return e_xfen_read;
         std::string board = args[0];
         std::string col = args[1];
         std::string KQkq = args[2];
@@ -174,21 +173,21 @@ namespace chess
                 for (int j = 0; j < b; j++)
                 {
                     if (ucidx > 63)
-                        return false;
+                        return e_xfen_read;
                     ucboard[ucidx++] = 0;
                 }
             }
             else if ((c >= 'A') && (c <= 'z'))
             {
                 if (ucidx > 63)
-                    return false;
+                    return e_xfen_read;
                 chesspiece p(c);
                 ucboard[ucidx++] = p.value;
             }
         }
 
         if (ucidx != 64)
-            return false;
+            return e_xfen_read;
 
         ucidx = 0;
         for (int y = 7; y >= 0; y--)
@@ -228,7 +227,7 @@ namespace chess
         else
         {
             if (!coord_int(ep, m_ep))
-                return false;
+                return e_xfen_read;
         }
 
         // we need to read half move and full move
@@ -239,7 +238,7 @@ namespace chess
 
         m_hash = 0;
 
-        return true;
+        return e_none;
     }
 
     void chessboard::set_kings_row(int8_t y, color_e col)
@@ -368,57 +367,36 @@ namespace chess
         return m;
     }
 
-    bool chessboard::remove(coord_s p0)
+    error_e chessboard::remove(coord_s p0)
     {
         if (!in_range(p0))
-        {
-            std::cout << "Invalid Range" << std::endl;
-            return false;
-        }
+            return e_invalid_coord;
         // Can't remove a king either.
         if ((p0 == m_king_pos[c_white]) || (p0 == m_king_pos[c_black]))
-        {
-            std::cout << "Cannot remove a king" << std::endl;
-            return false;
-        }
+            return e_cannot_remove_a_king;
         if ((m_cells[p0.y][p0.x] & piece_mask) == 0)
-        {
-            std::cout << "No piece there." << std::endl;
-            return false;
-        }
+            return e_no_piece_there;
         m_cells[p0.y][p0.x] = 0;
         update_kill_bits();
         m_hash = 0;
-        return true;
+        return e_none;
     }
 
-    bool chessboard::add(coord_s p0, chesspiece &p1)
+    error_e chessboard::add(coord_s p0, chesspiece &p1)
     {
         if (!in_range(p0))
-        {
-            std::cout << "Invalid Range" << std::endl;
-            return false;
-        }
+            return e_invalid_coord;
         if (p1.ptype == p_king)
-        {
-            std::cout << "Cannot add another king" << std::endl;
-            return false;
-        }
+            return e_cannot_add_another_king;
         if (p1.ptype == p_none)
-        {
-            std::cout << "Piece undefined" << std::endl;
-            return false;
-        }
+            return e_piece_undefined;
         // Can't remove a king either.
         if ((p0 == m_king_pos[c_white]) || (p0 == m_king_pos[c_black]))
-        {
-            std::cout << "Cannot add over a king" << std::endl;
-            return false;
-        }
+            return e_cannot_add_over_king;
         m_cells[p0.y][p0.x] = p1.value;
         update_kill_bits();
         m_hash = 0;
-        return true;
+        return e_none;
     }
 
     void chessboard::evaluate_check_and_mate(color_e col, std::vector<move_s> &possible, move_s &m)
@@ -500,14 +478,15 @@ namespace chess
         return empty;
     }
 
-    bool chessboard::suggest_move(move_s m)
+    error_e chessboard::suggest_move(move_s m)
     {
         m_suggestion = m;
-        return true;
+        return e_none;
     }
 
     move_s chessboard::computer_move(color_e turn_col, int rec)
     {
+        m_cancel = false;
         move_s best;
         m_turn = turn_col;
         std::vector<move_s> possible = possible_moves(turn_col);
@@ -524,6 +503,8 @@ namespace chess
             float beta = 999;
             for (size_t i = 0; i < possible.size(); i++)
             {
+                if (m_cancel)
+                    return best;
                 chessboard b(*this);
                 move_s candidate = b.move(possible[i]);
                 float score = b.computer_move_min(other(turn_col), alpha, beta, rec - 1);
@@ -540,7 +521,7 @@ namespace chess
                     best = candidate;
                     alpha = score;
                 }
-                thinking(-1);
+                thinking(candidate, i * 100 / possible.size());
             }
         }
         evaluate_check_and_mate(turn_col, possible, best);
@@ -554,7 +535,7 @@ namespace chess
 
     float chessboard::computer_move_max(color_e turn_col, float _alpha, float _beta, int rec)
     {
-        if (rec == 0)
+        if ((rec == 0) || (m_cancel))
             return weight(turn_col).weight;
         float alpha = _alpha;
         float beta = _beta;
@@ -575,7 +556,7 @@ namespace chess
 
     float chessboard::computer_move_min(color_e turn_col, float _alpha, float _beta, int rec)
     {
-        if (rec == 0)
+        if ((rec == 0) || (m_cancel))
             return -1.0f * weight(turn_col).weight;
         float alpha = _alpha;
         float beta = _beta;
@@ -750,10 +731,10 @@ namespace chess
         mp_cb_traces = _traces;
     }
 
-    void chessboard::thinking(int pct)
+    void chessboard::thinking(move_s m, int pct)
     {
         if (mp_cb_thinking)
-            (mp_cb_thinking)(pct);
+            (mp_cb_thinking)(m, pct);
     }
 
 }

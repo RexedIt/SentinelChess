@@ -14,6 +14,7 @@ namespace chess
         m_win_color = c_none;
         m_level = 4;
         m_trace_level = -1;
+        m_thread_running = false;
     }
 
     void chessgame::new_game(color_e user_color, int level)
@@ -26,14 +27,14 @@ namespace chess
         draw_board(1, m_board);
     }
 
-    bool chessgame::load_game(std::string filename)
+    error_e chessgame::load_game(std::string filename)
     {
         try
         {
             std::ifstream is;
             is.open(filename, std::ios::binary | std::ios::in);
             if (!is.is_open())
-                return false;
+                return e_loading;
             is.read((char *)&m_state, sizeof(m_state));
             is.read((char *)&m_user_color, sizeof(m_user_color));
             is.read((char *)&m_win_color, sizeof(m_win_color));
@@ -46,26 +47,26 @@ namespace chess
             chessturn_s t;
             for (int i = 0; i < num_turns; i++)
             {
-                if (!t.load(is))
+                if (t.load(is) != e_none)
                 {
                     is.close();
-                    return false;
+                    return e_loading;
                 }
                 m_turn.push_back(t);
             }
-            if (!m_board.load(is))
-                return false;
+            if (m_board.load(is) != e_none)
+                return e_loading;
             is.close();
             draw_board(turnno(), m_board);
-            return true;
+            return e_none;
         }
         catch (const std::exception &)
         {
-            return false;
+            return e_loading;
         }
     }
 
-    bool chessgame::save_game(std::string filename)
+    error_e chessgame::save_game(std::string filename)
     {
         try
         {
@@ -81,29 +82,29 @@ namespace chess
             os.write((char *)&num_turns, sizeof(num_turns));
             for (int i = 0; i < num_turns; i++)
             {
-                if (!m_turn[i].save(os))
+                if (m_turn[i].save(os) != e_none)
                 {
                     os.close();
-                    return false;
+                    return e_saving;
                 }
             }
-            if (!m_board.save(os))
+            if (m_board.save(os) != e_none)
             {
                 os.close();
-                return false;
+                return e_saving;
             }
             os.close();
-            return true;
+            return e_none;
         }
         catch (const std::exception &)
         {
-            return false;
+            return e_saving;
         }
     }
 
-    bool chessgame::load_xfen(std::string contents)
+    error_e chessgame::load_xfen(std::string contents)
     {
-        bool ret = m_board.load_xfen(contents);
+        error_e ret = m_board.load_xfen(contents);
         draw_board(turnno(), m_board);
         return ret;
     }
@@ -182,21 +183,24 @@ namespace chess
 
     game_state_e chessgame::is_game_over(color_e col, move_s &m)
     {
-        color_e winner_col = col == c_white ? c_black : c_white;
-        if (m.mate)
+        if (m_state == play_e)
         {
-            if (m.check)
-                return checkmate_e;
-            else
-                return stalemate_e;
+            color_e winner_col = col == c_white ? c_black : c_white;
+            if (m.mate)
+            {
+                if (m.check)
+                    m_state = checkmate_e;
+                else
+                    m_state = stalemate_e;
+            }
         }
-        return play_e;
+        return m_state;
     }
 
-    bool chessgame::computer_move(color_e col)
+    error_e chessgame::computer_move(color_e col)
     {
         if (m_state != play_e)
-            return false;
+            return e_invalid_game_state;
         if (col == m_board.turn_color())
         {
             move_s m = m_board.computer_move(col, m_level);
@@ -205,19 +209,62 @@ namespace chess
             draw_turn(turnno(), m_board, m, col);
             if (m_state != play_e)
                 game_over(m_state, m_win_color);
+            return e_none;
         }
-        return true;
+        return e_out_of_turn;
     }
 
-    bool chessgame::user_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
+    error_e chessgame::computer_move_async(color_e col)
+    {
+        if (computer_moving())
+            return e_busy;
+        if (m_state != play_e)
+            return e_invalid_game_state;
+        if (col != m_board.turn_color())
+            return e_out_of_turn;
+        m_thread_running = true;
+        std::thread background(&chessgame::computer_move_background, this, col);
+        m_thread_id = background.get_id();
+        background.detach();
+        return e_none;
+    }
+
+    void chessgame::computer_move_background(color_e col)
+    {
+        move_s m = m_board.computer_move(col, m_level);
+        m_state = is_game_over(col, m);
+        m_thread_result = new_turn(m_board, m, col);
+        m_thread_result.r = (int)m_state;
+        m_turn.push_back(m_thread_result);
+        m_thread_running = true;
+    }
+
+    void chessgame::computer_move_cancel()
+    {
+        m_board.cancel(true);
+    }
+
+    bool chessgame::computer_moving()
+    {
+        return m_thread_running;
+    }
+
+    error_e chessgame::forfeit()
+    {
+        m_state = forfeit_e;
+        m_win_color = other(m_user_color);
+        return e_none;
+    }
+
+    error_e chessgame::user_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
     {
         if (m_state != play_e)
-            return false;
+            return e_invalid_game_state;
         if (col == m_board.turn_color())
         {
             move_s m = m_board.user_move(col, p0, p1, promote);
             if (!m.is_valid())
-                return false;
+                return e_invalid_move;
             if (m.promote == request_promote)
             {
                 piece_e promote = p_queen;
@@ -231,43 +278,43 @@ namespace chess
             if (m_state != play_e)
                 game_over(m_state, m_win_color);
         }
-        return true;
+        return e_none;
     }
 
-    bool chessgame::suggest_move(coord_s p0, coord_s p1, int cx, bool en_passant, piece_e promote)
+    error_e chessgame::suggest_move(coord_s p0, coord_s p1, int cx, bool en_passant, piece_e promote)
     {
         move_s m(p0, p1, cx, en_passant);
         if (!m.is_valid())
-            return false;
+            return e_invalid_move;
         m.promote = promote;
         return m_board.suggest_move(m);
     }
 
-    bool chessgame::remove_piece(coord_s p0)
+    error_e chessgame::remove_piece(coord_s p0)
     {
-        if (m_board.remove(p0))
+        if (m_board.remove(p0) == e_none)
         {
             draw_board(turnno(), m_board);
-            return true;
+            return e_none;
         }
-        return false;
+        return e_removing;
     }
 
-    bool chessgame::add_piece(coord_s p0, chesspiece &p1)
+    error_e chessgame::add_piece(coord_s p0, chesspiece &p1)
     {
-        if (m_board.add(p0, p1))
+        if (m_board.add(p0, p1) == e_none)
         {
             draw_board(turnno(), m_board);
-            return true;
+            return e_none;
         }
-        return false;
+        return e_adding;
     }
 
-    bool chessgame::rewind_game(int move_no)
+    error_e chessgame::rewind_game(int move_no)
     {
         int idx = move_no - 2;
         if ((idx < -1) || (idx >= turnno() - 2))
-            return false;
+            return e_rewind_failed;
         if (idx >= 0)
         {
             m_board.copy(m_turn[idx].b);
@@ -280,7 +327,7 @@ namespace chess
         }
         draw_board(turnno(), m_board);
         clear_cache();
-        return true;
+        return e_none;
     }
 
     bool chessgame::check_state(color_e col)

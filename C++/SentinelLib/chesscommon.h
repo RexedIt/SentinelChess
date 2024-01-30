@@ -7,6 +7,39 @@
 namespace chess
 {
 
+    typedef enum error_e
+    {
+        e_none,
+        e_busy,
+        e_out_of_turn,
+        e_invalid_game_state,
+        e_invalid_range,
+        e_missing_move,
+        e_invalid_move,
+        e_failed_move,
+        e_missing_coord,
+        e_invalid_coord,
+        e_missing_filename,
+        e_loading,
+        e_saving,
+        e_removing,
+        e_adding,
+        e_rewind_missing,
+        e_rewind_failed,
+        e_missing_piece,
+        e_invalid_piece,
+        e_missing_coord_piece,
+        e_xfen_read,
+        e_check,
+        e_no_piece_there,
+        e_piece_undefined,
+        e_cannot_add_another_king,
+        e_cannot_remove_a_king,
+        e_cannot_add_over_king
+    } error_e;
+
+    std::string errorstr(error_e num);
+
     class chessboard;
     struct move_s;
 
@@ -133,7 +166,8 @@ namespace chess
     {
         play_e = 0,
         checkmate_e = 1,
-        stalemate_e = 2
+        stalemate_e = 2,
+        forfeit_e = 3
     } game_state_e;
 
     game_state_e is_game_over(color_e col, move_s &m);

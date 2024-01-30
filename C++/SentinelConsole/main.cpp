@@ -10,6 +10,12 @@
 
 using namespace chess;
 
+bool print_error(error_e num)
+{
+    std::cout << "ERROR: " << errorstr(num) << std::endl;
+    return false;
+}
+
 std::string get_arg(std::string cmdu)
 {
     size_t pos = cmdu.find(' ');
@@ -27,16 +33,10 @@ bool get_move(std::string cmdu, coord_s &p0, coord_s &p1)
 {
     size_t pos = cmdu.find('-');
     if (pos == std::string::npos)
-    {
-        std::cout << "ERROR - Move must be in the form XX-XX" << std::endl;
-        return false;
-    }
+        return print_error(e_missing_move);
     if ((!coord_int(cmdu.substr(0, pos), p0)) ||
         (!coord_int(cmdu.substr(pos + 1), p1)))
-    {
-        std::cout << "ERROR - Move must be in the form XX-XX for example A1-A2" << std::endl;
-        return false;
-    }
+        return print_error(e_invalid_move);
     return true;
 }
 
@@ -44,15 +44,9 @@ bool load_game(std::string cmd, chessgame &game)
 {
     std::string filename = get_arg(cmd);
     if (filename == "")
-    {
-        std::cout << "ERROR - Must include filename" << std::endl;
-        return false;
-    }
-    if (!game.load_game(filename))
-    {
-        std::cout << "ERROR Loading" << std::endl;
-        return false;
-    }
+        return print_error(e_missing_filename);
+    if (game.load_game(filename) != e_none)
+        return print_error(e_loading);
     return true;
 }
 
@@ -60,15 +54,9 @@ bool save_game(std::string cmd, chessgame &game)
 {
     std::string filename = get_arg(cmd);
     if (filename == "")
-    {
-        std::cout << "ERROR - Must include filename" << std::endl;
-        return false;
-    }
-    if (!game.save_game(filename))
-    {
-        std::cout << "ERROR Saving" << std::endl;
-        return false;
-    }
+        return print_error(e_missing_filename);
+    if (game.save_game(filename) != e_none)
+        return print_error(e_saving);
     return true;
 }
 
@@ -132,7 +120,7 @@ piece_e request_promote_piece()
     return promote;
 }
 
-void thinking(int pct)
+void thinking(move_s m, int pct)
 {
     std::cout << ".";
 }
@@ -207,9 +195,9 @@ int main(void)
         {
             std::cout << "Computer Turn" << std::endl;
             stopwatch s;
-            if (!game.computer_move(turn_col))
+            if (game.computer_move(turn_col) != e_none)
             {
-                std::cout << "Computer Move returned FALSE" << std::endl;
+                print_error(e_failed_move);
                 exit(EXIT_FAILURE);
             }
             std::cout << s.elapsed_str() << " " << cache_stats() << std::endl;
@@ -270,13 +258,13 @@ int main(void)
             cmdu = get_arg(cmdu);
             if (cmdu == "")
             {
-                std::cout << "ERROR - Invalid Rewind command need move number" << std::endl;
+                print_error(e_rewind_missing);
                 continue;
             }
             int moveno = atoi(cmdu.c_str());
-            if (!game.rewind_game(moveno))
+            if (game.rewind_game(moveno) != e_none)
             {
-                std::cout << "ERROR Rewinding Game to Move Indicated" << std::endl;
+                print_error(e_rewind_failed);
                 continue;
             }
             turn_col = game.turn_color();
@@ -286,13 +274,13 @@ int main(void)
             cmdu = get_arg(cmdu);
             if (cmdu == "")
             {
-                std::cout << "ERROR - Invalid Remove coordinates should be XY" << std::endl;
+                print_error(e_missing_coord);
                 continue;
             }
             coord_s p0;
-            if (!coord_int(cmdu, p0))
+            if (coord_int(cmdu, p0) != e_none)
             {
-                std::cout << "ERROR - Invalid Remove coordinates should be XY" << std::endl;
+                print_error(e_invalid_coord);
                 continue;
             }
             game.remove_piece(p0);
@@ -302,24 +290,24 @@ int main(void)
             std::vector<std::string> args = get_args(cmd);
             if (args.size() != 2)
             {
-                std::cout << "ERROR - Invalid Piece format P COORD COLORPIECE such as P G1 Wk for White Knight at G1" << std::endl;
+                print_error(e_missing_coord_piece);
                 continue;
             }
             coord_s p0;
-            if (!coord_int(args[0], p0))
+            if (coord_int(args[0], p0) != e_none)
             {
-                std::cout << "ERROR - Coordinate expected in form XY (letter+number)" << std::endl;
+                print_error(e_invalid_coord);
                 continue;
             }
             if (args[1].size() != 1)
             {
-                std::cout << "ERROR - Piece should be in form Piece one digit pPnNbBrRqQkK possible values" << std::endl;
+                print_error(e_missing_piece);
                 continue;
             }
             chesspiece p1(args[1][0]);
             if (p1.ptype == p_none)
             {
-                std::cout << "ERROR - Piece should be in form ColorPiece with one digit for each, K=King, k=Knight" << std::endl;
+                print_error(e_invalid_piece);
                 continue;
             }
             game.add_piece(p0, p1);
@@ -340,9 +328,9 @@ int main(void)
             cmdu = get_arg(cmd);
             if (cmdu == "")
                 std::cout << game.save_xfen() << std::endl;
-            else if (!game.load_xfen(cmdu))
+            else if (game.load_xfen(cmdu) != e_none)
             {
-                std::cout << "ERROR - XFEN content not read" << std::endl;
+                print_error(e_xfen_read);
                 continue;
             }
         }
@@ -353,21 +341,21 @@ int main(void)
                 cmdu = get_arg(cmdu);
                 if (cmdu == "")
                 {
-                    std::cout << "ERROR - Invalid move use M or MOVE XX-XX" << std::endl;
+                    print_error(e_missing_move);
                     continue;
                 }
             }
             coord_s p0, p1;
             if (!get_move(cmdu, p0, p1))
                 continue;
-            if (!game.user_move(my_col, p0, p1))
+            if (game.user_move(my_col, p0, p1) != e_none)
             {
-                std::cout << "ERROR - Invalid Move" << std::endl;
+                print_error(e_invalid_move);
                 continue;
             }
             if ((game.check_state(my_col)) && (game.state() == play_e))
             {
-                std::cout << "ERROR - You are in Check, try again" << std::endl;
+                print_error(e_check);
                 continue;
             }
             std::cout << std::endl;
