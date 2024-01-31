@@ -114,6 +114,12 @@ namespace chess
         return m_board.save_xfen();
     }
 
+    chessboard chessgame::board()
+    {
+        chessboard b(m_board);
+        return b;
+    }
+
     game_state_e chessgame::state()
     {
         return m_state;
@@ -144,10 +150,11 @@ namespace chess
         return (int)m_turn.size() + 1;
     }
 
-    void chessgame::set_callbacks(draw_board_callback _draw_board, game_end_callback _game_end, draw_move_callback _draw_move, request_promote_callback _request_promote, thinking_callback _thinking, traces_callback _traces)
+    void chessgame::set_callbacks(draw_board_callback _draw_board, game_end_callback _game_end, computer_moved_callback _computer_moved, draw_move_callback _draw_move, request_promote_callback _request_promote, thinking_callback _thinking, traces_callback _traces)
     {
         mp_cb_draw_board = _draw_board;
         mp_cb_game_end = _game_end;
+        mp_cb_computer_moved = _computer_moved;
         mp_cb_draw_move = _draw_move;
         mp_cb_request_promote = _request_promote;
         m_board.set_callbacks(_thinking, _traces);
@@ -165,6 +172,12 @@ namespace chess
         m_win_color = win_color;
         if (mp_cb_game_end)
             (mp_cb_game_end)(state, win_color);
+    }
+
+    void chessgame::computer_moved(int n, chessturn_s &t)
+    {
+        if (mp_cb_computer_moved)
+            (mp_cb_computer_moved)(n, t);
     }
 
     void chessgame::draw_move(int n, move_s &m, color_e c)
@@ -233,10 +246,10 @@ namespace chess
     {
         move_s m = m_board.computer_move(col, m_level);
         m_state = is_game_over(col, m);
-        m_thread_result = new_turn(m_board, m, col);
-        m_thread_result.r = (int)m_state;
-        m_turn.push_back(m_thread_result);
-        m_thread_running = true;
+        chessturn_s thread_result = new_turn(m_board, m, col);
+        m_turn.push_back(thread_result);
+        m_thread_running = false;
+        computer_moved(turnno(), thread_result);
     }
 
     void chessgame::computer_move_cancel()

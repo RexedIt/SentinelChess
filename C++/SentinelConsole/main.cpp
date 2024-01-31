@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 #include <windows.h>
+#include <chrono>
+#include <thread>
 
 #include "chessgame.h"
 #include "chesspiece.h"
@@ -83,6 +85,28 @@ bool get_new_game_options(color_e &my_col, std::string &coll, int &level)
     return true;
 }
 
+error_e computer_move(color_e &turn_col, chessgame &g, bool sync = false)
+{
+    std::cout << "Computer Turn" << std::endl;
+    stopwatch s;
+    // Synchronous
+    error_e ret = e_none;
+    if (sync)
+    {
+        ret = g.computer_move(turn_col);
+    }
+    else
+    {
+        ret = g.computer_move_async(turn_col);
+        // Simulate
+        while (g.computer_moving())
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    std::cout << s.elapsed_str() << " " << cache_stats() << std::endl;
+    std::cout << std::endl;
+    return e_none;
+}
+
 // *** Callbacks ***
 void draw_board(int n, chessboard &b)
 {
@@ -102,6 +126,12 @@ void game_over(game_state_e state, color_e win_color)
     else
         std::cout << color_str(win_color) + " Wins! ";
     std::cout << "****" << std::endl;
+}
+
+void computer_moved(int n, chessturn_s &t)
+{
+    board_to_console(n, t.b);
+    move_to_console(t.m, color_str(t.c));
 }
 
 piece_e request_promote_piece()
@@ -140,6 +170,7 @@ int main(void)
     game.set_callbacks(
         &draw_board,
         &game_over,
+        &computer_moved,
         &draw_move,
         &request_promote_piece,
         &thinking,
@@ -193,15 +224,11 @@ int main(void)
     {
         if (turn_col != my_col)
         {
-            std::cout << "Computer Turn" << std::endl;
-            stopwatch s;
-            if (game.computer_move(turn_col) != e_none)
+            if (computer_move(turn_col, game) != e_none)
             {
                 print_error(e_failed_move);
                 exit(EXIT_FAILURE);
             }
-            std::cout << s.elapsed_str() << " " << cache_stats() << std::endl;
-            std::cout << std::endl;
             turn_col = my_col;
         }
         // Is the game over?
