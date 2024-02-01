@@ -1,7 +1,6 @@
 #include "sentinelchess.h"
 
 #include <godot_cpp/core/class_db.hpp>
-#include <map>
 
 using namespace godot;
 
@@ -43,7 +42,12 @@ void traces(std::string msg)
 
 void SentinelChess::_bind_methods()
 {
+    ClassDB::bind_method(D_METHOD("errorstr", "num"), &SentinelChess::errorstr);
     ClassDB::bind_method(D_METHOD("new_game", "user_color", "level"), &SentinelChess::new_game);
+    ClassDB::bind_method(D_METHOD("save_game", "filename"), &SentinelChess::save_game);
+    ClassDB::bind_method(D_METHOD("load_game", "filename"), &SentinelChess::load_game);
+    ClassDB::bind_method(D_METHOD("turn_color"), &SentinelChess::turn_color);
+    ClassDB::bind_method(D_METHOD("state"), &SentinelChess::state);
 
     // Colors
     BIND_ENUM_CONSTANT(ColorNone);
@@ -56,6 +60,7 @@ void SentinelChess::_bind_methods()
     BIND_ENUM_CONSTANT(GameStateStaleMate);
     BIND_ENUM_CONSTANT(GameStateForfeit);
 
+    
     // Signals
     ADD_SIGNAL(MethodInfo("trace", PropertyInfo(Variant::STRING, "msg")));
     ADD_SIGNAL(MethodInfo("game_over", PropertyInfo(Variant::INT, "game_state"), PropertyInfo(Variant::INT, "win_color")));
@@ -81,7 +86,32 @@ SentinelChess::~SentinelChess()
     instance = NULL;
 }
 
+String SentinelChess::errorstr(int num)
+{
+    return String(::errorstr((error_e)num).c_str());
+}
+
 void SentinelChess::new_game(ChessColor user_color, int level)
 {
     m_game.new_game((color_e)user_color, level);
+}
+
+int SentinelChess::save_game(String filename)
+{
+    return m_game.save_game(filename.ascii().get_data());
+}
+
+int SentinelChess::load_game(String filename)
+{
+    return m_game.load_game(filename.ascii().get_data());
+}
+
+SentinelChess::ChessColor SentinelChess::turn_color()
+{
+    return (SentinelChess::ChessColor)m_game.turn_color();
+}
+
+SentinelChess::ChessGameState SentinelChess::state()
+{
+    return (SentinelChess::ChessGameState)m_game.state();
 }

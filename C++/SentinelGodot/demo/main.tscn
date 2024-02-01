@@ -1,5 +1,10 @@
-[gd_scene format=3 uid="uid://bw54mc0b8vxgk"]
+[gd_scene load_steps=2 format=3 uid="uid://bw54mc0b8vxgk"]
+
+[ext_resource type="Script" path="res://TestTemp.gd" id="1_0bfdd"]
 
 [node name="Main" type="Node2D"]
 
 [node name="SentinelChess" type="SentinelChess" parent="."]
+script = ExtResource("1_0bfdd")
+
+[connection signal="trace" from="SentinelChess" to="SentinelChess" method="_on_trace"]
