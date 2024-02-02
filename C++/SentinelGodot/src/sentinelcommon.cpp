@@ -45,16 +45,6 @@ int ChessCoord::get_y() const
 }
 
 // *** Chess Move
-void ChessMove::_bind_methods()
-{
-    ClassDB::bind_method(D_METHOD("get_p0"), &ChessMove::get_p0);
-    ClassDB::bind_method(D_METHOD("set_p0", "c"), &ChessMove::set_p0);
-    ClassDB::add_property("ChessMove", PropertyInfo(Variant::OBJECT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessCoord"), "set_p0", "get_p0");
-    ClassDB::bind_method(D_METHOD("get_p1"), &ChessMove::get_p1);
-    ClassDB::bind_method(D_METHOD("set_p1", "c"), &ChessMove::set_p1);
-    ClassDB::add_property("ChessMove", PropertyInfo(Variant::OBJECT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessCoord"), "set_p1", "get_p1");
-}
-
 ChessMove::ChessMove()
 {
     p0.reference_ptr(memnew(ChessCoord()));
@@ -70,6 +60,23 @@ ChessMove::ChessMove(move_s &c)
 
 ChessMove::~ChessMove()
 {
+}
+
+void ChessMove::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("get_p0"), &ChessMove::get_p0);
+    ClassDB::bind_method(D_METHOD("set_p0", "c"), &ChessMove::set_p0);
+    ClassDB::add_property("ChessMove", PropertyInfo(Variant::OBJECT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessCoord"), "set_p0", "get_p0");
+    ClassDB::bind_method(D_METHOD("get_p1"), &ChessMove::get_p1);
+    ClassDB::bind_method(D_METHOD("set_p1", "c"), &ChessMove::set_p1);
+    ClassDB::add_property("ChessMove", PropertyInfo(Variant::OBJECT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessCoord"), "set_p1", "get_p1");
+    ClassDB::bind_method(D_METHOD("get_cx"), &ChessMove::get_cx);
+    ClassDB::bind_method(D_METHOD("set_cx", "c"), &ChessMove::set_cx);
+    ClassDB::add_property("ChessMove", PropertyInfo(Variant::OBJECT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessCoord"), "set_cx", "get_cx");
+    ClassDB::bind_method(D_METHOD("promote"), &ChessMove::promote);
+    ClassDB::bind_method(D_METHOD("check"), &ChessMove::check);
+    ClassDB::bind_method(D_METHOD("mate"), &ChessMove::mate);
+    ClassDB::bind_method(D_METHOD("is_valid"), &ChessMove::is_valid);
 }
 
 void ChessMove::set_p0(const Ref<ChessCoord> &c)
@@ -99,3 +106,39 @@ Ref<ChessCoord> ChessMove::get_p1() const
 {
     return p1;
 }
+
+void ChessMove::set_cx(const int c)
+{
+    m_move.cx = (int8_t)c;
+}
+
+int ChessMove::get_cx() const
+{
+    return m_move.cx;
+}
+
+int ChessMove::promote() const
+{
+    return m_move.promote;
+}
+
+bool ChessMove::en_passant() const
+{
+    return m_move.en_passant;
+}
+
+bool ChessMove::check() const
+{
+    return m_move.check;
+}
+
+bool ChessMove::mate() const
+{
+    return m_move.mate;
+}
+
+bool ChessMove::is_valid()
+{
+    return m_move.is_valid();
+}
+

@@ -269,21 +269,21 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::user_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
+    error_e chessgame::user_move(color_e col, move_s m0)
     {
         if (m_state != play_e)
             return e_invalid_game_state;
         if (col == m_board.turn_color())
         {
-            move_s m = m_board.user_move(col, p0, p1, promote);
+            move_s m = m_board.user_move(col, m0);
             if (!m.is_valid())
                 return e_invalid_move;
             if (m.promote == request_promote)
             {
-                piece_e promote = p_queen;
+                m0.promote = p_queen;
                 if (mp_cb_request_promote)
-                    promote = (mp_cb_request_promote)();
-                m = m_board.user_move(col, p0, p1, promote);
+                    m0.promote = (mp_cb_request_promote)();
+                m = m_board.user_move(col, m0);
             }
             m_state = is_game_over(col, m);
             m_turn.push_back(new_turn(m_board, m, col));
@@ -294,11 +294,22 @@ namespace chess
         return e_none;
     }
 
+    error_e chessgame::user_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
+    {
+        move_s m(p0, p1, promote);
+        return user_move(col, m);
+    }
+
+    error_e chessgame::suggest_move(move_s m)
+    {
+        if (!m.is_valid())
+            return e_invalid_move;
+        return m_board.suggest_move(m);
+    }
+
     error_e chessgame::suggest_move(coord_s p0, coord_s p1, int cx, bool en_passant, piece_e promote)
     {
         move_s m(p0, p1, cx, en_passant);
-        if (!m.is_valid())
-            return e_invalid_move;
         m.promote = promote;
         return m_board.suggest_move(m);
     }

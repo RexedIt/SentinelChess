@@ -35,7 +35,8 @@ namespace chess
         e_piece_undefined,
         e_cannot_add_another_king,
         e_cannot_remove_a_king,
-        e_cannot_add_over_king
+        e_cannot_add_over_king,
+        e_invalid_reference
     } error_e;
 
     std::string errorstr(error_e num);

@@ -31,9 +31,9 @@ protected:
     static void _bind_methods();
 };
 
-class ChessMove : public Object
+class ChessMove : public RefCounted
 {
-    GDCLASS(ChessMove, Object)
+    GDCLASS(ChessMove, RefCounted)
 
 public:
     ChessMove();
@@ -44,12 +44,20 @@ public:
     Ref<ChessCoord> get_p0() const;
     void set_p1(const Ref<ChessCoord> &c);
     Ref<ChessCoord> get_p1() const;
+    void set_cx(const int c);
+    int get_cx() const;
+    int promote() const;
+    bool en_passant() const;
+    bool check() const;
+    bool mate() const;
+    bool is_valid();
 
     move_s get() { return m_move; }
 
 private:
     Ref<ChessCoord> p0;
     Ref<ChessCoord> p1;
+
     move_s m_move;
 
 protected:

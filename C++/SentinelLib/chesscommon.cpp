@@ -66,6 +66,8 @@ namespace chess
             return "Cannot remove a king";
         case e_cannot_add_over_king:
             return "Cannot add over an existing king";
+        case e_invalid_reference:
+            return "Invalid Reference";
         default:
             return "Unknown Error";
         }

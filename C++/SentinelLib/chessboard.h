@@ -37,12 +37,16 @@ namespace chess
         // The board weight or value for the supplied color
         weight_metric_s weight(color_e col);
 
+        unsigned char get(int8_t y, int8_t x);
         unsigned char get(coord_s c);
         piece_e get_piece(coord_s c);
+
         bool find_piece(piece_e pc, color_e col, coord_s &c);
 
         // User Move
+        move_s user_move(color_e col, move_s m);
         move_s user_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
+
         // Best Move
         move_s computer_move(color_e col, int rec);
         error_e suggest_move(move_s m);

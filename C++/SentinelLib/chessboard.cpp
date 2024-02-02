@@ -311,11 +311,16 @@ namespace chess
 
     unsigned char chessboard::get(coord_s s)
     {
-        if ((s.y < 0) || (s.y > 7))
-            return 0;
-        if ((s.x < 0) || (s.x > 7))
-            return 0;
-        return m_cells[s.y][s.x];
+        if (in_range(s))
+            return m_cells[s.y][s.x];
+        return 0;
+    }
+
+    unsigned char chessboard::get(int8_t y, int8_t x)
+    {
+        if (in_range(y,x))
+            return m_cells[y][x];
+        return 0;
     }
 
     piece_e chessboard::get_piece(coord_s s)
@@ -440,9 +445,11 @@ namespace chess
         return m_turn;
     }
 
-    move_s chessboard::user_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
+    move_s chessboard::user_move(color_e col, move_s m)
     {
         move_s empty;
+        coord_s p0 = m.p0;
+        coord_s p1 = m.p1;
         if ((!in_range(p0)) || (!in_range(p1)))
             return empty;
         if (p1 == p0)
@@ -452,13 +459,11 @@ namespace chess
             return empty;
         std::vector<move_s> possible;
         possible_moves(possible, p0);
-        move_s m(p0, p1);
         if (!contains_move(possible, m, true))
             return empty;
-        m.promote = promote;
         // Promotion?
         int ptarget = (col == c_white) ? 7 : 0;
-        if ((p.ptype == p_pawn) && (p1.y == ptarget) && (promote == p_none))
+        if ((p.ptype == p_pawn) && (p1.y == ptarget) && (m.promote == p_none))
         {
             m.promote = request_promote; // special flag to request
             return m;
@@ -476,6 +481,12 @@ namespace chess
             return move(m);
         }
         return empty;
+    }
+
+    move_s chessboard::user_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
+    {
+        move_s m(p0, p1, promote);
+        return user_move(col, m);
     }
 
     error_e chessboard::suggest_move(move_s m)

@@ -13,6 +13,49 @@ namespace chess
         kill_mask = 0;
     }
 
+    chesspiece::chesspiece(color_e c, piece_e p)
+    {
+        ptype = p;
+        color = c;
+        value = (unsigned char)(p + c);
+        kill_mask = color * color_kill_mask_mult;
+        switch (ptype)
+        {
+        case p_pawn:
+            abbr = 'p';
+            name = "Pawn";
+            break;
+        case p_bishop:
+            abbr = 'b';
+            name = "Bishop";
+            break;
+        case p_knight:
+            abbr = 'n';
+            name = "Knight";
+            break;
+        case p_rook:
+            abbr = 'r';
+            name = "Rook";
+            break;
+        case p_queen:
+            abbr = 'q';
+            name = "Queen";
+            break;
+        case p_king:
+            abbr = 'k';
+            name = "King";
+            break;
+        default:
+            abbr = ' ';
+            break;
+        }
+        if (color != c_none)
+        {
+            if (color == c_white)
+                abbr -= 32;
+        }
+    }
+
     chesspiece::chesspiece(unsigned char c)
     {
         ptype = (piece_e)(c & piece_mask);

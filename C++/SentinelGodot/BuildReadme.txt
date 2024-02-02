@@ -8,7 +8,9 @@
 5. Update your environment and add a GODOT_CPP environment variable, and set it to the path you installed godot_cpp in step 2, with no final \ or /
 6. You can now build this project, the godot plugin, using this command:
 	scons platform=windows
+	or, ./build.ps1
 	and the resulting plugins should work with the demo project and are included in demo/bin folder for your platform.
+	If you run the powershell script, it will clean up some intermediate files littered among the source directories which is annoying.
 
 This URL is helpful in the early steps.
 https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/gdextension_cpp_example.html

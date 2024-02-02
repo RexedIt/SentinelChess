@@ -40,7 +40,10 @@ namespace chess
         bool computer_moving();
         error_e forfeit();
 
+        error_e user_move(color_e col, move_s m0);
         error_e user_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
+
+        error_e suggest_move(move_s m);
         error_e suggest_move(coord_s p0, coord_s p1, int cx = -1, bool en_passant = false, piece_e promote = p_none);
         error_e rewind_game(int move_no);
         error_e remove_piece(coord_s p0);

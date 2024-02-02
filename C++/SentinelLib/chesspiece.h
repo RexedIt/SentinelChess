@@ -14,7 +14,8 @@ namespace chess
         chesspiece();
         chesspiece(unsigned char c);
         chesspiece(char code);
-
+        chesspiece(color_e c, piece_e p);
+        
         void possible_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8], unsigned char castled_left, unsigned char castled_right, coord_s ep);
         void update_kill_bits(coord_s p0, unsigned char (&cells)[8][8], int &kc);
 

@@ -1,7 +1,7 @@
 #include "register_types.h"
 
-#include "sentinelchess.h"
 #include "sentinelcommon.h"
+#include "sentinelchess.h"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
