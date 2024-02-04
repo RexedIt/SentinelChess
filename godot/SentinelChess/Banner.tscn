@@ -1,0 +1,49 @@
+[gd_scene load_steps=8 format=3 uid="uid://diw6t7ifc83w3"]
+
+[ext_resource type="Script" path="res://Scripts/SkipKey.gd" id="1_ralpe"]
+[ext_resource type="Texture2D" uid="uid://dojhe0bxfastp" path="res://Sprites/RetroWood/RetroBannerBack.jpg" id="1_s4hxh"]
+[ext_resource type="Texture2D" uid="uid://bid2kw8neksrx" path="res://Sprites/RetroWood/RetroBannerMissilesL.png" id="2_0b5v2"]
+[ext_resource type="Script" path="res://Scripts/SideTween.gd" id="3_3icb5"]
+[ext_resource type="Texture2D" uid="uid://dfk64c211qb6m" path="res://Sprites/RetroWood/RetroBannerMissilesR.png" id="3_8byuy"]
+[ext_resource type="Texture2D" uid="uid://b0fioyk6txjcf" path="res://Sprites/RetroWood/RetroBannerText.png" id="4_apxw7"]
+[ext_resource type="Script" path="res://Scripts/AlphaTween.gd" id="6_otv8g"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_ralpe")
+duration = 10.0
+loadscene = "res://MainGame.tscn"
+
+[node name="RetroBannerBack" type="Sprite2D" parent="."]
+texture_filter = 1
+texture_repeat = 1
+texture = ExtResource("1_s4hxh")
+centered = false
+
+[node name="RetroBannerMissilesL" type="Sprite2D" parent="."]
+texture = ExtResource("2_0b5v2")
+centered = false
+script = ExtResource("3_3icb5")
+startpos = Vector2(-500, 0)
+start = 0.5
+end = 2.0
+step = 16
+
+[node name="RetroBannerMissilesR" type="Sprite2D" parent="."]
+position = Vector2(960, 0)
+texture = ExtResource("3_8byuy")
+centered = false
+script = ExtResource("3_3icb5")
+startpos = Vector2(1920, 0)
+start = 0.75
+end = 2.25
+step = 16
+
+[node name="RetroBannerText" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0)
+texture = ExtResource("4_apxw7")
+centered = false
+script = ExtResource("6_otv8g")
+endalpha = 1.0
+start = 2.0
+end = 3.0
+step = 25
