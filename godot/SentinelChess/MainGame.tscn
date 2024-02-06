@@ -1,11 +1,116 @@
-[gd_scene load_steps=3 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=9 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
+[ext_resource type="Script" uid="uid://8l426dfegf75" path="res://Scripts/GameManager.gd" id="2_th60g"]
+[ext_resource type="Texture2D" uid="uid://b87etyr6ks3a8" path="res://Sprites/RetroWood/Board.png" id="3_2gi3p"]
+[ext_resource type="FontFile" uid="uid://dqmfxq4vf5b8g" path="res://Fonts/PressStart2P-vaV7.ttf" id="3_7nhen"]
+[ext_resource type="ButtonGroup" uid="uid://brly41b54bk0f" path="res://GroupColor.tres" id="4_ug52y"]
+[ext_resource type="Script" uid="uid://b5nfmf1511hyn" path="res://Scripts/Board.gd" id="5_8nr35"]
+[ext_resource type="Script" uid="uid://kldbmn05hgxk" path="res://Scripts/popNew.gd" id="5_bu5ts"]
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_i2www")
 
+[node name="SentinelChess" type="SentinelChess" parent="."]
+script = ExtResource("2_th60g")
+
 [node name="RetroWoodBackground" type="Sprite2D" parent="."]
 texture = ExtResource("2_4tyao")
 centered = false
+metadata/_edit_lock_ = true
+
+[node name="Board" type="Sprite2D" parent="."]
+position = Vector2(720, 558)
+texture = ExtResource("3_2gi3p")
+script = ExtResource("5_8nr35")
+
+[node name="popNew" type="Window" parent="."]
+title = "New Game Options"
+position = Vector2i(405, 416)
+size = Vector2i(630, 200)
+visible = false
+popup_window = true
+theme_override_fonts/title_font = ExtResource("3_7nhen")
+theme_override_font_sizes/title_font_size = 24
+script = ExtResource("5_bu5ts")
+
+[node name="MC" type="MarginContainer" parent="popNew"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 630.0
+offset_bottom = 224.0
+
+[node name="GC" type="GridContainer" parent="popNew/MC"]
+layout_mode = 2
+theme_override_constants/h_separation = 30
+theme_override_constants/v_separation = 30
+columns = 2
+
+[node name="Label" type="Label" parent="popNew/MC/GC"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Difficulty (1-5)"
+
+[node name="Level" type="HSlider" parent="popNew/MC/GC"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 5.0
+value = 3.0
+rounded = true
+
+[node name="Label2" type="Label" parent="popNew/MC/GC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Color"
+
+[node name="HC" type="HBoxContainer" parent="popNew/MC/GC"]
+layout_mode = 2
+alignment = 1
+
+[node name="White" type="CheckBox" parent="popNew/MC/GC/HC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_pressed = true
+button_group = ExtResource("4_ug52y")
+text = "White"
+alignment = 2
+
+[node name="Black" type="CheckBox" parent="popNew/MC/GC/HC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("4_ug52y")
+text = "Black
+"
+
+[node name="btnOK" type="Button" parent="popNew"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -40.0
+offset_right = -30.0004
+offset_bottom = -9.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "OK"
+
+[node name="btnCancel" type="Button" parent="popNew"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -290.0
+offset_top = -40.0
+offset_right = -200.0
+offset_bottom = -9.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = " Cancel "

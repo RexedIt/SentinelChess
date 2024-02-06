@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Scripts/SkipKey.gd" id="1_ralpe"]
 [ext_resource type="Texture2D" uid="uid://dojhe0bxfastp" path="res://Sprites/RetroWood/RetroBannerBack.jpg" id="1_s4hxh"]
 [ext_resource type="Texture2D" uid="uid://bid2kw8neksrx" path="res://Sprites/RetroWood/RetroBannerMissilesL.png" id="2_0b5v2"]
-[ext_resource type="Script" path="res://Scripts/SideTween.gd" id="3_3icb5"]
+[ext_resource type="Script" path="res://Scripts/PositionTween.gd" id="3_3icb5"]
 [ext_resource type="Texture2D" uid="uid://dfk64c211qb6m" path="res://Sprites/RetroWood/RetroBannerMissilesR.png" id="3_8byuy"]
 [ext_resource type="Texture2D" uid="uid://b0fioyk6txjcf" path="res://Sprites/RetroWood/RetroBannerText.png" id="4_apxw7"]
 [ext_resource type="Script" path="res://Scripts/AlphaTween.gd" id="6_otv8g"]

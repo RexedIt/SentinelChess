@@ -24,6 +24,7 @@ namespace chess
         m_state = play_e;
         m_board.new_board();
         m_turn.clear();
+        m_board.trace("cg:new_game");
         draw_board(1, m_board);
     }
 

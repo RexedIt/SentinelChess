@@ -1,10 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://bw54mc0b8vxgk"]
+[gd_scene load_steps=3 format=3 uid="uid://bw54mc0b8vxgk"]
 
-[ext_resource type="Script" path="res://TestTemp.gd" id="1_0bfdd"]
+[ext_resource type="Script" uid="uid://c2cp8yin4xi3e" path="res://TestTemp.gd" id="1_0bfdd"]
+[ext_resource type="Script" uid="uid://dpqyd1rq8kg5c" path="res://BindNode.gd" id="2_xh2gg"]
 
 [node name="Main" type="Node2D"]
 
 [node name="SentinelChess" type="SentinelChess" parent="."]
 script = ExtResource("1_0bfdd")
 
+[node name="BindNode" type="Node" parent="."]
+script = ExtResource("2_xh2gg")
+
+[connection signal="draw_board" from="SentinelChess" to="SentinelChess" method="_on_draw_board"]
 [connection signal="trace" from="SentinelChess" to="SentinelChess" method="_on_trace"]

@@ -111,12 +111,12 @@ void SentinelChess::_bind_methods()
     BIND_ENUM_CONSTANT(King);
 
     // Signals
-    ADD_SIGNAL(MethodInfo("trace", PropertyInfo(Variant::STRING, "msg")));
-    ADD_SIGNAL(MethodInfo("game_over", PropertyInfo(Variant::INT, "game_state"), PropertyInfo(Variant::INT, "win_color")));
-    ADD_SIGNAL(MethodInfo("draw_move", PropertyInfo(Variant::INT, "n"), PropertyInfo(Variant::OBJECT, "m", PROPERTY_HINT_RESOURCE_TYPE, "ChessMove"), PropertyInfo(Variant::INT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessColor")));
-    ADD_SIGNAL(MethodInfo("computer_move", PropertyInfo(Variant::INT, "n"), PropertyInfo(Variant::OBJECT, "m", PROPERTY_HINT_RESOURCE_TYPE, "ChessMove"), PropertyInfo(Variant::INT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessColor")));
-    ADD_SIGNAL(MethodInfo("draw_board", PropertyInfo(Variant::INT, "n")));
-    ADD_SIGNAL(MethodInfo("thinking", PropertyInfo(Variant::OBJECT, "m", PROPERTY_HINT_RESOURCE_TYPE, "ChessMove"), PropertyInfo(Variant::INT, "pct")));
+    ADD_SIGNAL(MethodInfo("trace", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::STRING, "msg")));
+    ADD_SIGNAL(MethodInfo("game_over", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::INT, "game_state"), PropertyInfo(Variant::INT, "win_color")));
+    ADD_SIGNAL(MethodInfo("draw_move", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::INT, "n"), PropertyInfo(Variant::OBJECT, "m", PROPERTY_HINT_RESOURCE_TYPE, "ChessMove"), PropertyInfo(Variant::INT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessColor")));
+    ADD_SIGNAL(MethodInfo("computer_move", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::INT, "n"), PropertyInfo(Variant::OBJECT, "m", PROPERTY_HINT_RESOURCE_TYPE, "ChessMove"), PropertyInfo(Variant::INT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessColor")));
+    ADD_SIGNAL(MethodInfo("draw_board", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::INT, "n")));
+    ADD_SIGNAL(MethodInfo("thinking", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::OBJECT, "m", PROPERTY_HINT_RESOURCE_TYPE, "ChessMove"), PropertyInfo(Variant::INT, "pct")));
 }
 
 SentinelChess::SentinelChess()
@@ -267,12 +267,12 @@ int SentinelChess::add_piece(const Ref<ChessCoord> &p0, ChessColor col, ChessPie
 // Board helpers
 SentinelChess::ChessColor SentinelChess::cell_color(int y, int x)
 {
-    return (SentinelChess::ChessColor)(m_game.board().get(y,x)&color_mask);
+    return (SentinelChess::ChessColor)(m_game.board().get(y, x) & color_mask);
 }
 
 SentinelChess::ChessPiece SentinelChess::cell_piece(int y, int x)
 {
-    return (SentinelChess::ChessPiece)(m_game.board().get(y,x)&piece_mask);
+    return (SentinelChess::ChessPiece)(m_game.board().get(y, x) & piece_mask);
 }
 
 bool SentinelChess::cell_dark(int y, int x)
@@ -284,11 +284,11 @@ bool SentinelChess::cell_dark(int y, int x)
 bool SentinelChess::cell_user_kill(int y, int x)
 {
     unsigned char mask_to_use = (m_game.user_color() == c_white) ? white_kill_mask : black_kill_mask;
-    return (SentinelChess::ChessColor)(m_game.board().get(y,x)&mask_to_use);
+    return (SentinelChess::ChessColor)(m_game.board().get(y, x) & mask_to_use);
 }
 
 bool SentinelChess::cell_computer_kill(int y, int x)
 {
     unsigned char mask_to_use = (m_game.user_color() == c_white) ? black_kill_mask : white_kill_mask;
-    return (SentinelChess::ChessColor)(m_game.board().get(y,x)&mask_to_use);
+    return (SentinelChess::ChessColor)(m_game.board().get(y, x) & mask_to_use);
 }

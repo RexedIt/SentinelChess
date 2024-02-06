@@ -64,6 +64,7 @@ namespace chess
 
         void set_callbacks(thinking_callback _thinking, traces_callback _traces);
         void cancel(bool c) { m_cancel = c; }
+        void trace(std::string msg);
 
     protected:
         unsigned char m_cells[8][8];

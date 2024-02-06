@@ -318,7 +318,7 @@ namespace chess
 
     unsigned char chessboard::get(int8_t y, int8_t x)
     {
-        if (in_range(y,x))
+        if (in_range(y, x))
             return m_cells[y][x];
         return 0;
     }
@@ -746,6 +746,12 @@ namespace chess
     {
         if (mp_cb_thinking)
             (mp_cb_thinking)(m, pct);
+    }
+
+    void chessboard::trace(std::string msg)
+    {
+        if (mp_cb_traces)
+            (mp_cb_traces)(msg);
     }
 
 }
