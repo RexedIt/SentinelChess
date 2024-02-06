@@ -1,13 +1,14 @@
-[gd_scene load_steps=9 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=10 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
-[ext_resource type="Script" uid="uid://8l426dfegf75" path="res://Scripts/GameManager.gd" id="2_th60g"]
+[ext_resource type="Script" uid="uid://c2fxtcukqail3" path="res://Scripts/GameManager.gd" id="2_th60g"]
 [ext_resource type="Texture2D" uid="uid://b87etyr6ks3a8" path="res://Sprites/RetroWood/Board.png" id="3_2gi3p"]
 [ext_resource type="FontFile" uid="uid://dqmfxq4vf5b8g" path="res://Fonts/PressStart2P-vaV7.ttf" id="3_7nhen"]
 [ext_resource type="ButtonGroup" uid="uid://brly41b54bk0f" path="res://GroupColor.tres" id="4_ug52y"]
-[ext_resource type="Script" uid="uid://b5nfmf1511hyn" path="res://Scripts/Board.gd" id="5_8nr35"]
-[ext_resource type="Script" uid="uid://kldbmn05hgxk" path="res://Scripts/popNew.gd" id="5_bu5ts"]
+[ext_resource type="Script" uid="uid://feu87e4pw2w" path="res://Scripts/Board.gd" id="5_8nr35"]
+[ext_resource type="Script" path="res://Scripts/popNew.gd" id="5_bu5ts"]
+[ext_resource type="Script" uid="uid://jmkj3gw012fe" path="res://Scripts/Piece.gd" id="6_d12bf"]
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_i2www")
@@ -24,6 +25,10 @@ metadata/_edit_lock_ = true
 position = Vector2(720, 558)
 texture = ExtResource("3_2gi3p")
 script = ExtResource("5_8nr35")
+
+[node name="Piece" type="Sprite2D" parent="Board"]
+position = Vector2(-560, 386)
+script = ExtResource("6_d12bf")
 
 [node name="popNew" type="Window" parent="."]
 title = "New Game Options"

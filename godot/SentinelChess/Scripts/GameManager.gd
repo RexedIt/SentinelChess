@@ -1,4 +1,4 @@
-@uid("uid://8l426dfegf75") # Generated automatically, do not modify.
+@uid("uid://c2fxtcukqail3") # Generated automatically, do not modify.
 
 extends SentinelChess
 
@@ -7,19 +7,19 @@ extends SentinelChess
 @onready var board : Node2D = get_parent().get_node("Board")
 
 enum GameState {
-		GAMEINIT,
-		GAMENEWORLOAD,
-		GAMENEW,
-		GAMELOAD,
-		GAMESAVE,
-		GAMEPLAY,
-		GAMEUSERMOVE,
-		GAMECOMPUTERMOVE,
-		GAMEPIECESELECT,
-		GAMEOVER		
+		INIT,
+		NEWORLOAD,
+		NEW,
+		LOAD,
+		SAVE,
+		PLAY,
+		USERMOVE,
+		COMPUTERMOVE,
+		PIECESELECT,
+		END		
 	 }
 
-var gamestate : GameState = GameState.GAMEINIT
+var gamestate : GameState = GameState.INIT
 var statewait : bool = false
 
 # Called when the node enters the scene tree for the first time.
@@ -28,8 +28,7 @@ func _ready():
 	popNew.on_closed.connect(_on_closed_new)
 	trace.connect(_trace)
 	draw_board.connect(_draw_board)
-	_gamestatereact(GameState.GAMEINIT)
-	
+	_gamestatereact(GameState.INIT)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -39,28 +38,28 @@ func _gamestatereact(gs):
 	gamestate = gs
 	match gamestate:
 		# clear the pending state flag
-		GameState.GAMEINIT:
+		GameState.INIT:
 			# Initialization
 			print("GS: Initialization")
 			# for now, we want to move to the new game prompt
 			# later we will select new or load
 			_newgameprompt()
-		GameState.GAMENEWORLOAD:
+		GameState.NEWORLOAD:
 			# Select new or Load Option
 			print("GS: New or Load Prompt")
 			# for now, we want to move to the new game prompt
 			# later we will select new or load
 			_newgameprompt()
-		GameState.GAMENEW:
+		GameState.NEW:
 			# Select New Game Option
 			print("GS: New Prompt")
 			_newgameprompt()
-		GameState.GAMEPLAY:
+		GameState.PLAY:
 			print("GS: Game Play")
 			_gameplay()
-		GameState.GAMELOAD:
+		GameState.LOAD:
 			print("GS: Load Prompt")
-		GameState.GAMESAVE:
+		GameState.SAVE:
 			print("GS: Save Prompt")
 
 func _newgameprompt():
@@ -70,11 +69,11 @@ func _newgameprompt():
 func _gameplay():
 	if (state() == SentinelChess.ChessGameState.Play):
 		if (turn_color() == user_color()):
-			_gamestatereact(GameState.GAMEUSERMOVE)
+			_gamestatereact(GameState.USERMOVE)
 		else:
-			_gamestatereact(GameState.GAMECOMPUTERMOVE)
+			_gamestatereact(GameState.COMPUTERMOVE)
 	else:
-		_gamestatereact(GameState.GAMEOVER)
+		_gamestatereact(GameState.END)
 		
 # Dialog Handlers
 func _on_closed_new(_cancelled, _level, _color):
@@ -83,11 +82,14 @@ func _on_closed_new(_cancelled, _level, _color):
 	board.setup(_color)
 	new_game(_color, _level)
 	statewait = false
-	_gamestatereact(GameState.GAMEPLAY)
+	_gamestatereact(GameState.PLAY)
 		
 # Signal Handlers
 func _draw_board(node, n):
-	print("draw_board")
+	# we restrict when this gets
+	# executed to load and new game
+	if (gamestate < GameState.PLAY):
+		board.refreshpieces()
 
 func _trace(node, msg):
 	print(":" + msg)
