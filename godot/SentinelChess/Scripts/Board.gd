@@ -2,8 +2,10 @@
 extends Sprite2D
 
 @onready var game : SentinelChess = get_parent().get_node('SentinelChess')
-@onready var PieceProto : Sprite2D = get_node('Piece')
+@onready var PieceProto : Area2D = get_node('Piece')
+
 var piece_arr = []
+var cell_arr = []
 
 @export var board_x0 : int = -560 # 156
 @export var board_y0 : int = 386 # 126
@@ -13,6 +15,7 @@ var piece_arr = []
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	piece_arr.resize(64)
+	
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -40,8 +43,8 @@ func refreshpieces():
 					po.refresh(pc,pt)
 				else:
 					po = PieceProto.duplicate()
-					po.initialize(pc,pt,board_y(y),board_x(x),rotation_degrees)
 					add_child(po)
+					po.initialize(pc,pt,y,x,board_y(y),board_x(x),rotation_degrees)
 					
 func board_y(y):
 	return board_y0 - y * board_dy
@@ -49,3 +52,15 @@ func board_y(y):
 func board_x(x):
 	return board_x0 + x * board_dx
 					
+# called by piece
+func can_drag(y, x) -> bool:
+	if game.gamestate != game.GameState.USERMOVE:
+		return false
+	return game.cell_color(y,x) == game.user_color()
+
+func board_coord(Vector2 piecepos) -> ChessCoord:
+	print('todo')
+	
+func drop_move(c1, c2) -> bool:
+	print('todo')	
+	

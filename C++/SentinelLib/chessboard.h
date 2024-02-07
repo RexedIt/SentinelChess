@@ -46,6 +46,7 @@ namespace chess
         // User Move
         move_s user_move(color_e col, move_s m);
         move_s user_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
+        std::vector<move_s> possible_moves(color_e col);
 
         // Best Move
         move_s computer_move(color_e col, int rec);
@@ -95,7 +96,6 @@ namespace chess
         float computer_move_max(color_e turn_col, float alpha, float beta, int rec);
         float computer_move_min(color_e turn_col, float alpha, float beta, int rec);
 
-        std::vector<move_s> possible_moves(color_e col);
         void possible_moves(std::vector<move_s> &possible, coord_s c);
         void update_kill_bits();
         void update_check(color_e col);

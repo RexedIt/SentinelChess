@@ -301,6 +301,11 @@ namespace chess
         return user_move(col, m);
     }
 
+    std::vector<move_s> chessgame::possible_moves(color_e col)
+    {
+        return m_board.possible_moves(col);
+    }
+
     error_e chessgame::suggest_move(move_s m)
     {
         if (!m.is_valid())

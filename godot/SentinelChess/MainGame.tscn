@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=11 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
@@ -9,6 +9,9 @@
 [ext_resource type="Script" uid="uid://feu87e4pw2w" path="res://Scripts/Board.gd" id="5_8nr35"]
 [ext_resource type="Script" path="res://Scripts/popNew.gd" id="5_bu5ts"]
 [ext_resource type="Script" uid="uid://jmkj3gw012fe" path="res://Scripts/Piece.gd" id="6_d12bf"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_55xmw"]
+size = Vector2(137, 96)
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_i2www")
@@ -25,10 +28,20 @@ metadata/_edit_lock_ = true
 position = Vector2(720, 558)
 texture = ExtResource("3_2gi3p")
 script = ExtResource("5_8nr35")
+board_x0 = null
+board_y0 = null
+board_dx = null
+board_dy = null
 
-[node name="Piece" type="Sprite2D" parent="Board"]
+[node name="Piece" type="Area2D" parent="Board"]
 position = Vector2(-560, 386)
 script = ExtResource("6_d12bf")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Board/Piece"]
+position = Vector2(-3.5, 1)
+shape = SubResource("RectangleShape2D_55xmw")
+
+[node name="Sprite" type="Sprite2D" parent="Board/Piece"]
 
 [node name="popNew" type="Window" parent="."]
 title = "New Game Options"

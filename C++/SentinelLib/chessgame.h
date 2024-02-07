@@ -42,6 +42,7 @@ namespace chess
 
         error_e user_move(color_e col, move_s m0);
         error_e user_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
+        std::vector<move_s> possible_moves(color_e col);
 
         error_e suggest_move(move_s m);
         error_e suggest_move(coord_s p0, coord_s p1, int cx = -1, bool en_passant = false, piece_e promote = p_none);

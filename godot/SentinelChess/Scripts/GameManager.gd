@@ -19,8 +19,8 @@ enum GameState {
 		END		
 	 }
 
-var gamestate : GameState = GameState.INIT
-var statewait : bool = false
+@export var gamestate : GameState = GameState.INIT
+@export var statewait : bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -57,6 +57,9 @@ func _gamestatereact(gs):
 		GameState.PLAY:
 			print("GS: Game Play")
 			_gameplay()
+		GameState.USERMOVE:
+			print("GS: User Move")
+			_usermove()
 		GameState.LOAD:
 			print("GS: Load Prompt")
 		GameState.SAVE:
@@ -74,7 +77,10 @@ func _gameplay():
 			_gamestatereact(GameState.COMPUTERMOVE)
 	else:
 		_gamestatereact(GameState.END)
-		
+	
+func _usermove():
+	print("User Move")	
+	
 # Dialog Handlers
 func _on_closed_new(_cancelled, _level, _color):
 	print("on_closed_new")
