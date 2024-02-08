@@ -3,12 +3,19 @@
 #include "chesspiece.h"
 
 #include <godot_cpp/core/class_db.hpp>
+#include <sstream>
 
 using namespace godot;
 
 SentinelChess *instance = NULL;
 
 // Callbacks
+void traces(std::string msg)
+{
+    if (instance)
+        instance->emit_signal("trace", instance, String(msg.c_str()));
+}
+
 void draw_board(int n, chessboard &b)
 {
     if (instance)
@@ -54,12 +61,6 @@ void thinking(move_s m, int pct)
     }
 }
 
-void traces(std::string msg)
-{
-    if (instance)
-        instance->emit_signal("trace", instance, String(msg.c_str()));
-}
-
 void SentinelChess::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("errorstr", "num"), &SentinelChess::errorstr);
@@ -79,6 +80,7 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("forfeit"), &SentinelChess::forfeit);
     ClassDB::bind_method(D_METHOD("user_move_m", "col", "m"), &SentinelChess::user_move_m);
     ClassDB::bind_method(D_METHOD("user_move_c", "col", "p0", "p1", "promote"), &SentinelChess::user_move_c);
+    ClassDB::bind_method(D_METHOD("possible_moves", "col"), &SentinelChess::possible_moves);
     ClassDB::bind_method(D_METHOD("suggest_move", "m"), &SentinelChess::suggest_move);
     ClassDB::bind_method(D_METHOD("rewind_game", "move_no"), &SentinelChess::rewind_game);
     ClassDB::bind_method(D_METHOD("remove_piece", "p0"), &SentinelChess::remove_piece);
@@ -89,6 +91,9 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("cell_dark", "y", "x"), &SentinelChess::cell_dark);
     ClassDB::bind_method(D_METHOD("cell_user_kill", "y", "x"), &SentinelChess::cell_user_kill);
     ClassDB::bind_method(D_METHOD("cell_computer_kill", "y", "x"), &SentinelChess::cell_computer_kill);
+
+    ClassDB::bind_method(D_METHOD("lastmove"), &SentinelChess::lastmove);
+    ClassDB::bind_method(D_METHOD("turnno"), &SentinelChess::turnno);
 
     // Colors
     BIND_ENUM_CONSTANT(cNone);
@@ -114,7 +119,7 @@ void SentinelChess::_bind_methods()
     ADD_SIGNAL(MethodInfo("trace", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::STRING, "msg")));
     ADD_SIGNAL(MethodInfo("game_over", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::INT, "game_state"), PropertyInfo(Variant::INT, "win_color")));
     ADD_SIGNAL(MethodInfo("draw_move", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::INT, "n"), PropertyInfo(Variant::OBJECT, "m", PROPERTY_HINT_RESOURCE_TYPE, "ChessMove"), PropertyInfo(Variant::INT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessColor")));
-    ADD_SIGNAL(MethodInfo("computer_move", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::INT, "n"), PropertyInfo(Variant::OBJECT, "m", PROPERTY_HINT_RESOURCE_TYPE, "ChessMove"), PropertyInfo(Variant::INT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessColor")));
+    ADD_SIGNAL(MethodInfo("computer_moved", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::INT, "n"), PropertyInfo(Variant::OBJECT, "m", PROPERTY_HINT_RESOURCE_TYPE, "ChessMove"), PropertyInfo(Variant::INT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessColor")));
     ADD_SIGNAL(MethodInfo("draw_board", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::INT, "n")));
     ADD_SIGNAL(MethodInfo("thinking", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::OBJECT, "m", PROPERTY_HINT_RESOURCE_TYPE, "ChessMove"), PropertyInfo(Variant::INT, "pct")));
 }
@@ -142,6 +147,18 @@ SentinelChess::~SentinelChess()
 String SentinelChess::errorstr(int num)
 {
     return String(::errorstr((error_e)num).c_str());
+}
+
+Ref<ChessMove> SentinelChess::lastmove()
+{
+    chessturn_s t = m_game.last_turn();
+    Ref<ChessMove> cm(memnew(ChessMove(t.m)));
+    return cm;
+}
+
+int SentinelChess::turnno()
+{
+    return m_game.turnno();
 }
 
 void SentinelChess::new_game(ChessColor user_color, int level)
@@ -231,6 +248,19 @@ int SentinelChess::user_move_m(ChessColor col, const Ref<ChessMove> &m)
         return m_game.user_move((color_e)col, m->get());
     else
         return e_invalid_reference;
+}
+
+Array SentinelChess::possible_moves(ChessColor col)
+{
+    Array a;
+
+    std::vector<move_s> sv = m_game.possible_moves((color_e)col);
+    for (int i = 0; i < sv.size(); i++)
+    {
+        Ref<ChessMove> cm(memnew(ChessMove(sv[i])));
+        a.push_back(cm);
+    }
+    return a;
 }
 
 int SentinelChess::suggest_move(const Ref<ChessMove> &m)

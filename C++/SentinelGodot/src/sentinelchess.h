@@ -2,6 +2,7 @@
 #define GDSENTINELCHESS_H
 
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/variant/typed_array.hpp>
 
 #include "chessgame.h"
 
@@ -15,7 +16,6 @@ class SentinelChess : public Node
     GDCLASS(SentinelChess, Node)
 
 public:
-
     enum ChessColor
     {
         cNone = c_none,
@@ -52,7 +52,6 @@ private:
     int load_game(String filename);
     int load_xfen(String content);
     String save_xfen();
-
     ChessGameState state();
     ChessColor user_color();
     ChessColor turn_color();
@@ -67,10 +66,15 @@ private:
 
     int user_move_c(ChessColor col, const Ref<ChessCoord> &p0, const Ref<ChessCoord> &p1, ChessPiece promote);
     int user_move_m(ChessColor col, const Ref<ChessMove> &m);
+    Array possible_moves(ChessColor col);
+
     int suggest_move(const Ref<ChessMove> &m);
     int rewind_game(int move_no);
     int remove_piece(const Ref<ChessCoord> &p0);
     int add_piece(const Ref<ChessCoord> &p0, ChessColor col, ChessPiece piece);
+
+    Ref<ChessMove> lastmove();
+    int turnno();
 
     // Board helpers
     ChessColor cell_color(int y, int x);

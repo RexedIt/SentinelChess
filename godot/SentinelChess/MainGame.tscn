@@ -28,14 +28,11 @@ metadata/_edit_lock_ = true
 position = Vector2(720, 558)
 texture = ExtResource("3_2gi3p")
 script = ExtResource("5_8nr35")
-board_x0 = null
-board_y0 = null
-board_dx = null
-board_dy = null
 
 [node name="Piece" type="Area2D" parent="Board"]
 position = Vector2(-560, 386)
 script = ExtResource("6_d12bf")
+step = 16
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Board/Piece"]
 position = Vector2(-3.5, 1)

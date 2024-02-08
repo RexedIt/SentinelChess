@@ -59,6 +59,9 @@ namespace chess
                            draw_move_callback _draw_move = NULL, request_promote_callback _request_promote = NULL,
                            thinking_callback _thinking = NULL, traces_callback _traces = NULL);
 
+        chessturn_s last_turn();
+        int turnno();
+
     private:
         game_state_e m_state;
         std::vector<chessturn_s> m_turn;
@@ -71,7 +74,6 @@ namespace chess
         int m_trace_level;
         chessboard m_board;
 
-        int turnno();
         void draw_board(int n, chessboard &b);
         void game_over(game_state_e state, color_e win_color);
         void draw_move(int n, move_s &m, color_e c);

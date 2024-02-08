@@ -21,6 +21,9 @@ void ChessCoord::_bind_methods()
     ClassDB::add_property("ChessCoord", PropertyInfo(Variant::INT, "x"), "set_x", "get_x");
     ClassDB::bind_method(D_METHOD("get_y"), &ChessCoord::get_y);
     ClassDB::bind_method(D_METHOD("set_y", "y"), &ChessCoord::set_y);
+    ClassDB::bind_method(D_METHOD("set_yx", "y", "x"), &ChessCoord::set_yx);
+    ClassDB::bind_method(D_METHOD("matches", "c"), &ChessCoord::matches);
+    ClassDB::bind_method(D_METHOD("matches_yx", "y", "x"), &ChessCoord::matches_yx);
     ClassDB::add_property("ChessCoord", PropertyInfo(Variant::INT, "y"), "set_y", "get_y");
 }
 
@@ -37,6 +40,27 @@ int ChessCoord::get_x() const
 void ChessCoord::set_y(const int y)
 {
     m_coord.y = y;
+}
+
+void ChessCoord::set_yx(const int y, const int x)
+{
+    m_coord.y = y;
+    m_coord.x = x;
+}
+
+bool ChessCoord::matches(const Ref<ChessCoord> &c)
+{
+    if (c.is_valid())
+        return c->get() == m_coord;
+    return false;
+}
+
+bool ChessCoord::matches_yx(const int y, const int x)
+{
+    if (m_coord.y == y)
+        if (m_coord.x == x)
+            return true;
+    return false;
 }
 
 int ChessCoord::get_y() const
@@ -66,12 +90,16 @@ void ChessMove::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("get_p0"), &ChessMove::get_p0);
     ClassDB::bind_method(D_METHOD("set_p0", "c"), &ChessMove::set_p0);
-    ClassDB::add_property("ChessMove", PropertyInfo(Variant::OBJECT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessCoord"), "set_p0", "get_p0");
+    ClassDB::add_property("ChessMove", PropertyInfo(Variant::OBJECT, "p0", PROPERTY_HINT_RESOURCE_TYPE, "ChessCoord"), "set_p0", "get_p0");
     ClassDB::bind_method(D_METHOD("get_p1"), &ChessMove::get_p1);
     ClassDB::bind_method(D_METHOD("set_p1", "c"), &ChessMove::set_p1);
-    ClassDB::add_property("ChessMove", PropertyInfo(Variant::OBJECT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessCoord"), "set_p1", "get_p1");
+    ClassDB::add_property("ChessMove", PropertyInfo(Variant::OBJECT, "p1", PROPERTY_HINT_RESOURCE_TYPE, "ChessCoord"), "set_p1", "get_p1");
     ClassDB::bind_method(D_METHOD("get_cx"), &ChessMove::get_cx);
+    ClassDB::bind_method(D_METHOD("set_y0x0y1x1", "y0", "x0", "y1", "x1"), &ChessMove::set_y0x0y1x1);
     ClassDB::bind_method(D_METHOD("set_cx", "c"), &ChessMove::set_cx);
+    ClassDB::bind_method(D_METHOD("matches", "m"), &ChessMove::matches);
+    ClassDB::bind_method(D_METHOD("matches_p0p1", "p0", "p1"), &ChessMove::matches_p0p1);
+    ClassDB::bind_method(D_METHOD("matches_y0x0p1", "y0", "x0", "p0"), &ChessMove::matches_y0x0p1);
     ClassDB::add_property("ChessMove", PropertyInfo(Variant::OBJECT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessCoord"), "set_cx", "get_cx");
     ClassDB::bind_method(D_METHOD("promote"), &ChessMove::promote);
     ClassDB::bind_method(D_METHOD("check"), &ChessMove::check);
@@ -112,6 +140,42 @@ void ChessMove::set_cx(const int c)
     m_move.cx = (int8_t)c;
 }
 
+void ChessMove::set_y0x0y1x1(const int y0, const int x0, const int y1, const int x1)
+{
+    m_move.p0.y = y0;
+    m_move.p0.x = x0;
+    m_move.p1.y = y1;
+    m_move.p1.x = x1;
+}
+
+bool ChessMove::matches(const Ref<ChessMove> &m)
+{
+    if (m.is_valid())
+    {
+        move_s mm = m->get();
+        if (mm.p0 == m_move.p0)
+            if (mm.p1 == m_move.p1)
+                return true;
+    }
+    return false;
+}
+
+bool ChessMove::matches_p0p1(const Ref<ChessCoord> &p0, const Ref<ChessCoord> &p1)
+{
+    if (p0.is_valid() && p1.is_valid())
+        return (m_move.p0 == p0->get()) && (m_move.p1 == p1->get());
+    return false;
+}
+
+bool ChessMove::matches_y0x0p1(const int y0, const int x0, const Ref<ChessCoord> &p1)
+{
+    if (m_move.p0.y == y0)
+        if (m_move.p0.x == x0)
+            if (p1.is_valid())
+                return (m_move.p1 == p1->get());
+    return false;
+}
+
 int ChessMove::get_cx() const
 {
     return m_move.cx;
@@ -141,4 +205,3 @@ bool ChessMove::is_valid()
 {
     return m_move.is_valid();
 }
-

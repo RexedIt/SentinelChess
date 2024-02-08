@@ -6,6 +6,9 @@ extends Sprite2D
 
 var piece_arr = []
 var cell_arr = []
+var last_drag_y : int
+var last_drag_x : int
+var possible_moves : Array
 
 @export var board_x0 : int = -560 # 156
 @export var board_y0 : int = 386 # 126
@@ -36,7 +39,8 @@ func refreshpieces():
 			if (pc == SentinelChess.ChessColor.cNone):
 				if (po!=null):
 					remove_child(po)
-					piece_arr[y*8+x]=null
+					po.queue_free()
+					po=null
 			else:
 				var pt : SentinelChess.ChessPiece = game.cell_piece(y,x)
 				if (po!=null):
@@ -44,23 +48,117 @@ func refreshpieces():
 				else:
 					po = PieceProto.duplicate()
 					add_child(po)
-					po.initialize(pc,pt,y,x,board_y(y),board_x(x),rotation_degrees)
+					po.initialize(pc,pt,y,x,screen_y(y),screen_x(x),rotation_degrees)
+			piece_arr[y*8+x]=po
 					
-func board_y(y):
-	return board_y0 - y * board_dy
+func screen_y(by : int) -> int:
+	var sy = board_y0 - by * board_dy
+	if sy < board_y0 - 8 * board_dy or sy > board_y0:
+		sy = board_y0
+	return sy
 
-func board_x(x):
-	return board_x0 + x * board_dx
-					
+func screen_x(bx : int) -> int:
+	var sx = board_x0 + bx * board_dx
+	if sx < board_x0 or sx > board_x0 + 8 * board_dx:
+		sx = board_x0
+	return sx
+
+func screen_v(b: ChessCoord) -> Vector2:
+	var v : Vector2
+	if b == null:
+		v.y = board_y0
+		v.x = board_x0
+		return v
+	v.y = screen_y(b.y)
+	v.x = screen_x(b.x)
+	return v
+	
+func board_y(sy : int) -> int:
+	var by = -1 * (sy - board_y0) / board_dy
+	if by < 0 or by > 7:
+		by = -1
+	return by
+	
+func board_x(sx : int) -> int:
+	var bx = (sx - board_x0) / board_dx
+	if bx < 0 or bx > 7:
+		bx = -1
+	return bx
+
+func board_c(s: Vector2) -> ChessCoord:
+	var c = ChessCoord.new()
+	c.y = board_y(s.y)
+	c.x = board_x(s.x)
+	return c
+	
 # called by piece
-func can_drag(y, x) -> bool:
+func drag_start(y : int, x : int) -> bool:
 	if game.gamestate != game.GameState.USERMOVE:
 		return false
-	return game.cell_color(y,x) == game.user_color()
-
-func board_coord(Vector2 piecepos) -> ChessCoord:
+	if game.cell_color(y,x) == game.user_color():
+		last_drag_y = y
+		last_drag_x = x
+		possible_moves = game.possible_moves(game.user_color())
+		return true
+	return false
+	
+func can_drop(c1 : ChessCoord, c2 : ChessCoord) -> bool:
+	# if same square, let it be.
+	if c1.matches(c2):
+		return true
+	for possible_move in possible_moves:
+		if possible_move.matches_p0p1(c1,c2):
+			print('match')
+			return true
+	print('no match')
+	return false
+	
+func can_move(c1 : ChessCoord, c2 : ChessCoord) -> bool:
 	print('todo')
+	return false
+
+func drop_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
+	if p0.matches(p1):
+		return false
+	if not can_drop(p0, p1):
+		return false
+	var err : int = game.user_move_c(game.user_color(), p0, p1, SentinelChess.ChessPiece.pNone)
+	if err != 0:
+		handle_error(err)
+		return false
+	game._on_user_moved()
+	return true
+
+func move_piece(p0 : ChessCoord, p1 : ChessCoord):
+	var pc : Area2D = piece_arr[p0.y*8+p0.x]
+	if pc == null:
+		return
+	var pd : Area2D = piece_arr[p1.y*8+p1.x]
+	if pd != null:
+		pd.queue_free()
+	piece_arr[p0.y*8+p0.x] = null
+	piece_arr[p1.y*8+p1.x] = pc
 	
-func drop_move(c1, c2) -> bool:
-	print('todo')	
+func handle_error(err : int):
+	game._on_error(err)
+
+func animate_move(m : ChessMove):
+	if m != null:
+		var p0 : ChessCoord = m.p0
+		var p1 : ChessCoord = m.p1
+		if p0 != null and p1 != null:
+			var po = piece_arr[p0.y*8+p0.x]
+			if po != null:
+				po.animate_move(p1)
+
+func coordstr(p0 : ChessCoord) -> String:
+	var s = "%d.%d"
+	return s % [p0.y, p0.x]
 	
+func _on_animated(p0 : ChessCoord, p1 : ChessCoord):
+	move_piece(p0,p1)
+	# we do this just in case of moves like promotion or castling, en passant
+	refreshpieces()
+	# print('_on_animated ' + coordstr(p0) + ' to ' + coordstr(p1))
+	game._on_animated()			
+		

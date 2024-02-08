@@ -146,6 +146,16 @@ namespace chess
         return m_level;
     }
 
+    chessturn_s chessgame::last_turn()
+    {
+        if (m_turn.size() == 0)
+        {
+            chessturn_s m;
+            return m;
+        }
+        return m_turn[m_turn.size() - 1];
+    }
+
     int chessgame::turnno()
     {
         return (int)m_turn.size() + 1;

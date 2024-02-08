@@ -16,12 +16,16 @@ class ChessCoord : public RefCounted
 public:
     ChessCoord(){};
     ChessCoord(coord_s &c);
+    ChessCoord(const int y, const int x);
     ~ChessCoord();
 
     void set_x(const int x);
     int get_x() const;
     void set_y(const int y);
     int get_y() const;
+    void set_yx(const int y, const int x);
+    bool matches(const Ref<ChessCoord> &c);
+    bool matches_yx(const int y, const int x);
     coord_s get() { return m_coord; }
 
 private:
@@ -46,6 +50,10 @@ public:
     Ref<ChessCoord> get_p1() const;
     void set_cx(const int c);
     int get_cx() const;
+    void set_y0x0y1x1(const int y0, const int x0, const int y1, const int x1);
+    bool matches(const Ref<ChessMove> &m);
+    bool matches_p0p1(const Ref<ChessCoord> &p0, const Ref<ChessCoord> &p1);
+    bool matches_y0x0p1(const int y0, const int x0, const Ref<ChessCoord> &p1);
     int promote() const;
     bool en_passant() const;
     bool check() const;
