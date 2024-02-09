@@ -1,3 +1,4 @@
+@uid("uid://no557lyo44m") # Generated automatically, do not modify.
 extends Sprite2D
 
 @export var endalpha : float
@@ -21,5 +22,4 @@ func _process(delta):
 		if (step):
 			var pct = int(smooth * 100) / step * step
 			smooth = float(pct)/100.0
-		print(smooth)
 		modulate.a = smooth

@@ -1,17 +1,29 @@
-[gd_scene load_steps=11 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=20 format=3 uid="uid://dvuxnanwnc5st"]
 
-[ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
+[ext_resource type="Script" uid="uid://o21q8fipo8cb" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
 [ext_resource type="Script" uid="uid://c2fxtcukqail3" path="res://Scripts/GameManager.gd" id="2_th60g"]
 [ext_resource type="Texture2D" uid="uid://b87etyr6ks3a8" path="res://Sprites/RetroWood/Board.png" id="3_2gi3p"]
 [ext_resource type="FontFile" uid="uid://dqmfxq4vf5b8g" path="res://Fonts/PressStart2P-vaV7.ttf" id="3_7nhen"]
 [ext_resource type="ButtonGroup" uid="uid://brly41b54bk0f" path="res://GroupColor.tres" id="4_ug52y"]
 [ext_resource type="Script" uid="uid://feu87e4pw2w" path="res://Scripts/Board.gd" id="5_8nr35"]
-[ext_resource type="Script" path="res://Scripts/popNew.gd" id="5_bu5ts"]
+[ext_resource type="Script" uid="uid://duly64wj4k304" path="res://Scripts/popNew.gd" id="5_bu5ts"]
 [ext_resource type="Script" uid="uid://jmkj3gw012fe" path="res://Scripts/Piece.gd" id="6_d12bf"]
+[ext_resource type="Script" uid="uid://sach311s5oje" path="res://Scripts/GameUI.gd" id="10_0mwoa"]
+[ext_resource type="Script" uid="uid://cu5mptv486reu" path="res://Scripts/popLoad.gd" id="10_we7ge"]
+[ext_resource type="Script" uid="uid://dlro2dej0frrj" path="res://Scripts/popSave.gd" id="11_dt7qr"]
+[ext_resource type="Texture2D" uid="uid://dgtgd7nmuptr6" path="res://Sprites/RetroWood/New.jpg" id="11_ehsup"]
+[ext_resource type="Texture2D" uid="uid://dt35fbefu60ls" path="res://Sprites/RetroWood/Open.jpg" id="12_5o0s6"]
+[ext_resource type="Texture2D" uid="uid://cphjjv5ttc3a3" path="res://Sprites/RetroWood/Save.jpg" id="15_pwrnu"]
+[ext_resource type="Texture2D" uid="uid://baiu161gnvfj0" path="res://Sprites/RetroWood/Pause.jpg" id="16_arl5w"]
+[ext_resource type="Texture2D" uid="uid://bxdtqof8robqc" path="res://Sprites/RetroWood/Rewind.jpg" id="17_fpd0j"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_55xmw"]
 size = Vector2(137, 96)
+
+[sub_resource type="FontVariation" id="FontVariation_h0o2n"]
+base_font = ExtResource("3_7nhen")
+spacing_bottom = 10
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_i2www")
@@ -28,9 +40,12 @@ metadata/_edit_lock_ = true
 position = Vector2(720, 558)
 texture = ExtResource("3_2gi3p")
 script = ExtResource("5_8nr35")
+board_x0 = -557
+board_y0 = 384
+metadata/_edit_lock_ = true
 
 [node name="Piece" type="Area2D" parent="Board"]
-position = Vector2(-560, 386)
+position = Vector2(-557, 384)
 script = ExtResource("6_d12bf")
 step = 16
 
@@ -129,3 +144,121 @@ grow_horizontal = 0
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("3_7nhen")
 text = " Cancel "
+
+[node name="popLoad" type="FileDialog" parent="."]
+title = "Open a File"
+position = Vector2i(640, 320)
+size = Vector2i(640, 480)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.chs ; Sentinel Chess Files")
+script = ExtResource("10_we7ge")
+
+[node name="popSave" type="FileDialog" parent="."]
+position = Vector2i(640, 320)
+size = Vector2i(640, 480)
+ok_button_text = "Save"
+access = 2
+filters = PackedStringArray("*.chs ; Sentinel Chess Files")
+script = ExtResource("11_dt7qr")
+
+[node name="GameUI" type="CanvasLayer" parent="."]
+script = ExtResource("10_0mwoa")
+step = 16
+
+[node name="btnNew" type="Button" parent="GameUI"]
+offset_left = 1425.0
+offset_top = 10.0
+offset_right = 1500.0
+offset_bottom = 81.0
+icon = ExtResource("11_ehsup")
+
+[node name="btnLoad" type="Button" parent="GameUI"]
+offset_left = 1490.0
+offset_top = 10.0
+offset_right = 1565.0
+offset_bottom = 81.0
+icon = ExtResource("12_5o0s6")
+
+[node name="btnSave" type="Button" parent="GameUI"]
+offset_left = 1555.0
+offset_top = 10.0
+offset_right = 1630.0
+offset_bottom = 81.0
+icon = ExtResource("15_pwrnu")
+
+[node name="btnPause" type="Button" parent="GameUI"]
+offset_left = 1620.0
+offset_top = 10.0
+offset_right = 1695.0
+offset_bottom = 81.0
+icon = ExtResource("16_arl5w")
+
+[node name="btnRewind" type="Button" parent="GameUI"]
+offset_left = 1685.0
+offset_top = 10.0
+offset_right = 1760.0
+offset_bottom = 81.0
+icon = ExtResource("17_fpd0j")
+
+[node name="lblHistory" type="RichTextLabel" parent="GameUI"]
+offset_left = 1441.0
+offset_top = 100.0
+offset_right = 1894.0
+offset_bottom = 901.0
+theme_override_fonts/normal_font = SubResource("FontVariation_h0o2n")
+theme_override_font_sizes/normal_font_size = 20
+
+[node name="lblCmd" type="Label" parent="GameUI"]
+offset_left = 1450.0
+offset_top = 980.0
+offset_right = 1554.0
+offset_bottom = 1011.0
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 26
+text = "CMD>"
+
+[node name="txtCmd" type="LineEdit" parent="GameUI"]
+offset_left = 1556.0
+offset_top = 968.0
+offset_right = 1889.0
+offset_bottom = 1015.0
+focus_neighbor_top = NodePath("../btnNew")
+theme_override_colors/font_color = Color(0.754947, 0.837007, 1, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 26
+
+[node name="lblError" type="Label" parent="GameUI"]
+offset_left = 1442.0
+offset_top = 901.0
+offset_right = 1894.0
+offset_bottom = 960.0
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 2
+autowrap_mode = 3
+
+[node name="lblClock" type="Label" parent="GameUI"]
+offset_left = 1439.0
+offset_top = 1041.0
+offset_right = 1907.0
+offset_bottom = 1075.0
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 29
+text = "GAME 00:00 00:00"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="canceled" from="popLoad" to="popLoad" method="_on_canceled"]
+[connection signal="confirmed" from="popLoad" to="popLoad" method="_on_confirmed"]
+[connection signal="canceled" from="popSave" to="popSave" method="_on_canceled"]
+[connection signal="confirmed" from="popSave" to="popSave" method="_on_confirmed"]
+[connection signal="pressed" from="GameUI/btnNew" to="GameUI" method="_on_btn_new_pressed"]
+[connection signal="pressed" from="GameUI/btnLoad" to="GameUI" method="_on_btn_load_pressed"]
+[connection signal="pressed" from="GameUI/btnSave" to="GameUI" method="_on_btn_save_pressed"]
+[connection signal="pressed" from="GameUI/btnPause" to="GameUI" method="_on_btn_pause_pressed"]
+[connection signal="pressed" from="GameUI/btnRewind" to="GameUI" method="_on_btn_rewind_pressed"]
+[connection signal="text_submitted" from="GameUI/txtCmd" to="GameUI" method="_on_txt_cmd_text_submitted"]

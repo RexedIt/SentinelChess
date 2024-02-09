@@ -45,6 +45,8 @@ func _input(event: InputEvent):
 			src.x = x_ind
 			if not board.drop_move(src,dest):
 				position = dragstart
+				if not src.matches(dest):
+					board.handle_error_msg("Invalid Move.")
 			else:
 				position = board.screen_v(dest)
 				y_ind = dest.y

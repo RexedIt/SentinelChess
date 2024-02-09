@@ -25,7 +25,7 @@ namespace chess
         m_board.new_board();
         m_turn.clear();
         m_board.trace("cg:new_game");
-        draw_board(1, m_board);
+        draw_board(0, m_board);
     }
 
     error_e chessgame::load_game(std::string filename)
@@ -79,7 +79,7 @@ namespace chess
             os.write((char *)&m_win_color, sizeof(m_win_color));
             os.write((char *)&m_level, sizeof(m_level));
             os.write((char *)&m_trace_level, sizeof(m_trace_level));
-            int num_turns = turnno() - 1;
+            int num_turns = turnno();
             os.write((char *)&num_turns, sizeof(num_turns));
             for (int i = 0; i < num_turns; i++)
             {
@@ -158,7 +158,7 @@ namespace chess
 
     int chessgame::turnno()
     {
-        return (int)m_turn.size() + 1;
+        return (int)m_turn.size();
     }
 
     void chessgame::set_callbacks(draw_board_callback _draw_board, game_end_callback _game_end, computer_moved_callback _computer_moved, draw_move_callback _draw_move, request_promote_callback _request_promote, thinking_callback _thinking, traces_callback _traces)
@@ -352,8 +352,10 @@ namespace chess
 
     error_e chessgame::rewind_game(int move_no)
     {
-        int idx = move_no - 2;
-        if ((idx < -1) || (idx >= turnno() - 2))
+        int idx = move_no - 1;
+        if (idx == turnno())
+            return e_none;
+        if ((idx < -1) || (idx >= turnno()))
             return e_rewind_failed;
         if (idx >= 0)
         {

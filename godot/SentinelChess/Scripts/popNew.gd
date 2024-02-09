@@ -1,4 +1,4 @@
-@uid("uid://kldbmn05hgxk") # Generated automatically, do not modify.
+@uid("uid://duly64wj4k304") # Generated automatically, do not modify.
 extends Window
 
 @export var cancelled : bool = false
@@ -28,7 +28,7 @@ signal on_closed(_cancelled, _level, _color)
 
 func _VisibilityChanged():
 	if (visible):
-		HSlider.value = 3
+		sldLevel.value = 3
 		btnWhite.button_pressed = true
 		cancelled = false
 	else:

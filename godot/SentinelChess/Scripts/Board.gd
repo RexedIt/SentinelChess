@@ -108,15 +108,11 @@ func can_drop(c1 : ChessCoord, c2 : ChessCoord) -> bool:
 		return true
 	for possible_move in possible_moves:
 		if possible_move.matches_p0p1(c1,c2):
-			print('match')
+			#print('match')
 			return true
-	print('no match')
+	#print('no match')
 	return false
 	
-func can_move(c1 : ChessCoord, c2 : ChessCoord) -> bool:
-	print('todo')
-	return false
-
 func drop_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
 	if p0.matches(p1):
 		return false
@@ -142,6 +138,9 @@ func move_piece(p0 : ChessCoord, p1 : ChessCoord):
 func handle_error(err : int):
 	game._on_error(err)
 
+func handle_error_msg(err : String):
+	game._on_error_msg(err)
+	
 func animate_move(m : ChessMove):
 	if m != null:
 		var p0 : ChessCoord = m.p0

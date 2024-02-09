@@ -6,7 +6,7 @@
 [ext_resource type="Script" path="res://Scripts/PositionTween.gd" id="3_3icb5"]
 [ext_resource type="Texture2D" uid="uid://dfk64c211qb6m" path="res://Sprites/RetroWood/RetroBannerMissilesR.png" id="3_8byuy"]
 [ext_resource type="Texture2D" uid="uid://b0fioyk6txjcf" path="res://Sprites/RetroWood/RetroBannerText.png" id="4_apxw7"]
-[ext_resource type="Script" path="res://Scripts/AlphaTween.gd" id="6_otv8g"]
+[ext_resource type="Script" uid="uid://no557lyo44m" path="res://Scripts/AlphaTween.gd" id="6_otv8g"]
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_ralpe")

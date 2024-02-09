@@ -101,6 +101,7 @@ void ChessMove::_bind_methods()
     ClassDB::bind_method(D_METHOD("matches_p0p1", "p0", "p1"), &ChessMove::matches_p0p1);
     ClassDB::bind_method(D_METHOD("matches_y0x0p1", "y0", "x0", "p0"), &ChessMove::matches_y0x0p1);
     ClassDB::add_property("ChessMove", PropertyInfo(Variant::OBJECT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessCoord"), "set_cx", "get_cx");
+    ClassDB::bind_method(D_METHOD("en_passant"), &ChessMove::en_passant);
     ClassDB::bind_method(D_METHOD("promote"), &ChessMove::promote);
     ClassDB::bind_method(D_METHOD("check"), &ChessMove::check);
     ClassDB::bind_method(D_METHOD("mate"), &ChessMove::mate);
