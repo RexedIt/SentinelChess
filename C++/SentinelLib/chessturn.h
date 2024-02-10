@@ -17,8 +17,8 @@ namespace chess
         }
         chessturn_s(const chessturn_s &oth);
         chessturn_s(chessboard &_b, move_s &_m, color_e _c, int _r = 0);
-        bool load(std::ifstream &);
-        bool save(std::ofstream &);
+        error_e load(std::ifstream &);
+        error_e save(std::ofstream &);
     } chessturn_s;
 
     chessturn_s new_turn(chessboard &_b, move_s &_m, color_e _c, int _r = 0);

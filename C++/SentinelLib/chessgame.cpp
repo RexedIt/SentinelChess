@@ -289,6 +289,8 @@ namespace chess
             move_s m = m_board.user_move(col, m0);
             if (!m.is_valid())
                 return e_invalid_move;
+            if (m.check)
+                return e_check;
             if (m.promote == request_promote)
             {
                 m0.promote = p_queen;

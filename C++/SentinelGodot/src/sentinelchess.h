@@ -57,6 +57,7 @@ private:
     ChessColor turn_color();
     ChessColor computer_color();
     ChessColor win_color();
+    bool check_state(ChessColor col);
 
     // moving
     int computer_move(ChessColor col);
@@ -74,6 +75,8 @@ private:
     int add_piece(const Ref<ChessCoord> &p0, ChessColor col, ChessPiece piece);
 
     Ref<ChessMove> lastmove();
+    ChessColor lastcolor();
+    int lastturnno();
     int turnno();
 
     // Board helpers

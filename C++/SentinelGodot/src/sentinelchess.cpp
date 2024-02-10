@@ -74,6 +74,7 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("computer_color"), &SentinelChess::computer_color);
     ClassDB::bind_method(D_METHOD("win_color"), &SentinelChess::win_color);
     ClassDB::bind_method(D_METHOD("state"), &SentinelChess::state);
+    ClassDB::bind_method(D_METHOD("check_state"), &SentinelChess::check_state);
     ClassDB::bind_method(D_METHOD("computer_move", "col"), &SentinelChess::computer_move);
     ClassDB::bind_method(D_METHOD("computer_move_cancel"), &SentinelChess::computer_move_cancel);
     ClassDB::bind_method(D_METHOD("computer_moving"), &SentinelChess::computer_moving);
@@ -93,6 +94,8 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("cell_computer_kill", "y", "x"), &SentinelChess::cell_computer_kill);
 
     ClassDB::bind_method(D_METHOD("lastmove"), &SentinelChess::lastmove);
+    ClassDB::bind_method(D_METHOD("lastcolor"), &SentinelChess::lastcolor);
+    ClassDB::bind_method(D_METHOD("lastturnno"), &SentinelChess::lastturnno);
     ClassDB::bind_method(D_METHOD("turnno"), &SentinelChess::turnno);
 
     // Colors
@@ -156,6 +159,19 @@ Ref<ChessMove> SentinelChess::lastmove()
     return cm;
 }
 
+SentinelChess::ChessColor SentinelChess::lastcolor()
+{
+    chessturn_s t = m_game.last_turn();
+    return (ChessColor)t.c;
+}
+
+int SentinelChess::lastturnno()
+{
+    if (turnno()==0)
+        return 0;
+    return turnno()-1;
+}
+
 int SentinelChess::turnno()
 {
     return m_game.turnno();
@@ -207,6 +223,11 @@ SentinelChess::ChessColor SentinelChess::computer_color()
 SentinelChess::ChessColor SentinelChess::win_color()
 {
     return (SentinelChess::ChessColor)m_game.win_color();
+}
+
+bool SentinelChess::check_state(ChessColor col)
+{
+    return m_game.check_state((color_e)col);
 }
 
 SentinelChess::ChessGameState SentinelChess::state()

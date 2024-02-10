@@ -29,22 +29,22 @@ namespace chess
         r = oth.r;
     }
 
-    bool chessturn_s::load(std::ifstream &is)
+    error_e chessturn_s::load(std::ifstream &is)
     {
-        if (!b.load(is))
-            return false;
+        if (b.load(is)!=e_none)
+            return e_loading;
         is.read((char *)&m, sizeof(m));
         is.read((char *)&c, sizeof(c));
-        return true;
+        return e_none;
     }
 
-    bool chessturn_s::save(std::ofstream &os)
+    error_e chessturn_s::save(std::ofstream &os)
     {
-        if (!b.save(os))
-            return false;
+        if (b.save(os)!=e_none)
+            return e_saving;
         os.write((char *)&m, sizeof(m));
         os.write((char *)&c, sizeof(c));
-        return true;
+        return e_none;
     }
 
 }
