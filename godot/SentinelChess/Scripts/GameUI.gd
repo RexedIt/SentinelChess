@@ -71,13 +71,23 @@ func append_history(msg : String, color : String = 'blue'):
 	lblHistory.newline()
 	lblHistory.pop()
 
+func append_load(msg: String):
+	append_history('Load Game - ' + msg)
+	# for last move info
+	if game_manager.turnno()>1:
+		append_move(game_manager.lastturnno(),game_manager.lastmove(), game_manager.lastcolor())
+		
 func append_move(n : int, m : ChessMove, col : SentinelChess.ChessColor):
 	var color : String = 'white'
 	if col == SentinelChess.ChessColor.Black:
 		color = 'black'
 	append_history(str(n) + ' ' + color + ' ' + movestr(m), color)
+	if (game_manager.check_state(SentinelChess.Black)):
+		append_history('Black in Check.', 'black')	
+	if (game_manager.check_state(SentinelChess.White)):
+		append_history('White in Check.', 'white')
 		
-	# UI Handlers
+# UI Handlers
 
 func show_error(msg : String):
 	errortime = 3
@@ -109,7 +119,7 @@ func handle_rewind(move_no: int) -> bool:
 		show_error('!' + game_manager.errorstr(err))
 		return false
 	append_history('Rewind - ' + str(move_no))
-	game_manager.refresh_board()
+	game_manager.refresh_turn()
 	return true
 	
 func _on_txt_cmd_text_submitted(new_text):
@@ -158,7 +168,7 @@ func handle_load(filename: String) -> bool:
 		show_error('!' + game_manager.errorstr(err))
 		return false
 	clear_history()
-	append_history('Load Game - ' + toload)
+	append_load(toload)
 	game_manager.refresh_board()
 	return true
 
@@ -188,6 +198,10 @@ func handle_move(cmd: String) -> bool:
 					if err != 0:
 						show_error('!' + game_manager.errorstr(err))
 						return false
+					if game_manager.check_state(game_manager.user_color()):
+						if game_manager.state() == SentinelChess.ChessGameState.Play:
+							show_error("You are in Check.")
+							return false
 					append_move(game_manager.turnno(), m, game_manager.user_color())
 					game_manager._user_moved(m)
 					return true				

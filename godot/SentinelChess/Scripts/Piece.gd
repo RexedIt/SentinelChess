@@ -86,7 +86,8 @@ func _physics_process(delta):
 			board._on_animated(src, dest)
 			self.z_index = 0
 					
-func refresh(pc,pt):
+func refresh(pc,pt,r):
+	rotation_degrees = r
 	if pc != piececolor or pt != piecetype:
 		piececolor = pc
 		piecetype = pt
@@ -107,7 +108,7 @@ func refresh(pc,pt):
 			SentinelChess.ChessPiece.King:
 				SpriteName += 'King'
 		sprite.texture = load('res://Sprites/RetroWood/' + SpriteName + '.png')
-
+		
 func center() -> Vector2:
 	var v : Vector2
 	v = position
@@ -128,8 +129,7 @@ func initialize(pc, pt, yi, xi, y, x, r):
 	sprite = get_node('Sprite')
 	position.x = x
 	position.y = y
-	rotation_degrees = r
-	refresh(pc, pt)
+	refresh(pc, pt, r)
 
 func animate_move(p1 : ChessCoord):
 	animstart = position

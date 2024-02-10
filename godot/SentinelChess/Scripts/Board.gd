@@ -44,7 +44,7 @@ func refreshpieces():
 			else:
 				var pt : SentinelChess.ChessPiece = game.cell_piece(y,x)
 				if (po!=null):
-					po.refresh(pc,pt)
+					po.refresh(pc,pt,rotation_degrees)
 				else:
 					po = PieceProto.duplicate()
 					add_child(po)
@@ -122,6 +122,11 @@ func drop_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
 	if err != 0:
 		handle_error(err)
 		return false
+	if game.check_state(game.user_color()):
+		if game.state() == SentinelChess.ChessGameState.Play:
+			handle_error_msg("You are in Check.")
+			return false
+		# *** REM *** TODO Extra Checks?
 	game._on_user_moved()
 	return true
 

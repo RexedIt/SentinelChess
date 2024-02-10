@@ -164,7 +164,7 @@ func _on_closed_load(_cancelled, _filename):
 		_gamestatereact(prepopgamestate)
 		return
 	gameUI.clear_history()
-	gameUI.append_history('Load Game - ' + _filename)
+	gameUI.append_load(_filename)
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
@@ -223,6 +223,10 @@ func _draw_board(node, n):
 func refresh_board():
 	board.setup(user_color())
 	board.refreshpieces()
+
+func refresh_turn():
+	board.refreshpieces()
+	_gamestatereact(GameState.PLAY)
 	
 func _user_moved(m):
 	board.animate_move(m)
