@@ -1,13 +1,23 @@
 #include "chesslobby.h"
-#include "chesshuman.h"
+#include "chessplayer.h"
 #include "chesscomputer.h"
 
 namespace chess
 {
 
-    chesslobby::chesslobby()
+    chesslobby::chesslobby(std::shared_ptr<chessgamelistener> p_listener)
     {
         mp_game = std::shared_ptr<chessgame>(new chessgame());
+        set_listener(p_listener);
+    }
+
+    void chesslobby::set_listener(std::shared_ptr<chessgamelistener> p_listener)
+    {
+        if (p_listener)
+            mp_game->listen(p_listener);
+        else
+            mp_game->unlisten(cl_user);
+        mp_listener = p_listener;
     }
 
     chesslobby::~chesslobby()
@@ -19,23 +29,51 @@ namespace chess
         mp_players_backup.clear();
     }
 
-    error_e chesslobby::new_game(int def_skill)
+    error_e chesslobby::new_game()
     {
-        return mp_game->new_game(mp_players, def_skill);
+        return mp_game->new_game();
     }
 
-    error_e chesslobby::new_game(color_e user_color, std::string name, int skill, chessplayertype_e ptype, int def_skill)
+    void chesslobby::attach_to_game()
+    {
+        if (mp_listener)
+            mp_game->listen(mp_listener);
+        else
+            mp_game->unlisten(cl_user);
+        for (const auto &kv : mp_players)
+            kv.second->set_game(mp_game);
+    }
+
+    void chesslobby::detach_from_game()
+    {
+        mp_game->unlisten(cl_user);
+        for (const auto &kv : mp_players)
+            kv.second->set_game(NULL);
+    }
+
+    error_e chesslobby::new_game(color_e user_color, std::string name, int skill, chessplayertype_e ptype)
     {
         backup();
 
         clear_players();
-        error_e err = add_player(user_color,name,skill, ptype);
+        error_e err = add_player(user_color, name, skill, ptype);
+        if (err != e_none)
+            return restore(err);
+
+        // Create a computer matchup
+        err = add_player(other(user_color), "Computer", skill, t_computer);
         if (err != e_none)
             return restore(err);
 
         mp_game = std::shared_ptr<chessgame>(new chessgame());
-        err = mp_game->new_game(mp_players, def_skill);
-        return restore(err);
+        attach_to_game();
+
+        err = mp_game->new_game();
+        if (err != e_none)
+            return restore(err);
+
+        attach_to_game();
+        return err;
     }
 
     error_e chesslobby::load_game(std::string filename)
@@ -62,10 +100,16 @@ namespace chess
             }
 
             mp_game = std::shared_ptr<chessgame>(new chessgame());
+            set_listener(mp_listener);
 
             err = mp_game->load_game(is);
             is.close();
-            return restore(err);
+
+            if (err != e_none)
+                return restore(err);
+
+            attach_to_game();
+            return err;
         }
         catch (const std::exception &)
         {
@@ -88,12 +132,12 @@ namespace chess
                 os.close();
                 return err;
             }
-                
+
             err = mp_game->save_game(os);
             os.close();
             return err;
         }
-        catch (const std::exception&)
+        catch (const std::exception &)
         {
             return e_saving;
         }
@@ -102,14 +146,14 @@ namespace chess
     error_e chesslobby::add_player(color_e color, std::string name, int skill, chessplayertype_e ptype)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        switch(ptype)
+        switch (ptype)
         {
-            case t_human:
-                mp_players[color] = std::shared_ptr<chesshuman>(new chesshuman(name, skill));
-                return e_none;
-            case t_computer:
-                mp_players[color] = std::shared_ptr<chesscomputer>(new chesscomputer("Computer", skill));
-                return e_none;
+        case t_human:
+            mp_players[color] = std::shared_ptr<chessplayer>(new chessplayer(name, skill));
+            return e_none;
+        case t_computer:
+            mp_players[color] = std::shared_ptr<chesscomputer>(new chesscomputer("Computer", skill));
+            return e_none;
         }
         return e_player_not_created;
     }
@@ -132,12 +176,24 @@ namespace chess
         return e_none;
     }
 
+    std::shared_ptr<chessgame> chesslobby::game()
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        return mp_game;
+    }
+
     std::shared_ptr<chessplayer> chesslobby::player(color_e col)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         if (mp_players.count(col))
             return mp_players[col];
         return NULL;
+    }
+
+    std::map<color_e, std::shared_ptr<chessplayer>> chesslobby::players()
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        return mp_players;
     }
 
     error_e chesslobby::load_players(std::ifstream &is)
@@ -147,21 +203,21 @@ namespace chess
             int8_t n = 0;
             is.read((char *)&n, sizeof(n));
             mp_players.clear();
-            for (int8_t i=0;i<n;i++)
+            for (int8_t i = 0; i < n; i++)
             {
                 color_e color;
-                is.read((char *)&color,sizeof(color));
+                is.read((char *)&color, sizeof(color));
                 std::string name = load_string(is);
                 int32_t skill;
-                is.read((char *)&skill,sizeof(skill));
+                is.read((char *)&skill, sizeof(skill));
                 chessplayertype_e ptype = t_none;
                 is.read((char *)ptype, sizeof(ptype));
-                if (add_player(color,name,skill,ptype)!=e_none)
+                if (add_player(color, name, skill, ptype) != e_none)
                     return e_loading;
             }
             return e_none;
         }
-        catch(const std::exception&)
+        catch (const std::exception &)
         {
             return e_loading;
         }
@@ -172,20 +228,20 @@ namespace chess
         try
         {
             int8_t n = (int8_t)mp_players.size();
-            os.write((char*)&n, sizeof(n));
+            os.write((char *)&n, sizeof(n));
             for (const auto &kv : mp_players)
             {
                 color_e color = kv.second->playercolor();
-                os.write((char*)&color,sizeof(color));
-                save_string(kv.second->playername(),os);
+                os.write((char *)&color, sizeof(color));
+                save_string(kv.second->playername(), os);
                 int32_t skill = kv.second->playerskill();
-                os.write((char*)&skill, sizeof(skill));
+                os.write((char *)&skill, sizeof(skill));
                 chessplayertype_e t = kv.second->playertype();
-                os.write((char*)&t,sizeof(t));
+                os.write((char *)&t, sizeof(t));
             }
             return e_none;
         }
-        catch(const std::exception&)
+        catch (const std::exception &)
         {
             return e_saving;
         }
@@ -194,6 +250,7 @@ namespace chess
     // functions to restore values
     void chesslobby::backup()
     {
+        detach_from_game();
         mp_game_backup = mp_game;
         mp_players_backup = mp_players;
     }
@@ -204,6 +261,7 @@ namespace chess
         mp_players_backup = mp_players;
         mp_game_backup = NULL;
         mp_players_backup.clear();
+        attach_to_game();
         return err;
     }
 

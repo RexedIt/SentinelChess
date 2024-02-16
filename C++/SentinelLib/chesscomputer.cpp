@@ -11,6 +11,7 @@ namespace chess
         m_level = 3;
         m_cancel = false;
         m_playertype = t_computer;
+        m_listenertype = cl_computer;
         m_thread_running = false;
         m_name = "Computer";
     }
@@ -24,6 +25,7 @@ namespace chess
             m_level = 6;
         m_cancel = false;
         m_playertype = t_computer;
+        m_listenertype = cl_computer;
         m_name = name;
         m_skill = skill;
     }
@@ -42,11 +44,11 @@ namespace chess
         }
     }
 
-    void chesscomputer::signal_on_turn(int16_t turn_no, bool check, chessboard &board)
+    void chesscomputer::signal_on_turn(int16_t turn_no, bool check, chessboard &board, color_e color)
     {
         // This is where we will determine game state, move, or forfeit.
         // move:
-        if (!m_thread_running)
+        if ((!m_thread_running) && (color == m_color))
         {
             m_thread_running = true;
             std::thread background(&chesscomputer::computer_move, this, std::ref(board));

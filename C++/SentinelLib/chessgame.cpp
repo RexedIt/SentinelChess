@@ -21,14 +21,6 @@ namespace chess
         return m_state;
     }
 
-    chessplayertype_e chessgame::playertype(color_e col)
-    {
-        std::lock_guard<std::mutex> guard(m_mutex);
-        if (mp_players.count(col))
-            return mp_players[col]->playertype();
-        return t_none;
-    }
-
     color_e chessgame::turn_color()
     {
         return m_board.turn_color();
@@ -159,16 +151,8 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::new_game(std::map<color_e, std::shared_ptr<chessplayer>> players, int skill)
+    error_e chessgame::new_game()
     {
-        if (players.count(c_white))
-            _register(players[c_white], c_white);
-        else
-            _register(_default_computer_player(skill), c_white);
-        if (players.count(c_black))
-            _register(players[c_black], c_black);
-        else
-            _register(_default_computer_player(skill), c_black);
         m_state = play_e;
         m_win_color = c_none;
         m_board.new_board();
@@ -216,10 +200,10 @@ namespace chess
     {
         try
         {
-            os.write((char*)&m_state, sizeof(m_state));
-            os.write((char*)&m_win_color, sizeof(m_win_color));
+            os.write((char *)&m_state, sizeof(m_state));
+            os.write((char *)&m_win_color, sizeof(m_win_color));
             int16_t num_turns = turnno();
-            os.write((char*)&num_turns, sizeof(num_turns));
+            os.write((char *)&num_turns, sizeof(num_turns));
             for (int i = 0; i < num_turns; i++)
             {
                 if (m_turn[i].save(os) != e_none)
@@ -236,7 +220,7 @@ namespace chess
             os.close();
             return e_none;
         }
-        catch (const std::exception&)
+        catch (const std::exception &)
         {
             return e_saving;
         }
@@ -254,27 +238,21 @@ namespace chess
         return m_board.save_xfen();
     }
 
-    error_e chessgame::_register(std::shared_ptr<chessplayer> pplayer, color_e color)
+    error_e chessgame::listen(std::shared_ptr<chessgamelistener> plistener)
     {
-        // Called by the lobby or game manager, the factory
-        // has created the player object and it is being assigned
-        // a slot
         std::lock_guard<std::mutex> guard(m_mutex);
-        if (pplayer == NULL)
-            return e_invalid_player;
-        if (mp_players.count(color) == 0)
-        {
-            mp_players[color] = pplayer;
-            pplayer->_register(this, color);
-            return e_none;
-        }
-        return e_player_already_registered;
+        if (plistener == NULL)
+            return e_invalid_listener;
+        chessgamelistenertype listenertype = plistener->listenertype();
+        mp_listeners[listenertype] = plistener;
+        return e_none;
     }
 
-    error_e chessgame::_unregister(color_e color)
+    error_e chessgame::unlisten(chessgamelistenertype listenertype)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        mp_players.erase(color);
+        if (mp_listeners.count(listenertype))
+            mp_listeners.erase(listenertype);
         return e_none;
     }
 
@@ -288,35 +266,28 @@ namespace chess
 
     error_e chessgame::chat(std::string msg, color_e col)
     {
-        signal_chat(msg,col);
+        signal_chat(msg, col);
         return e_none;
-    }
-
-    // Signallers and Private Functions
-    std::shared_ptr<chessplayer> chessgame::_default_computer_player(int skill)
-    {
-        return std::shared_ptr<chesscomputer>(new chesscomputer("Computer", skill));
     }
 
     void chessgame::signal_refresh_board()
     {
         int16_t n = turnno();
-        for (const auto &kv : mp_players)
+        for (const auto &kv : mp_listeners)
             kv.second->signal_refresh_board(n, m_board);
     }
 
     void chessgame::signal_on_consider(move_s &m, color_e c, int8_t p)
     {
-        for (const auto &kv : mp_players)
+        for (const auto &kv : mp_listeners)
             kv.second->signal_on_consider(m, c, p);
     }
 
     void chessgame::signal_on_move(move_s &m, color_e c)
     {
         int16_t n = turnno();
-        for (const auto &kv : mp_players)
-            if (!kv.second->is(c))
-                kv.second->signal_on_move(n, m, c);
+        for (const auto &kv : mp_listeners)
+            kv.second->signal_on_move(n, m, c);
     }
 
     void chessgame::signal_on_turn()
@@ -324,22 +295,20 @@ namespace chess
         int16_t n = turnno();
         color_e c = m_board.turn_color();
         bool ch = m_board.check_state(c);
-        for (const auto &kv : mp_players)
-            if (kv.second->is(c))
-                kv.second->signal_on_turn(n, ch, m_board);
+        for (const auto &kv : mp_listeners)
+            kv.second->signal_on_turn(n, ch, m_board, c);
     }
 
     void chessgame::signal_on_end()
     {
-        for (const auto &kv : mp_players)
+        for (const auto &kv : mp_listeners)
             kv.second->signal_on_end(m_state, m_win_color);
     }
 
     void chessgame::signal_chat(std::string msg, color_e c)
     {
-        for (const auto &kv : mp_players)
-            if (!kv.second->is(c))
-                kv.second->signal_chat(msg, c);
+        for (const auto &kv : mp_listeners)
+            kv.second->signal_chat(msg, c);
     }
 
 }

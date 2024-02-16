@@ -39,20 +39,42 @@ void board_to_console(int n, chess::chessboard &b)
 {
     std::cout << "\r\n--- #" << n << " --------------------\r\n"
               << std::endl;
-    std::cout << colorchar(ansi_black, ansi_light_blue, "    A  B  C  D  E  F  G  H\r\n") << std::endl;
-    for (int i = 7; i >= 0; i--)
+
+    if (b.turn_color()==c_white)
     {
-        std::cout << colorchar(ansi_black, ansi_light_blue, std::to_string(i + 1) + "  ");
-        for (int j = 0; j < 8; j++)
+        std::cout << colorchar(ansi_black, ansi_light_blue, "    A  B  C  D  E  F  G  H\r\n") << std::endl;
+        for (int i = 7; i >= 0; i--)
         {
-            int cell = i * 8 + j + i % 2;
-            int bkgnd = (cell % 2 == 0) ? ansi_dark_gray : ansi_light_gray;
-            chess::chesspiece piece(b.get(coord_s(i, j)));
-            int fgnd = piece.color == c_black ? ansi_black : ansi_white;
-            std::string piecestr(1, piece.abbr);
-            std::cout << colorchar(bkgnd, fgnd, " " + piecestr + " ");
+            std::cout << colorchar(ansi_black, ansi_light_blue, std::to_string(i + 1) + "  ");
+            for (int j = 0; j <= 7; j++)
+            {
+                int cell = i * 8 + j + i % 2;
+                int bkgnd = (cell % 2 == 0) ? ansi_dark_gray : ansi_light_gray;
+                chess::chesspiece piece(b.get(coord_s(i, j)));
+                int fgnd = piece.color == c_black ? ansi_black : ansi_white;
+                std::string piecestr(1, piece.abbr);
+                std::cout << colorchar(bkgnd, fgnd, " " + piecestr + " ");
+            }
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
+    }
+    else
+    {
+        std::cout << colorchar(ansi_black, ansi_light_blue, "    H  G  F  E  D  C  B  A\r\n") << std::endl;
+        for (int i = 0; i <=7; i++)
+        {
+            std::cout << colorchar(ansi_black, ansi_light_blue, std::to_string(i + 1) + "  ");
+            for (int j = 7; j >= 0; j--)
+            {
+                int cell = i * 8 + j + i % 2;
+                int bkgnd = (cell % 2 == 0) ? ansi_dark_gray : ansi_light_gray;
+                chess::chesspiece piece(b.get(coord_s(i, j)));
+                int fgnd = piece.color == c_black ? ansi_black : ansi_white;
+                std::string piecestr(1, piece.abbr);
+                std::cout << colorchar(bkgnd, fgnd, " " + piecestr + " ");
+            }
+            std::cout << std::endl;
+        }
     }
     std::string s_check = b.check_state();
     if (s_check != "")

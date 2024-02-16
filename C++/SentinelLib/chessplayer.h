@@ -5,11 +5,12 @@
 #include "chessboard.h"
 
 #include <mutex>
-#include <queue>
 #include <memory>
 
 namespace chess
 {
+
+    class chessgame;
 
     std::vector<std::string> playertypes();
     chessplayertype_e playertypefromstring(std::string);
@@ -17,6 +18,7 @@ namespace chess
 
     class chessplayer
     {
+
     public:
         chessplayer();
         chessplayer(std::string name, int32_t skill);
@@ -30,32 +32,24 @@ namespace chess
         std::vector<move_s> possible_moves();
         error_e chat(std::string msg);
 
-        // Signals
-        virtual void signal_refresh_board(int16_t, chessboard &) = 0;
-        virtual void signal_on_consider(move_s &m, color_e c, int8_t pct = -1) = 0;
-        virtual void signal_on_move(int16_t, move_s &, color_e) = 0;
-        virtual void signal_on_turn(int16_t, bool, chessboard &b) = 0;
-        virtual void signal_on_end(game_state_e, color_e) = 0;
-        virtual void signal_chat(std::string, color_e) = 0;
-
         color_e playercolor();
         chessplayertype_e playertype();
         std::string playername();
         int32_t playerskill();
 
-        friend class chessgame;
+        friend class chesslobby;
 
     protected:
-        virtual void _register(chessgame *pgame, color_e);
-        virtual void _unregister();
-        std::mutex m_mutex;
+        void set_game(std::shared_ptr<chessgame> p_game);
+
         color_e m_color;
         std::string m_name;
         int32_t m_skill;
         chessplayertype_e m_playertype;
         // we do not use a shared pointer here as we do not want the
         // player to be able to dispose of the game inadvertently.
-        chessgame *mp_game;
+        std::mutex m_mutex;
+        std::shared_ptr<chessgame> mp_game;
     };
 
 }

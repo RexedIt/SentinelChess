@@ -43,7 +43,10 @@ namespace chess
         e_player_not_found,
         e_no_game,
         e_interrupted,
-        e_invalid_move_needs_promote
+        e_invalid_move_needs_promote,
+        e_invalid_listener,
+        e_listener_already_registered,
+        e_listener_not_found
     } error_e;
 
     std::string errorstr(error_e num);
@@ -185,6 +188,13 @@ namespace chess
         t_computer
     } chessplayertype_e;
 
+    typedef enum chessgamelistenertype
+    {
+        cl_none,
+        cl_computer,
+        cl_user,
+        cl_clock
+    } chessgamelistenertype;
 
     game_state_e is_game_over(color_e col, move_s &m);
     bool contains_move(std::vector<move_s> possible_moves, move_s &m, bool inherit = false);
@@ -199,7 +209,7 @@ namespace chess
     move_s new_move(coord_s p0, coord_s p1, piece_e promote);
 
     float get_rand();
-    
+
     std::string load_string(std::ifstream &is);
     void save_string(std::string s, std::ofstream &os);
 

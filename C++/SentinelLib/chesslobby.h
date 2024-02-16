@@ -1,6 +1,8 @@
 #pragma once
 
 #include "chessgame.h"
+#include "chessgamelistener.h"
+#include "chessplayer.h"
 
 namespace chess
 {
@@ -10,11 +12,11 @@ namespace chess
     {
 
     public:
-        chesslobby();
+        chesslobby(std::shared_ptr<chessgamelistener> p_listener = NULL);
         ~chesslobby();
 
-        error_e new_game(int def_skill = 600);
-        error_e new_game(color_e user_color, std::string name, int skill, chessplayertype_e ptype, int def_skill = 600);
+        error_e new_game();
+        error_e new_game(color_e user_color, std::string name, int skill, chessplayertype_e ptype);
         error_e load_game(std::string filename);
         error_e save_game(std::string filename);
 
@@ -22,23 +24,27 @@ namespace chess
         error_e drop_player(color_e color);
         error_e clear_players();
 
+        void set_listener(std::shared_ptr<chessgamelistener>);
+        std::shared_ptr<chessgame> game();
         std::shared_ptr<chessplayer> player(color_e col);
+        std::map<color_e, std::shared_ptr<chessplayer>> players();
 
     private:
-
         std::mutex m_mutex;
+        std::shared_ptr<chessgamelistener> mp_listener;
         std::map<color_e, std::shared_ptr<chessplayer>> mp_players;
         std::shared_ptr<chessgame> mp_game;
 
         error_e load_players(std::ifstream &is);
         error_e save_players(std::ofstream &os);
-        
+
+        void attach_to_game();
+        void detach_from_game();
+
         void backup();
-        error_e restore(error_e err=e_none);
+        error_e restore(error_e err = e_none);
 
         std::map<color_e, std::shared_ptr<chessplayer>> mp_players_backup;
         std::shared_ptr<chessgame> mp_game_backup;
-
-
     };
 }

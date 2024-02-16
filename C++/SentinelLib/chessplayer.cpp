@@ -52,14 +52,19 @@ namespace chess
 
     chessplayer::~chessplayer()
     {
-        _unregister();
     }
 
     color_e chessplayer::playercolor()
     {
         return m_color;
     }
-    
+
+    void chessplayer::set_game(std::shared_ptr<chessgame> p_game)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        mp_game = p_game;
+    }
+
     chessplayertype_e chessplayer::playertype()
     {
         return m_playertype;
@@ -73,22 +78,6 @@ namespace chess
     int32_t chessplayer::playerskill()
     {
         return m_skill;
-    }
-
-    void chessplayer::_register(chessgame *p_game, color_e color)
-    {
-        std::lock_guard<std::mutex> guard(m_mutex);
-        mp_game = p_game;
-        m_color = color;
-    }
-
-    void chessplayer::_unregister()
-    {
-        std::lock_guard<std::mutex> guard(m_mutex);
-        if (mp_game != NULL)
-            mp_game->_unregister(m_color);
-        mp_game = NULL;
-        m_color = c_none;
     }
 
     bool chessplayer::is(color_e c)

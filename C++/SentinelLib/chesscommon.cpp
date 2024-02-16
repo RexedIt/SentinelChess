@@ -82,6 +82,12 @@ namespace chess
             return "Interrupted";
         case e_invalid_move_needs_promote:
             return "Invalid Move, needs Promote piece set";
+        case e_invalid_listener:
+            return "Invalid listener";
+        case e_listener_already_registered:
+            return "Listener already registered";
+        case e_listener_not_found:
+            return "Listener not found";
         default:
             return "Unknown Error";
         }
@@ -250,20 +256,21 @@ namespace chess
     {
         int n = 0;
         is.read((char *)&n, sizeof(n));
-        if ((n<0)||(n>65535))
+        if ((n < 0) || (n > 65535))
             return "";
         std::string s;
-        s.reserve(n+1);
-        is.read((char *)s.c_str(),n);
+        s.reserve(n + 1);
+        is.read((char *)s.c_str(), n);
         return s;
     }
 
     void save_string(std::string s, std::ofstream &os)
     {
         int n = s.length();
-        if (n>65535) n=65535;
-        os.write((char*)&n, sizeof(n));
-        os.write(s.c_str(),n);
+        if (n > 65535)
+            n = 65535;
+        os.write((char *)&n, sizeof(n));
+        os.write(s.c_str(), n);
     }
 
     const char *ws = " \t\n\r\f\v";

@@ -4,10 +4,11 @@
 #include <windows.h>
 #include <chrono>
 #include <thread>
+#include <set>
 
 #include "chesslobby.h"
-// #include "chesspiece.h"
 #include "console.h"
+#include "chessplayer.h"
 
 using namespace chess;
 
@@ -52,13 +53,44 @@ bool get_move(std::string cmdu, coord_s &p0, coord_s &p1)
     return true;
 }
 
+// *** Callbacks from Player Object(s)
+std::shared_ptr<chessgame> p_game = NULL;
+std::set<color_e> humans;
+std::set<color_e> computers;
+color_e last_went = c_none;
+
+void refresh_data(chesslobby &lobby)
+{
+    bool set_cb = false;
+    humans.clear();
+    computers.clear();
+    last_went = c_none;
+
+    p_game = lobby.game();
+
+    std::map<color_e, std::shared_ptr<chessplayer>> p_players = lobby.players();
+    for (const auto &kv : p_players)
+    {
+        if (kv.second->playertype() == t_human)
+        {
+            humans.insert(kv.second->playercolor());
+        }
+        else
+        {
+            computers.insert(kv.second->playercolor());
+        }
+    }
+}
+
 bool load_game(std::string cmd, chesslobby &lobby)
 {
     std::string filename = get_arg(cmd);
     if (filename == "")
         return print_error(e_missing_filename);
-    if (lobby.load_game(filename) != e_none)
+    error_e err = lobby.load_game(filename);
+    if (err != e_none)
         return print_error(e_loading);
+    refresh_data(lobby);
     return true;
 }
 
@@ -80,25 +112,37 @@ bool add_player(chesslobby &lobby, color_e color)
         std::string cmd;
         std::getline(std::cin, cmd);
         std::vector<std::string> args = get_args(cmd, ',');
-        if (args.size() == 0)
-            return false;
-        if (args.size() != 3)
+        if (args.size() > 3)
             continue;
-        std::string name = args[0];
-        int skill = atoi(args[1].c_str());
-        if ((skill < 0) || (skill > 2000))
+        std::string name = "Computer";
+        int skill = 600;
+        chessplayertype_e ptype = t_computer;
+
+        if (args.size() >= 1)
+            name = args[0];
+
+        if (args.size() >= 2)
         {
-            print_error("Skill must be 0-2000");
-            continue;
+            std::string ptypes = uppercase(args[1]);
+            ptype = playertypefromstring(ptypes);
+            if (ptype == p_none)
+            {
+                print_error("Invalid Player Type");
+                continue;
+            }
         }
-        std::string ptype = uppercase(args[2]);
-        chessplayertype_e t = playertypefromstring(ptype);
-        if (t == p_none)
+
+        if (args.size() >= 3)
         {
-            print_error("Invalid Player Type");
-            continue;
+            skill = atoi(args[2].c_str());
+            if ((skill < 0) || (skill > 2000))
+            {
+                print_error("Skill must be 0-2000");
+                continue;
+            }
         }
-        if (lobby.add_player(color, name, skill, t) != e_none)
+
+        if (lobby.add_player(color, name, skill, ptype) != e_none)
         {
             print_error("Error adding player");
             return false;
@@ -107,22 +151,61 @@ bool add_player(chesslobby &lobby, color_e color)
     }
 }
 
-bool add_players(chesslobby &lobby)
+bool new_game(chesslobby &lobby)
 {
-    std::cout << "\r\nEnter Player Options: name, skill, type" << std::endl;
-    std::cout << "where skill is 0-2000 and type can be" << std::endl;
-    std::cout << "either console or computer\r\n" << std::endl;
+    std::cout << "\r\nEnter Player Options: name [,skill] [,type]" << std::endl;
+    std::cout << "where type [optional] can be either Human or Computer" << std::endl;
+    std::cout << "and skill [optional] can be 0-2000\r\n"
+              << std::endl;
     if (!add_player(lobby, c_white))
         return false;
     if (!add_player(lobby, c_black))
         return false;
+    error_e err = lobby.new_game();
+    if (err != e_none)
+        return print_error(err);
+    refresh_data(lobby);
     return true;
+}
+
+void refresh_board(int16_t t, chessboard &b)
+{
+    board_to_console(t, b);
+}
+
+void on_consider(move_s &m, color_e c, int8_t p)
+{
+}
+
+void on_move(int16_t t, move_s &m, color_e c)
+{
+}
+
+void on_turn(int16_t, bool ch, chessboard &b, color_e c)
+{
+}
+
+void on_end(game_state_e g, color_e c)
+{
+}
+
+void chat(std::string msg, color_e c)
+{
 }
 
 int main(void)
 {
 
-    chesslobby lobby;
+    std::shared_ptr<chessgamelistener_direct> p_listener(
+        new chessgamelistener_direct(cl_user,
+                                     &refresh_board,
+                                     &on_consider,
+                                     &on_move,
+                                     &on_turn,
+                                     &on_end,
+                                     &chat));
+
+    chesslobby lobby(p_listener);
 
     while (true)
     {
@@ -135,11 +218,8 @@ int main(void)
         std::string cmdl = cmdu.substr(0, 1);
         if (cmdl == "N")
         {
-            if (add_players(lobby))
-            {
-                lobby.new_game();
+            if (new_game(lobby))
                 break;
-            }
         }
         else if (cmdl == "L")
         {
@@ -151,7 +231,7 @@ int main(void)
             exit(EXIT_SUCCESS);
         }
     }
-    
+
     /*
     chessgame game;
 
