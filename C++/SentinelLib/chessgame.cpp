@@ -7,8 +7,6 @@ namespace chess
     chessgame::chessgame()
     {
         m_state = play_e;
-        m_white_type = t_none;
-        m_black_type = t_none;
         m_win_color = c_none;
     }
 
@@ -23,14 +21,12 @@ namespace chess
         return m_state;
     }
 
-    chessplayertype_e chessgame::white_type()
+    chessplayertype_e chessgame::playertype(color_e col)
     {
-        return m_white_type;
-    }
-
-    chessplayertype_e chessgame::black_type()
-    {
-        return m_black_type;
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if (mp_players.count(col))
+            return mp_players[col]->playertype();
+        return t_none;
     }
 
     color_e chessgame::turn_color()
@@ -53,9 +49,9 @@ namespace chess
         return m_turn[m_turn.size() - 1];
     }
 
-    int chessgame::turnno()
+    int16_t chessgame::turnno()
     {
-        return (int)m_turn.size();
+        return (int16_t)m_turn.size();
     }
 
     game_state_e chessgame::is_game_over(color_e col, move_s &m)
@@ -183,26 +179,13 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::load_game(std::string filename)
+    error_e chessgame::load_game(std::ifstream &is)
     {
         try
         {
-            std::ifstream is;
-            is.open(filename, std::ios::binary | std::ios::in);
-            if (!is.is_open())
-                return e_loading;
-
-            char header[] = "SENTINEL_CHESS";
-            int headl = strlen(header);
-            is.read(header, headl);
-            if (strncmp(header, "SENTINEL_CHESS", headl))
-                return e_loading;
-
-            is.read((char *)&m_white_type, sizeof(m_white_type));
-            is.read((char *)&m_black_type, sizeof(m_black_type));
             is.read((char *)&m_state, sizeof(m_state));
             is.read((char *)&m_win_color, sizeof(m_win_color));
-            int num_turns = 0;
+            int16_t num_turns = 0;
             is.read((char *)&num_turns, sizeof(num_turns));
             m_turn.clear();
             // If there are no turns ... we will just load the board
@@ -229,21 +212,13 @@ namespace chess
         }
     }
 
-    error_e chessgame::save_game(std::string filename)
+    error_e chessgame::save_game(std::ofstream &os)
     {
         try
         {
-            std::ofstream os;
-            os.open(filename, std::ios::binary | std::ios::out);
-
-            char header[] = "SENTINEL_CHESS";
-            os.write(header, strlen(header));
-
-            os.write((char*)&m_white_type, sizeof(m_white_type));
-            os.write((char*)&m_black_type, sizeof(m_black_type));
             os.write((char*)&m_state, sizeof(m_state));
             os.write((char*)&m_win_color, sizeof(m_win_color));
-            int num_turns = turnno();
+            int16_t num_turns = turnno();
             os.write((char*)&num_turns, sizeof(num_turns));
             for (int i = 0; i < num_turns; i++)
             {
@@ -287,13 +262,9 @@ namespace chess
         std::lock_guard<std::mutex> guard(m_mutex);
         if (pplayer == NULL)
             return e_invalid_player;
-        if (m_players.count(color) == 0)
+        if (mp_players.count(color) == 0)
         {
-            if (color == c_white)
-                m_white_type = pplayer->playertype();
-            else if (color == c_black)
-                m_black_type = pplayer->playertype();
-            m_players[color] = pplayer;
+            mp_players[color] = pplayer;
             pplayer->_register(this, color);
             return e_none;
         }
@@ -303,11 +274,7 @@ namespace chess
     error_e chessgame::_unregister(color_e color)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        m_players.erase(color);
-        if (color == c_white)
-            m_white_type = t_none;
-        else if (color == c_black)
-            m_black_type = t_none;
+        mp_players.erase(color);
         return e_none;
     }
 
@@ -319,6 +286,12 @@ namespace chess
         return e_none;
     }
 
+    error_e chessgame::chat(std::string msg, color_e col)
+    {
+        signal_chat(msg,col);
+        return e_none;
+    }
+
     // Signallers and Private Functions
     std::shared_ptr<chessplayer> chessgame::_default_computer_player(int skill)
     {
@@ -327,39 +300,46 @@ namespace chess
 
     void chessgame::signal_refresh_board()
     {
-        int n = turnno();
-        for (const auto &kv : m_players)
+        int16_t n = turnno();
+        for (const auto &kv : mp_players)
             kv.second->signal_refresh_board(n, m_board);
     }
 
-    void chessgame::signal_on_consider(move_s &m, color_e c, int p)
+    void chessgame::signal_on_consider(move_s &m, color_e c, int8_t p)
     {
-        for (const auto &kv : m_players)
+        for (const auto &kv : mp_players)
             kv.second->signal_on_consider(m, c, p);
     }
 
     void chessgame::signal_on_move(move_s &m, color_e c)
     {
-        int n = turnno();
-        for (const auto &kv : m_players)
+        int16_t n = turnno();
+        for (const auto &kv : mp_players)
             if (!kv.second->is(c))
                 kv.second->signal_on_move(n, m, c);
     }
 
     void chessgame::signal_on_turn()
     {
-        int n = turnno();
+        int16_t n = turnno();
         color_e c = m_board.turn_color();
         bool ch = m_board.check_state(c);
-        for (const auto &kv : m_players)
+        for (const auto &kv : mp_players)
             if (kv.second->is(c))
                 kv.second->signal_on_turn(n, ch, m_board);
     }
 
     void chessgame::signal_on_end()
     {
-        for (const auto &kv : m_players)
+        for (const auto &kv : mp_players)
             kv.second->signal_on_end(m_state, m_win_color);
+    }
+
+    void chessgame::signal_chat(std::string msg, color_e c)
+    {
+        for (const auto &kv : mp_players)
+            if (!kv.second->is(c))
+                kv.second->signal_chat(msg, c);
     }
 
 }

@@ -72,6 +72,10 @@ namespace chess
             return "Invalid Player";
         case e_player_already_registered:
             return "Player already registered";
+        case e_player_not_created:
+            return "Player not created";
+        case e_player_not_found:
+            return "Player not found";
         case e_no_game:
             return "No Game";
         case e_interrupted:
@@ -80,37 +84,6 @@ namespace chess
             return "Invalid Move, needs Promote piece set";
         default:
             return "Unknown Error";
-        }
-    }
-
-    std::vector<std::string> playertypes()
-    {
-        std::vector<std::string> ret;
-        ret.push_back("Console");
-        ret.push_back("Computer");
-        return ret;
-    }
-
-    chessplayertype_e playertypefromstring(std::string p)
-    {
-        std::string pu = uppercase(p);
-        if (pu == "CONSOLE")
-            return t_console;
-        if (pu == "COMPUTER")
-            return t_computer;
-        return t_none;
-    }
-
-    std::string playertypetostring(chessplayertype_e p)
-    {
-        switch (p)
-        {
-        case t_console:
-            return "Console";
-        case t_computer:
-            return "Computer";
-        default:
-            return "None";
         }
     }
 
@@ -271,6 +244,26 @@ namespace chess
         std::string cmdu = u;
         std::transform(cmdu.begin(), cmdu.end(), cmdu.begin(), ::tolower);
         return cmdu;
+    }
+
+    std::string load_string(std::ifstream &is)
+    {
+        int n = 0;
+        is.read((char *)&n, sizeof(n));
+        if ((n<0)||(n>65535))
+            return "";
+        std::string s;
+        s.reserve(n+1);
+        is.read((char *)s.c_str(),n);
+        return s;
+    }
+
+    void save_string(std::string s, std::ofstream &os)
+    {
+        int n = s.length();
+        if (n>65535) n=65535;
+        os.write((char*)&n, sizeof(n));
+        os.write(s.c_str(),n);
     }
 
     const char *ws = " \t\n\r\f\v";

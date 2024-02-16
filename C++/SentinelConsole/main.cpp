@@ -52,7 +52,6 @@ bool get_move(std::string cmdu, coord_s &p0, coord_s &p1)
     return true;
 }
 
-/*
 bool load_game(std::string cmd, chesslobby &lobby)
 {
     std::string filename = get_arg(cmd);
@@ -63,16 +62,15 @@ bool load_game(std::string cmd, chesslobby &lobby)
     return true;
 }
 
-bool save_game(std::string cmd, chessgame &game)
+bool save_game(std::string cmd, chesslobby &lobby)
 {
     std::string filename = get_arg(cmd);
     if (filename == "")
         return print_error(e_missing_filename);
-    if (game.save_game(filename) != e_none)
+    if (lobby.save_game(filename) != e_none)
         return print_error(e_saving);
     return true;
 }
-*/
 
 bool add_player(chesslobby &lobby, color_e color)
 {
@@ -111,8 +109,7 @@ bool add_player(chesslobby &lobby, color_e color)
 
 bool add_players(chesslobby &lobby)
 {
-    std::cout << "\r\nWelcome to lame-ass console chess!!!\r\n\r\n";
-    std::cout << "Enter Player Options: name, skill, type" << std::endl;
+    std::cout << "\r\nEnter Player Options: name, skill, type" << std::endl;
     std::cout << "where skill is 0-2000 and type can be" << std::endl;
     std::cout << "either console or computer\r\n" << std::endl;
     if (!add_player(lobby, c_white))
@@ -127,11 +124,34 @@ int main(void)
 
     chesslobby lobby;
 
-    if (!add_players(lobby))
+    while (true)
     {
-        print_error("Exiting");
-        exit(EXIT_FAILURE);
+        std::cout << "\r\nWelcome to Sentinel Console Chess!!!\r\n";
+        std::cout << "\r\nNEW, LOAD FileName, or QUIT?\r\n";
+        std::string cmd;
+        std::cout << "> ";
+        std::getline(std::cin, cmd);
+        std::string cmdu = uppercase(cmd);
+        std::string cmdl = cmdu.substr(0, 1);
+        if (cmdl == "N")
+        {
+            if (add_players(lobby))
+            {
+                lobby.new_game();
+                break;
+            }
+        }
+        else if (cmdl == "L")
+        {
+            if (load_game(cmd, lobby))
+                break;
+        }
+        else if (cmdl == "Q")
+        {
+            exit(EXIT_SUCCESS);
+        }
     }
+    
     /*
     chessgame game;
 

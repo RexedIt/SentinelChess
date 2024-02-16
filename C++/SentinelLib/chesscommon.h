@@ -39,6 +39,8 @@ namespace chess
         e_invalid_reference,
         e_invalid_player,
         e_player_already_registered,
+        e_player_not_created,
+        e_player_not_found,
         e_no_game,
         e_interrupted,
         e_invalid_move_needs_promote
@@ -48,19 +50,6 @@ namespace chess
 
     class chessboard;
     struct move_s;
-
-    typedef enum chessplayertype_e
-    {
-        // these are used to construct players so any class representation is
-        // good.  Note the types in this file are not created directly
-        t_none,
-        t_console,
-        t_computer
-    } chessplayertype_e;
-
-    std::vector<std::string> playertypes();
-    chessplayertype_e playertypefromstring(std::string);
-    std::string playertypetostring(chessplayertype_e);
 
     typedef enum piece_e
     {
@@ -189,6 +178,14 @@ namespace chess
         terminate_e = 5
     } game_state_e;
 
+    typedef enum chessplayertype_e
+    {
+        t_none,
+        t_human,
+        t_computer
+    } chessplayertype_e;
+
+
     game_state_e is_game_over(color_e col, move_s &m);
     bool contains_move(std::vector<move_s> possible_moves, move_s &m, bool inherit = false);
     std::string color_str(color_e col);
@@ -202,6 +199,10 @@ namespace chess
     move_s new_move(coord_s p0, coord_s p1, piece_e promote);
 
     float get_rand();
+    
+    std::string load_string(std::ifstream &is);
+    void save_string(std::string s, std::ofstream &os);
+
     std::vector<std::string> split_string(std::string cmd, char div);
     void write_hex_uchar(std::ofstream &file1, unsigned char c);
     unsigned char read_hex_uchar(std::string line);

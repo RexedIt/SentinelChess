@@ -3,7 +3,7 @@
 namespace chess
 {
 
-    chessturn_s new_turn(chessboard &_b, move_s &_m, color_e _c, int _r)
+    chessturn_s new_turn(chessboard &_b, move_s &_m, color_e _c, int16_t _r)
     {
         chessturn_s t;
         t.b = _b;
@@ -13,7 +13,7 @@ namespace chess
         return t;
     }
 
-    chessturn_s::chessturn_s(chessboard &_b, move_s &_m, color_e _c, int _r)
+    chessturn_s::chessturn_s(chessboard &_b, move_s &_m, color_e _c, int16_t _r)
     {
         b = _b;
         m = _m;

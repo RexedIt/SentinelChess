@@ -3,17 +3,35 @@
 namespace chess
 {
 
-    chessplayerasync::eventdata::eventdata(const eventdata &e)
+    std::vector<std::string> playertypes()
     {
-        etype = e.etype;
-        move_no = e.move_no;
-        check = e.check;
-        color = e.color;
-        turn_color = e.turn_color;
-        win_color = e.win_color;
-        game_state = e.game_state;
-        move = e.move;
-        msg = e.msg;
+        std::vector<std::string> ret;
+        ret.push_back("Human");
+        ret.push_back("Computer");
+        return ret;
+    }
+
+    chessplayertype_e playertypefromstring(std::string p)
+    {
+        std::string pu = uppercase(p);
+        if (pu == "HUMAN")
+            return t_human;
+        if (pu == "COMPUTER")
+            return t_computer;
+        return t_none;
+    }
+
+    std::string playertypetostring(chessplayertype_e p)
+    {
+        switch (p)
+        {
+        case t_human:
+            return "Human";
+        case t_computer:
+            return "Computer";
+        default:
+            return "None";
+        }
     }
 
     chessplayer::chessplayer()
@@ -24,7 +42,7 @@ namespace chess
         m_skill = 0;
     }
 
-    chessplayer::chessplayer(std::string name, int skill)
+    chessplayer::chessplayer(std::string name, int32_t skill)
     {
         m_name = name;
         m_skill = skill;
@@ -37,6 +55,11 @@ namespace chess
         _unregister();
     }
 
+    color_e chessplayer::playercolor()
+    {
+        return m_color;
+    }
+    
     chessplayertype_e chessplayer::playertype()
     {
         return m_playertype;
@@ -47,7 +70,7 @@ namespace chess
         return m_name;
     }
 
-    int chessplayer::playerskill()
+    int32_t chessplayer::playerskill()
     {
         return m_skill;
     }
@@ -114,70 +137,14 @@ namespace chess
         return p;
     }
 
-    void chessplayerasync::signal_refresh_board(int n, chessboard &b)
+    error_e chessplayer::chat(std::string msg)
     {
-        eventdata e(refresh_board);
-        e.move_no = n;
-        push_event(e);
-    }
-
-    void chessplayerasync::signal_on_consider(move_s &m, color_e c, int p)
-    {
-        eventdata e(on_consider);
-        e.move = m;
-        e.color = c;
-        e.percent = p;
-        push_event(e);
-    }
-
-    void chessplayerasync::signal_on_move(int n, move_s &m, color_e c)
-    {
-        eventdata e(on_move);
-        e.move_no = n;
-        e.move = m;
-        e.color = c;
-        push_event(e);
-    }
-
-    void chessplayerasync::signal_on_turn(int n, bool c, chessboard &b)
-    {
-        eventdata e(on_turn);
-        e.move_no = n;
-        e.check = c;
-        push_event(e);
-    }
-
-    void chessplayerasync::signal_on_end(game_state_e g, color_e w)
-    {
-        eventdata e(on_end);
-        e.game_state = g;
-        e.win_color = w;
-    }
-
-    void chessplayerasync::signal_chat(std::string msg, color_e c)
-    {
-        eventdata e(on_chat);
-        e.msg = msg;
-        e.color = c;
-        push_event(e);
-    }
-
-    void chessplayerasync::push_event(eventdata e)
-    {
-        std::lock_guard<std::mutex> guard(m_mutex);
-        m_events.push(e);
-    }
-
-    chessplayerasync::eventdata chessplayerasync::pop_event()
-    {
-        std::lock_guard<std::mutex> guard(m_mutex);
-        eventdata e;
-        if (m_events.size() > 0)
+        if (mp_game != NULL)
         {
-            e = m_events.front();
-            m_events.pop();
+            mp_game->chat(msg, m_color);
+            return e_none;
         }
-        return e;
+        return e_no_game;
     }
 
 }

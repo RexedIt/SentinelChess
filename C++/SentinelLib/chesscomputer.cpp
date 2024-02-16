@@ -15,7 +15,7 @@ namespace chess
         m_name = "Computer";
     }
 
-    chesscomputer::chesscomputer(std::string name, int skill)
+    chesscomputer::chesscomputer(std::string name, int32_t skill)
     {
         m_level = skill / 500 + 2;
         if (m_level < 1)
@@ -42,7 +42,7 @@ namespace chess
         }
     }
 
-    void chesscomputer::signal_on_turn(int turn_no, bool check, chessboard &board)
+    void chesscomputer::signal_on_turn(int16_t turn_no, bool check, chessboard &board)
     {
         // This is where we will determine game state, move, or forfeit.
         // move:
@@ -100,7 +100,7 @@ namespace chess
                 best = candidate;
                 alpha = score;
             }
-            signal_on_consider(candidate, m_color, i * 100 / possible.size());
+            signal_on_consider(candidate, m_color, (int8_t)(i * 100 / possible.size()));
         }
         // We will need to do this in the game move function now. evaluate_check_and_mate(m_color, possible, best);
         if ((best.is_valid()) && (mp_game != NULL))
@@ -108,7 +108,7 @@ namespace chess
         return e_no_game;
     }
 
-    float chesscomputer::computer_move_max(chessboard &board, color_e turn_col, float _alpha, float _beta, int rec)
+    float chesscomputer::computer_move_max(chessboard &board, color_e turn_col, float _alpha, float _beta, int32_t rec)
     {
         if ((rec == 0) || (m_cancel))
             return weight(board, turn_col);
@@ -129,7 +129,7 @@ namespace chess
         return alpha;
     }
 
-    float chesscomputer::computer_move_min(chessboard &board, color_e turn_col, float _alpha, float _beta, int rec)
+    float chesscomputer::computer_move_min(chessboard &board, color_e turn_col, float _alpha, float _beta, int32_t rec)
     {
         if ((rec == 0) || (m_cancel))
             return -1.0f * weight(board, turn_col);
