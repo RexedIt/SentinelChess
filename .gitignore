@@ -1,4 +1,10 @@
+/.gitignore.bak
+*.zip
 /C++/build
+/C++/**/Debug/
+/C++/**/x64/
+/C++/.vs
+/C++/**/*.user
 /C++/SentinelGodot/.sconsign.dblite
 /.vs
 /Assets

@@ -68,10 +68,52 @@ namespace chess
             return "Cannot add over an existing king";
         case e_invalid_reference:
             return "Invalid Reference";
+        case e_invalid_player:
+            return "Invalid Player";
+        case e_player_already_registered:
+            return "Player already registered";
+        case e_no_game:
+            return "No Game";
+        case e_interrupted:
+            return "Interrupted";
+        case e_invalid_move_needs_promote:
+            return "Invalid Move, needs Promote piece set";
         default:
             return "Unknown Error";
         }
     }
+
+    std::vector<std::string> playertypes()
+    {
+        std::vector<std::string> ret;
+        ret.push_back("Console");
+        ret.push_back("Computer");
+        return ret;
+    }
+
+    chessplayertype_e playertypefromstring(std::string p)
+    {
+        std::string pu = uppercase(p);
+        if (pu == "CONSOLE")
+            return t_console;
+        if (pu == "COMPUTER")
+            return t_computer;
+        return t_none;
+    }
+
+    std::string playertypetostring(chessplayertype_e p)
+    {
+        switch (p)
+        {
+        case t_console:
+            return "Console";
+        case t_computer:
+            return "Computer";
+        default:
+            return "None";
+        }
+    }
+
     std::string move_s::to_string()
     {
         std::string s = "";
@@ -93,7 +135,7 @@ namespace chess
 
     bool move_s::is_valid()
     {
-        return (p0.y != -1);
+        return ((p0.y != -1) && (error == e_none));
     }
 
     void move_s::invalidate()
@@ -105,7 +147,7 @@ namespace chess
         cx = -1;
         en_passant = false;
         promote = p_none;
-        terminal = false;
+        error = e_none;
     }
 
     bool move_s::matches(const move_s &m)
@@ -231,6 +273,28 @@ namespace chess
         return cmdu;
     }
 
+    const char *ws = " \t\n\r\f\v";
+
+    // trim from end of string (right)
+    inline std::string rtrim(std::string s, const char *t = ws)
+    {
+        s.erase(s.find_last_not_of(t) + 1);
+        return s;
+    }
+
+    // trim from beginning of string (left)
+    inline std::string ltrim(std::string s, const char *t = ws)
+    {
+        s.erase(0, s.find_first_not_of(t));
+        return s;
+    }
+
+    // trim from both ends of string (right then left)
+    inline std::string trim(std::string s, const char *t = ws)
+    {
+        return ltrim(rtrim(s, t), t);
+    }
+
     std::vector<std::string> split_string(std::string cmd, char div)
     {
         std::vector<std::string> ret;
@@ -238,12 +302,12 @@ namespace chess
         size_t pos = rem.find(div);
         while (pos != std::string::npos)
         {
-            ret.push_back(rem.substr(0, pos));
+            ret.push_back(trim(rem.substr(0, pos)));
             rem = rem.substr(pos + 1);
             pos = rem.find(div);
         }
         if (rem != "")
-            ret.push_back(rem);
+            ret.push_back(trim(rem));
         return ret;
     }
 

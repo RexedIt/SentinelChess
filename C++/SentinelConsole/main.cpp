@@ -5,9 +5,8 @@
 #include <chrono>
 #include <thread>
 
-#include "chessgame.h"
-#include "chesspiece.h"
-#include "chesscache.h"
+#include "chesslobby.h"
+// #include "chesspiece.h"
 #include "console.h"
 
 using namespace chess;
@@ -15,6 +14,12 @@ using namespace chess;
 bool print_error(error_e num)
 {
     std::cout << "ERROR: " << errorstr(num) << std::endl;
+    return false;
+}
+
+bool print_error(std::string msg)
+{
+    std::cout << "ERROR: " << msg << std::endl;
     return false;
 }
 
@@ -31,6 +36,11 @@ std::vector<std::string> get_args(std::string cmdu)
     return split_string(get_arg(cmdu), ' ');
 }
 
+std::vector<std::string> get_args(std::string cmdu, char sep)
+{
+    return split_string(cmdu, sep);
+}
+
 bool get_move(std::string cmdu, coord_s &p0, coord_s &p1)
 {
     size_t pos = cmdu.find('-');
@@ -42,12 +52,13 @@ bool get_move(std::string cmdu, coord_s &p0, coord_s &p1)
     return true;
 }
 
-bool load_game(std::string cmd, chessgame &game)
+/*
+bool load_game(std::string cmd, chesslobby &lobby)
 {
     std::string filename = get_arg(cmd);
     if (filename == "")
         return print_error(e_missing_filename);
-    if (game.load_game(filename) != e_none)
+    if (lobby.load_game(filename) != e_none)
         return print_error(e_loading);
     return true;
 }
@@ -61,110 +72,67 @@ bool save_game(std::string cmd, chessgame &game)
         return print_error(e_saving);
     return true;
 }
+*/
 
-bool get_new_game_options(color_e &my_col, std::string &coll, int &level)
+bool add_player(chesslobby &lobby, color_e color)
 {
-    std::cout << "\r\nBlack or White (default)? ";
-    std::string mycolor;
-    std::getline(std::cin, mycolor);
-    if (mycolor == "")
+    while (true)
+    {
+        std::cout << color_str(color) << " Player: ";
+        std::string cmd;
+        std::getline(std::cin, cmd);
+        std::vector<std::string> args = get_args(cmd, ',');
+        if (args.size() == 0)
+            return false;
+        if (args.size() != 3)
+            continue;
+        std::string name = args[0];
+        int skill = atoi(args[1].c_str());
+        if ((skill < 0) || (skill > 2000))
+        {
+            print_error("Skill must be 0-2000");
+            continue;
+        }
+        std::string ptype = uppercase(args[2]);
+        chessplayertype_e t = playertypefromstring(ptype);
+        if (t == p_none)
+        {
+            print_error("Invalid Player Type");
+            continue;
+        }
+        if (lobby.add_player(color, name, skill, t) != e_none)
+        {
+            print_error("Error adding player");
+            return false;
+        }
+        return true;
+    }
+}
+
+bool add_players(chesslobby &lobby)
+{
+    std::cout << "\r\nWelcome to lame-ass console chess!!!\r\n\r\n";
+    std::cout << "Enter Player Options: name, skill, type" << std::endl;
+    std::cout << "where skill is 0-2000 and type can be" << std::endl;
+    std::cout << "either console or computer\r\n" << std::endl;
+    if (!add_player(lobby, c_white))
         return false;
-    std::string colu = uppercase(mycolor);
-    coll = colu.substr(0, 1);
-    if (coll == "B")
-        my_col = c_black;
-    coll = color_str(my_col);
-    std::cout << "Level (1-5)? ";
-    std::string mylevel;
-    std::getline(std::cin, mylevel);
-    if (mylevel == "")
-        return false;
-    level = atoi(mylevel.c_str());
-    if ((level < 1) || (level > 5))
+    if (!add_player(lobby, c_black))
         return false;
     return true;
 }
 
-error_e computer_move(color_e &turn_col, chessgame &g, bool sync = false)
-{
-    std::cout << "Computer Turn" << std::endl;
-    stopwatch s;
-    // Synchronous
-    error_e ret = e_none;
-    if (sync)
-    {
-        ret = g.computer_move(turn_col);
-    }
-    else
-    {
-        ret = g.computer_move_async(turn_col);
-        // Simulate
-        while (g.computer_moving())
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-    std::cout << s.elapsed_str() << " " << cache_stats() << std::endl;
-    std::cout << std::endl;
-    return e_none;
-}
-
-// *** Callbacks ***
-void draw_board(int n, chessboard &b)
-{
-    board_to_console(n, b);
-}
-
-void draw_move(int n, move_s &m, color_e c)
-{
-    move_to_console(m, color_str(c));
-}
-
-void game_over(game_state_e state, color_e win_color)
-{
-    std::cout << "\r\n**** Game Over! ";
-    if (win_color == c_none)
-        std::cout << "Stalemate! ";
-    else
-        std::cout << color_str(win_color) + " Wins! ";
-    std::cout << "****" << std::endl;
-}
-
-void computer_moved(int n, chessturn_s &t)
-{
-    board_to_console(n, t.b);
-    move_to_console(t.m, color_str(t.c));
-}
-
-piece_e request_promote_piece()
-{
-    piece_e promote = p_queen;
-    std::cout << "Q = Queen, (default) R = Rook, B = Bishop, K = Knight? ";
-    std::string pcu;
-    std::getline(std::cin, pcu);
-    pcu = uppercase(pcu).substr(0, 1);
-    if (pcu == "R")
-        promote = p_rook;
-    if (pcu == "B")
-        promote = p_bishop;
-    if (pcu == "K")
-        promote = p_knight;
-    return promote;
-}
-
-void thinking(move_s m, int pct)
-{
-    std::cout << ".";
-}
-
-void traces(std::string msg)
-{
-    std::cout << msg;
-}
-
-// *** End Callbacks ***
-
 int main(void)
 {
 
+    chesslobby lobby;
+
+    if (!add_players(lobby))
+    {
+        print_error("Exiting");
+        exit(EXIT_FAILURE);
+    }
+    /*
     chessgame game;
 
     game.set_callbacks(
@@ -242,7 +210,7 @@ int main(void)
         if ((cmdu == "?") || (cmdu == "HELP") || (cmdu == "H"))
         {
             std::cout << "Commands: NEW LOAD or L [FileName] SAVE or S [FileName] QUIT or Q MOVE or M [XX-XX]" << std::endl;
-            std::cout << "Also SAVE CACHE, < [Turn], REMOVE or R [XX], and TRACE or T [RecLvl]" << std::endl;
+            std::cout << "Also < [Turn], REMOVE or R [XX], and TRACE or T [RecLvl]" << std::endl;
             continue;
         }
         if (cmdl == "N")
@@ -265,11 +233,6 @@ int main(void)
                 comp_col = other(turn_col);
                 continue;
             }
-        }
-        else if (cmdu == "SAVE CACHE")
-        {
-            std::cout << "Saving Cache..." << std::endl;
-            save_cache();
         }
         else if (cmdl == "S")
         {
@@ -375,7 +338,7 @@ int main(void)
             coord_s p0, p1;
             if (!get_move(cmdu, p0, p1))
                 continue;
-            if (game.user_move(my_col, p0, p1) != e_none)
+            if (game.move(my_col, p0, p1) != e_none)
             {
                 print_error(e_invalid_move);
                 continue;
@@ -389,4 +352,5 @@ int main(void)
             turn_col = comp_col;
         }
     }
+    */
 }

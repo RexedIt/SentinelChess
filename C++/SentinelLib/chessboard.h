@@ -26,7 +26,7 @@ namespace chess
         chessboard();
         chessboard(chessboard &other);
 
-        void copy(chessboard &other);
+        void copy(const chessboard &other);
         error_e load(std::ifstream &is);
         error_e save(std::ofstream &os);
 
@@ -35,7 +35,7 @@ namespace chess
         error_e load_xfen(std::string);
 
         // The board weight or value for the supplied color
-        weight_metric_s weight(color_e col);
+        board_metric_s board_metric(color_e col);
 
         unsigned char get(int8_t y, int8_t x);
         unsigned char get(coord_s c);
@@ -44,8 +44,8 @@ namespace chess
         bool find_piece(piece_e pc, color_e col, coord_s &c);
 
         // User Move
-        move_s user_move(color_e col, move_s m);
-        move_s user_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
+        move_s attempt_move(color_e col, move_s m);
+        move_s attempt_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
         std::vector<move_s> possible_moves(color_e col);
 
         // Best Move
@@ -67,7 +67,12 @@ namespace chess
         void cancel(bool c) { m_cancel = c; }
         void trace(std::string msg);
 
+        friend class chesscomputer;
+
     protected:
+        // Move
+        move_s execute_move(const move_s &m);
+
         unsigned char m_cells[8][8];
         unsigned char m_castled_left;
         unsigned char m_castled_right;
@@ -90,8 +95,6 @@ namespace chess
 
         void evaluate_check_and_mate(color_e col, std::vector<move_s> &possible, move_s &m);
 
-        // Move
-        move_s move(const move_s &m);
         // move_s computer_move(std::vector<move_s> &possible, color_e col, coord_s p0, int rec, bool root = true);
         float computer_move_max(color_e turn_col, float alpha, float beta, int rec);
         float computer_move_min(color_e turn_col, float alpha, float beta, int rec);

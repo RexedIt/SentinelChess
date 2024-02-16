@@ -36,7 +36,12 @@ namespace chess
         e_cannot_add_another_king,
         e_cannot_remove_a_king,
         e_cannot_add_over_king,
-        e_invalid_reference
+        e_invalid_reference,
+        e_invalid_player,
+        e_player_already_registered,
+        e_no_game,
+        e_interrupted,
+        e_invalid_move_needs_promote
     } error_e;
 
     std::string errorstr(error_e num);
@@ -44,16 +49,40 @@ namespace chess
     class chessboard;
     struct move_s;
 
+    typedef enum chessplayertype_e
+    {
+        // these are used to construct players so any class representation is
+        // good.  Note the types in this file are not created directly
+        t_none,
+        t_console,
+        t_computer
+    } chessplayertype_e;
+
+    std::vector<std::string> playertypes();
+    chessplayertype_e playertypefromstring(std::string);
+    std::string playertypetostring(chessplayertype_e);
+
     typedef enum piece_e
     {
         p_none = 0,
         p_pawn = 1,
-        p_bishop = 3,
-        p_knight = 4,
-        p_rook = 5,
-        p_queen = 8,
-        p_king = 15
+        p_bishop = 2,
+        p_knight = 3,
+        p_rook = 4,
+        p_queen = 5,
+        p_king = 6
     } piece_e;
+
+    const int piece_default_weights[] =
+        {
+            0,  // no piece
+            10, // pawn
+            30, // bishop
+            30, // knight
+            50, // rook
+            90, // queen
+            900 // king
+    };
 
     typedef enum color_e // a mask
     {
@@ -62,18 +91,13 @@ namespace chess
         c_black = 32
     } color_e;
 
-    const unsigned char piece_mask = 15;
+    const unsigned char piece_mask = 7;
+    const unsigned char unused_mask = 8;
     const unsigned char color_mask = 48;
     const unsigned char piece_and_color_mask = 63;
     const unsigned char white_kill_mask = 64;
     const unsigned char black_kill_mask = 128;
     const unsigned char color_kill_mask_mult = 4;
-    const int16_t request_promote = -1;
-
-    const float piece_weight = 1.0f;
-    const float kill_count_weight = 0.025f;
-    const float board_position_weight = 0.05f;
-    const int check_points = 60;
 
 #pragma pack(push, 1)
 
@@ -102,7 +126,6 @@ namespace chess
         move_s()
         {
             promote = p_none;
-            terminal = false;
         }
         move_s(coord_s _p0, coord_s _p1, int8_t _cx = -1, bool _en_passant = false)
         {
@@ -111,27 +134,22 @@ namespace chess
             cx = _cx;
             en_passant = _en_passant;
             promote = p_none;
-            terminal = false;
         }
         move_s(coord_s _p0, coord_s _p1, piece_e _promote)
         {
             p0 = _p0;
             p1 = _p1;
             promote = _promote;
-            terminal = false;
         }
         coord_s p0;
         coord_s p1;
         int8_t cx = -1;
-        float weight = -999;
         // Packed data - we want to hit 16 exactly
         int8_t promote;
-        bool cache = false;
         bool en_passant = false;
         bool check = false;
         bool mate = false;
-        // bit masked fields need to be init in constructor
-        bool terminal : 1;
+        error_e error = e_none;
         // Note our total struct size must hit 16 for some reason
         std::string to_string();
         bool is_valid();
@@ -139,36 +157,36 @@ namespace chess
         bool matches(const move_s &);
     } move_s;
 
-    typedef struct weight_metric_s
+    typedef struct board_metric_s
     {
-        weight_metric_s()
+        board_metric_s()
         {
-            weight = 0;
-            pc = 0;
             kc = 0;
             bp = 0;
+            ch = false;
+            och = false;
+            for (int i = 0; i < 7; i++)
+                pc[i] = opc[i] = 0;
         }
-        weight_metric_s(float _w, int _pc, int _kc, int _bp)
-        {
-            weight = _w;
-            pc = _pc;
-            kc = _kc;
-            bp = _bp;
-        }
-        float weight;
-        int pc;
-        int kc;
-        int bp;
-    } weight_metric_s;
+        int8_t pc[7];  // Piece Count, own Color
+        int8_t opc[7]; // Piece Count, other color
+        int kc;        // Kill Coverage
+        int bp;        // Board Position
+        bool ch;       // Me in Check
+        bool och;      // Opponent in Check
+    } board_metric_s;
 
 #pragma pack(pop)
 
     typedef enum game_state_e
     {
+        none_e = -1,
         play_e = 0,
         checkmate_e = 1,
         stalemate_e = 2,
-        forfeit_e = 3
+        forfeit_e = 3,
+        time_e = 4,
+        terminate_e = 5
     } game_state_e;
 
     game_state_e is_game_over(color_e col, move_s &m);

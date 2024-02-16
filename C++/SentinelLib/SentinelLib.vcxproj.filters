@@ -2,18 +2,24 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="chessboard.cpp" />
-    <ClCompile Include="chesscache.cpp" />
     <ClCompile Include="chesscommon.cpp" />
     <ClCompile Include="chessgame.cpp" />
     <ClCompile Include="chesspiece.cpp" />
     <ClCompile Include="chessturn.cpp" />
+    <ClCompile Include="chesscomputer.cpp" />
+    <ClCompile Include="chessconsole.cpp" />
+    <ClCompile Include="chesslobby.cpp" />
+    <ClCompile Include="chessplayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="chessboard.h" />
-    <ClInclude Include="chesscache.h" />
     <ClInclude Include="chesscommon.h" />
     <ClInclude Include="chessgame.h" />
     <ClInclude Include="chesspiece.h" />
     <ClInclude Include="chessturn.h" />
+    <ClInclude Include="chesscomputer.h" />
+    <ClInclude Include="chessconsole.h" />
+    <ClInclude Include="chesslobby.h" />
+    <ClInclude Include="chessplayer.h" />
   </ItemGroup>
 </Project>

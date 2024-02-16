@@ -1,6 +1,5 @@
 #include "chessboard.h"
 #include "chesspiece.h"
-#include "chesscache.h"
 #include "chessturn.h"
 
 #include <memory.h>
@@ -36,7 +35,7 @@ namespace chess
         copy(other);
     }
 
-    void chessboard::copy(chessboard &other)
+    void chessboard::copy(const chessboard &other)
     {
         memcpy(&m_cells, other.m_cells, sizeof(m_cells));
         m_castled_left = other.m_castled_left;
@@ -266,15 +265,12 @@ namespace chess
                 m_cells[i][j] = 0;
     }
 
-    weight_metric_s chessboard::weight(color_e col)
+    board_metric_s chessboard::board_metric(color_e col)
     {
-        int pc = 0;
-        int bp = 0;
-        int kc = 0;
+        board_metric_s bm;
+
         color_e enemy_col = other(col);
         unsigned char kill_mask = col * color_kill_mask_mult;
-
-        bp = 0;
 
         for (int8_t y = 0; y < 8; y++)
         {
@@ -285,28 +281,25 @@ namespace chess
                 {
                     if (m_cells[y][x] & col)
                     {
-                        pc += (piece);
-                        bp += (col == c_white) ? y + 1 : 8 - y;
+                        bm.pc[piece]++;
+                        bm.bp += (col == c_white) ? y + 1 : 8 - y;
                     }
                     else if (m_cells[y][x] & enemy_col)
                     {
-                        pc -= (piece);
-                        bp -= (enemy_col == c_white) ? y + 1 : 8 - y;
+                        bm.opc[piece]++;
+                        bm.bp -= (enemy_col == c_white) ? y + 1 : 8 - y;
                     }
                 }
                 if ((m_cells[y][x] & kill_mask) == kill_mask)
-                    kc++;
+                    bm.kc++;
             }
         }
 
-        float ret = ((float)pc) * piece_weight +
-                    ((float)kc) * kill_count_weight +
-                    ((float)bp) * board_position_weight;
+        // opponent king capture?
+        bm.ch = m_check[col];
+        bm.och = m_check[other(col)];
 
-        if (m_king_pos.count(other(col)) == 0)
-            ret += check_points;
-
-        return weight_metric_s(ret, pc, kc, bp);
+        return bm;
     }
 
     unsigned char chessboard::get(coord_s s)
@@ -361,7 +354,7 @@ namespace chess
         for (size_t i = 0; i < possible.size(); i++)
         {
             chessboard b(*this);
-            b.move(possible[i]);
+            b.execute_move(possible[i]);
             if (!b.find_check(col))
             {
                 m = possible[i];
@@ -410,13 +403,13 @@ namespace chess
         if (m.is_valid())
         {
             chessboard b(*this);
-            m = b.move(m);
+            m = b.execute_move(m);
         }
         m.mate = true;
         for (size_t i = 0; i < possible.size(); i++)
         {
             chessboard b(*this);
-            b.move(possible[i]);
+            b.execute_move(possible[i]);
             if (!b.find_check(col))
             {
                 m.mate = false;
@@ -445,9 +438,10 @@ namespace chess
         return m_turn;
     }
 
-    move_s chessboard::user_move(color_e col, move_s m)
+    move_s chessboard::attempt_move(color_e col, move_s m)
     {
         move_s empty;
+        empty.error = e_invalid_move;
         coord_s p0 = m.p0;
         coord_s p1 = m.p1;
         if ((!in_range(p0)) || (!in_range(p1)))
@@ -465,8 +459,8 @@ namespace chess
         int ptarget = (col == c_white) ? 7 : 0;
         if ((p.ptype == p_pawn) && (p1.y == ptarget) && (m.promote == p_none))
         {
-            m.promote = request_promote; // special flag to request
-            return m;
+            empty.error = e_invalid_move_needs_promote;
+            return empty;
         }
         // Castling etc?
         // For this we have to evaluate all possible moves
@@ -476,17 +470,34 @@ namespace chess
         if (m.is_valid())
         {
             if (m.check)
+            {
+                m.error = e_check;
                 return m;
+            }
             m_turn = other(col);
-            return move(m);
+            return execute_move(m);
         }
         return empty;
     }
 
-    move_s chessboard::user_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
+    move_s chessboard::attempt_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
     {
         move_s m(p0, p1, promote);
-        return user_move(col, m);
+        return attempt_move(col, m);
+    }
+
+    // *** MUST GO ***
+    float weight(board_metric_s bm)
+    {
+        const float kc_weight = 0.25f;
+        const float bp_weight = 0.5f;
+        int pw = 0;
+        for (int i = 0; i < 7; i++)
+            pw += bm.pc[i] * piece_default_weights[i] -
+                  bm.opc[i] * piece_default_weights[i];
+        return ((float)pw) +
+               ((float)bm.kc) * kc_weight +
+               ((float)bm.bp) * bp_weight;
     }
 
     error_e chessboard::suggest_move(move_s m)
@@ -501,45 +512,33 @@ namespace chess
         move_s best;
         m_turn = turn_col;
         std::vector<move_s> possible = possible_moves(turn_col);
-        // Suggested move?
-        if (m_suggestion.is_valid())
+        // Figure move?
+        float alpha = -9999;
+        float beta = 9999;
+        for (size_t i = 0; i < possible.size(); i++)
         {
-            best = m_suggestion;
-            m_suggestion.invalidate();
-        }
-        else
-        {
-            // Figure move?
-            float alpha = -999;
-            float beta = 999;
-            for (size_t i = 0; i < possible.size(); i++)
+            if (m_cancel)
+                return best;
+            chessboard b(*this);
+            move_s candidate = b.execute_move(possible[i]);
+            float score = b.computer_move_min(other(turn_col), alpha, beta, rec - 1);
+            if (score >= beta)
             {
-                if (m_cancel)
-                    return best;
-                chessboard b(*this);
-                move_s candidate = b.move(possible[i]);
-                float score = b.computer_move_min(other(turn_col), alpha, beta, rec - 1);
-                candidate.weight = score;
-                if (score >= beta)
-                {
-                    candidate.weight = beta;
-                    best = candidate;
-                    break;
-                }
-                else if (score > alpha)
-                {
-                    candidate.weight = alpha;
-                    best = candidate;
-                    alpha = score;
-                }
-                thinking(candidate, i * 100 / possible.size());
+                best = candidate;
+                break;
             }
+            else if (score > alpha)
+            {
+                best = candidate;
+                alpha = score;
+            }
+            thinking(candidate, i * 100 / possible.size());
         }
         evaluate_check_and_mate(turn_col, possible, best);
         if (best.is_valid())
         {
             m_turn = other(m_turn);
-            best = move(best);
+            best = execute_move(best);
         }
         return best;
     }
@@ -547,7 +546,7 @@ namespace chess
     float chessboard::computer_move_max(color_e turn_col, float _alpha, float _beta, int rec)
     {
         if ((rec == 0) || (m_cancel))
-            return weight(turn_col).weight;
+            return weight(board_metric(turn_col));
         float alpha = _alpha;
         float beta = _beta;
         std::vector<move_s> possible = possible_moves(turn_col);
@@ -555,7 +554,7 @@ namespace chess
         {
             chessboard b(*this);
             // Execute the move
-            b.move(possible[i]);
+            b.execute_move(possible[i]);
             float score = b.computer_move_min(other(turn_col), alpha, beta, rec - 1);
             if (score >= beta)
                 return beta;
@@ -568,7 +567,7 @@ namespace chess
     float chessboard::computer_move_min(color_e turn_col, float _alpha, float _beta, int rec)
     {
         if ((rec == 0) || (m_cancel))
-            return -1.0f * weight(turn_col).weight;
+            return -1.0f * weight(board_metric(turn_col));
         float alpha = _alpha;
         float beta = _beta;
         std::vector<move_s> possible = possible_moves(turn_col);
@@ -576,7 +575,7 @@ namespace chess
         {
             chessboard b(*this);
             // Execute the move
-            b.move(possible[i]);
+            b.execute_move(possible[i]);
             float score = b.computer_move_max(other(turn_col), alpha, beta, rec - 1);
             if (score <= alpha)
                 return alpha;
@@ -585,6 +584,7 @@ namespace chess
         }
         return beta;
     }
+    // *** MUST GO ***
 
     std::vector<move_s> chessboard::possible_moves(color_e turn_col)
     {
@@ -651,7 +651,7 @@ namespace chess
         m_kill_updated = true;
     }
 
-    move_s chessboard::move(const move_s &m0)
+    move_s chessboard::execute_move(const move_s &m0)
     {
         move_s m1 = m0;
         chesspiece piece(m_cells[m0.p0.y][m0.p0.x]);
@@ -708,7 +708,8 @@ namespace chess
 
         m_hash = 0;
         m1.check = m_check[piece.color];
-        m1.terminal = m_king_pos.count(other(piece.color)) == 0;
+        if (m1.check)
+            m1.error = e_check;
 
         m_fullmove++;
         return m1;
