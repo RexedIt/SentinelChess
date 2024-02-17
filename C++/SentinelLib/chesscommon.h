@@ -199,6 +199,7 @@ namespace chess
     game_state_e is_game_over(color_e col, move_s &m);
     bool contains_move(std::vector<move_s> possible_moves, move_s &m, bool inherit = false);
     std::string color_str(color_e col);
+    std::string game_state_str(game_state_e g);
     std::string coord_str(coord_s c);
     bool coord_int(std::string s, coord_s &c);
     bool in_range(int8_t y, int8_t x);

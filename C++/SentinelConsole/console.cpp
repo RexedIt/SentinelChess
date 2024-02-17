@@ -35,12 +35,12 @@ std::string colorchar(int bkgnd, int fgnd, std::string s)
     return res + s + "\x1b[0m";
 }
 
-void board_to_console(int n, chess::chessboard &b)
+void board_to_console(int n, chess::chessboard &b, bool r)
 {
     std::cout << "\r\n--- #" << n << " --------------------\r\n"
               << std::endl;
 
-    if (b.turn_color()==c_white)
+    if ((b.turn_color() == c_white) || (r == false))
     {
         std::cout << colorchar(ansi_black, ansi_light_blue, "    A  B  C  D  E  F  G  H\r\n") << std::endl;
         for (int i = 7; i >= 0; i--)
@@ -61,7 +61,7 @@ void board_to_console(int n, chess::chessboard &b)
     else
     {
         std::cout << colorchar(ansi_black, ansi_light_blue, "    H  G  F  E  D  C  B  A\r\n") << std::endl;
-        for (int i = 0; i <=7; i++)
+        for (int i = 0; i <= 7; i++)
         {
             std::cout << colorchar(ansi_black, ansi_light_blue, std::to_string(i + 1) + "  ");
             for (int j = 7; j >= 0; j--)

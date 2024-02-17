@@ -16,7 +16,10 @@ namespace chess
         if (p_listener)
             mp_game->listen(p_listener);
         else
-            mp_game->unlisten(cl_user);
+        {
+            if (mp_listener)
+                mp_game->unlisten(mp_listener->id());
+        }
         mp_listener = p_listener;
     }
 
@@ -31,6 +34,7 @@ namespace chess
 
     error_e chesslobby::new_game()
     {
+        attach_to_game();
         return mp_game->new_game();
     }
 
@@ -38,15 +42,12 @@ namespace chess
     {
         if (mp_listener)
             mp_game->listen(mp_listener);
-        else
-            mp_game->unlisten(cl_user);
         for (const auto &kv : mp_players)
             kv.second->set_game(mp_game);
     }
 
     void chesslobby::detach_from_game()
     {
-        mp_game->unlisten(cl_user);
         for (const auto &kv : mp_players)
             kv.second->set_game(NULL);
     }
@@ -60,13 +61,13 @@ namespace chess
         if (err != e_none)
             return restore(err);
 
+        // create game object early
+        mp_game = std::shared_ptr<chessgame>(new chessgame());
+
         // Create a computer matchup
         err = add_player(other(user_color), "Computer", skill, t_computer);
         if (err != e_none)
             return restore(err);
-
-        mp_game = std::shared_ptr<chessgame>(new chessgame());
-        attach_to_game();
 
         err = mp_game->new_game();
         if (err != e_none)
@@ -92,15 +93,16 @@ namespace chess
                 is.close();
                 return restore(e_loading);
             }
+
+            mp_game = std::shared_ptr<chessgame>(new chessgame());
+            attach_to_game();
+
             error_e err = load_players(is);
             if (err != e_none)
             {
                 is.close();
                 return restore(err);
             }
-
-            mp_game = std::shared_ptr<chessgame>(new chessgame());
-            set_listener(mp_listener);
 
             err = mp_game->load_game(is);
             is.close();
@@ -149,11 +151,19 @@ namespace chess
         switch (ptype)
         {
         case t_human:
-            mp_players[color] = std::shared_ptr<chessplayer>(new chessplayer(name, skill));
+        {
+            std::shared_ptr<chessplayer> p_chessplayer(new chessplayer(color, name, skill, t_human));
+            mp_players[color] = p_chessplayer;
             return e_none;
+        }
         case t_computer:
-            mp_players[color] = std::shared_ptr<chesscomputer>(new chesscomputer("Computer", skill));
+        {
+            std::shared_ptr<chesscomputer> p_chesscomputer(new chesscomputer(color, name, skill));
+            // if the type is a listener, do this
+            mp_game->listen(p_chesscomputer);
+            mp_players[color] = p_chesscomputer;
             return e_none;
+        }
         }
         return e_player_not_created;
     }

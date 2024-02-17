@@ -149,6 +149,26 @@ namespace chess
         return "None";
     }
 
+    std::string game_state_str(game_state_e g)
+    {
+        switch (g)
+        {
+        case play_e:
+            return "Play";
+        case checkmate_e:
+            return "CheckMate";
+        case stalemate_e:
+            return "Stalemate";
+        case forfeit_e:
+            return "Forfeit";
+        case time_e:
+            return "Time";
+        case terminate_e:
+            return "Terminated";
+        }
+        return "None";
+    }
+
     std::string coord_str(coord_s s)
     {
         char pos[3];
@@ -321,5 +341,4 @@ namespace chess
     {
         return (unsigned char)std::stoi(line, 0, 16);
     }
-
 }

@@ -16,8 +16,9 @@ namespace chess
         m_name = "Computer";
     }
 
-    chesscomputer::chesscomputer(std::string name, int32_t skill)
+    chesscomputer::chesscomputer(color_e color, std::string name, int32_t skill)
     {
+        m_color = color;
         m_level = skill / 500 + 2;
         if (m_level < 1)
             m_level = 1;
@@ -26,6 +27,7 @@ namespace chess
         m_cancel = false;
         m_playertype = t_computer;
         m_listenertype = cl_computer;
+        m_thread_running = false;
         m_name = name;
         m_skill = skill;
     }
@@ -88,7 +90,10 @@ namespace chess
         for (size_t i = 0; i < possible.size(); i++)
         {
             if (m_cancel)
+            {
+                m_thread_running = false;
                 return e_interrupted;
+            }
             chessboard b(board);
             move_s candidate = b.execute_move(possible[i]);
             float score = computer_move_min(b, other(m_color), alpha, beta, rec - 1);
@@ -102,12 +107,14 @@ namespace chess
                 best = candidate;
                 alpha = score;
             }
-            signal_on_consider(candidate, m_color, (int8_t)(i * 100 / possible.size()));
+            consider(candidate, (int8_t)(i * 100 / possible.size()));
         }
         // We will need to do this in the game move function now. evaluate_check_and_mate(m_color, possible, best);
-        if ((best.is_valid()) && (mp_game != NULL))
-            return mp_game->move(m_color, best);
-        return e_no_game;
+        error_e err = e_none;
+        if (best.is_valid())
+            err = move(best);
+        m_thread_running = false;
+        return err;
     }
 
     float chesscomputer::computer_move_max(chessboard &board, color_e turn_col, float _alpha, float _beta, int32_t rec)

@@ -3,6 +3,8 @@
 namespace chess
 {
 
+    int id_ctr = 0;
+
     chessevent::chessevent(const chessevent &e)
     {
         etype = e.etype;
@@ -19,6 +21,7 @@ namespace chess
     chessgamelistener::chessgamelistener(chessgamelistenertype listenertype)
     {
         m_listenertype = listenertype;
+        m_id = ++id_ctr;
     }
 
     chessgamelistener::~chessgamelistener()
@@ -28,6 +31,11 @@ namespace chess
     chessgamelistenertype chessgamelistener::listenertype()
     {
         return m_listenertype;
+    }
+
+    int chessgamelistener::id()
+    {
+        return m_id;
     }
 
     chessgamelistener_direct::chessgamelistener_direct(

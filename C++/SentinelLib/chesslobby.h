@@ -4,6 +4,8 @@
 #include "chessgamelistener.h"
 #include "chessplayer.h"
 
+#include <mutex>
+
 namespace chess
 {
 

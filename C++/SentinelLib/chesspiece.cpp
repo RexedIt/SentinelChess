@@ -392,7 +392,7 @@ namespace chess
         calc_single_move(possible, p0, 1, 1, cells);
         // Can we castle left?
         if ((castled_left & color) == 0)
-            if (castle_path(p0, p0.y, 2, cells))
+            if (castle_path(p0, p0.y, 1, cells))
                 possible.push_back(new_move(p0, coord_s(p0.y, 2), 0));
         // How about right?
         if ((castled_right & color) == 0)
@@ -417,12 +417,11 @@ namespace chess
         int8_t dx = x1 - p0.x < 0 ? -1 : 1;
         int8_t x = p0.x;
         int8_t y = p0.y;
-        // Check for check
-        if ((cells[y][x] & kill_mask) == kill_mask)
-            return false;
         unsigned char allowed = 255 - kill_mask;
         while (true)
         {
+            if ((cells[y][x] & kill_mask) == kill_mask)
+                return false;
             x += dx;
             if ((cells[y][x] & allowed) != 0)
                 return false;

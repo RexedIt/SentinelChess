@@ -42,11 +42,12 @@ namespace chess
         m_skill = 0;
     }
 
-    chessplayer::chessplayer(std::string name, int32_t skill)
+    chessplayer::chessplayer(color_e color, std::string name, int32_t skill, chessplayertype_e _type)
     {
+        m_color = color;
         m_name = name;
         m_skill = skill;
-        m_playertype = t_none;
+        m_playertype = _type;
         mp_game = NULL;
     }
 
@@ -88,7 +89,7 @@ namespace chess
     error_e chessplayer::forfeit()
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        if (mp_game != NULL)
+        if (mp_game == NULL)
             return e_no_game;
         return mp_game->forfeit(m_color);
     }
@@ -96,7 +97,7 @@ namespace chess
     error_e chessplayer::move(move_s m0)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        if (mp_game != NULL)
+        if (mp_game == NULL)
             return e_no_game;
         return mp_game->move(m_color, m0);
     }
@@ -104,7 +105,7 @@ namespace chess
     error_e chessplayer::move(coord_s p0, coord_s p1, piece_e promote)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        if (mp_game != NULL)
+        if (mp_game == NULL)
             return e_no_game;
         return mp_game->move(m_color, p0, p1, promote);
     }
@@ -112,7 +113,7 @@ namespace chess
     chessboard chessplayer::board()
     {
         chessboard b;
-        if (mp_game != NULL)
+        if (mp_game == NULL)
             b.copy(mp_game->board());
         return b;
     }
@@ -131,6 +132,16 @@ namespace chess
         if (mp_game != NULL)
         {
             mp_game->chat(msg, m_color);
+            return e_none;
+        }
+        return e_no_game;
+    }
+
+    error_e chessplayer::consider(move_s &m, int8_t p)
+    {
+        if (mp_game != NULL)
+        {
+            mp_game->consider(m, m_color, p);
             return e_none;
         }
         return e_no_game;

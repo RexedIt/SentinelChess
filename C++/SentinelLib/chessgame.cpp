@@ -243,16 +243,16 @@ namespace chess
         std::lock_guard<std::mutex> guard(m_mutex);
         if (plistener == NULL)
             return e_invalid_listener;
-        chessgamelistenertype listenertype = plistener->listenertype();
-        mp_listeners[listenertype] = plistener;
+        int id = plistener->id();
+        mp_listeners[id] = plistener;
         return e_none;
     }
 
-    error_e chessgame::unlisten(chessgamelistenertype listenertype)
+    error_e chessgame::unlisten(int id)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        if (mp_listeners.count(listenertype))
-            mp_listeners.erase(listenertype);
+        if (mp_listeners.count(id))
+            mp_listeners.erase(id);
         return e_none;
     }
 
@@ -267,6 +267,12 @@ namespace chess
     error_e chessgame::chat(std::string msg, color_e col)
     {
         signal_chat(msg, col);
+        return e_none;
+    }
+
+    error_e chessgame::consider(move_s &m, color_e c, int8_t p)
+    {
+        signal_on_consider(m, c, p);
         return e_none;
     }
 

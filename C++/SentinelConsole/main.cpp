@@ -9,6 +9,7 @@
 #include "chesslobby.h"
 #include "console.h"
 #include "chessplayer.h"
+#include "chesspiece.h"
 
 using namespace chess;
 
@@ -57,14 +58,14 @@ bool get_move(std::string cmdu, coord_s &p0, coord_s &p1)
 std::shared_ptr<chessgame> p_game = NULL;
 std::set<color_e> humans;
 std::set<color_e> computers;
-color_e last_went = c_none;
+color_e whose_turn = c_none;
+std::string prompt;
 
 void refresh_data(chesslobby &lobby)
 {
     bool set_cb = false;
     humans.clear();
     computers.clear();
-    last_went = c_none;
 
     p_game = lobby.game();
 
@@ -80,6 +81,7 @@ void refresh_data(chesslobby &lobby)
             computers.insert(kv.second->playercolor());
         }
     }
+    whose_turn = p_game->turn_color();
 }
 
 bool load_game(std::string cmd, chesslobby &lobby)
@@ -153,7 +155,7 @@ bool add_player(chesslobby &lobby, color_e color)
 
 bool new_game(chesslobby &lobby)
 {
-    std::cout << "\r\nEnter Player Options: name [,skill] [,type]" << std::endl;
+    std::cout << "\r\nEnter Player Options: name [,type] [,skill]" << std::endl;
     std::cout << "where type [optional] can be either Human or Computer" << std::endl;
     std::cout << "and skill [optional] can be 0-2000\r\n"
               << std::endl;
@@ -170,23 +172,46 @@ bool new_game(chesslobby &lobby)
 
 void refresh_board(int16_t t, chessboard &b)
 {
-    board_to_console(t, b);
+    bool r = humans.count(b.turn_color()) > 0;
+    board_to_console(t, b, r);
 }
 
 void on_consider(move_s &m, color_e c, int8_t p)
 {
+    std::cout << ".";
 }
 
 void on_move(int16_t t, move_s &m, color_e c)
 {
+    if (!humans.count(c))
+    {
+        std::cout << std::endl;
+        move_to_console(m, color_str(c));
+    }
+    refresh_board(t, p_game->board());
+}
+
+void set_prompt(bool ch = false)
+{
+    prompt = color_str(whose_turn) + " move ";
+    if (ch)
+        prompt += "(Check) ";
+    prompt += "> ";
 }
 
 void on_turn(int16_t, bool ch, chessboard &b, color_e c)
 {
+    whose_turn = c;
+    if (humans.count(c))
+        set_prompt(ch);
 }
 
 void on_end(game_state_e g, color_e c)
 {
+    std::cout << "\r\n**** Game Over! ";
+    std::cout << game_state_str(g) + " ";
+    std::cout << color_str(c) + " Wins! ";
+    std::cout << "****" << std::endl;
 }
 
 void chat(std::string msg, color_e c)
@@ -232,225 +257,144 @@ int main(void)
         }
     }
 
-    /*
-    chessgame game;
-
-    game.set_callbacks(
-        &draw_board,
-        &game_over,
-        &computer_moved,
-        &draw_move,
-        &request_promote_piece,
-        &thinking,
-        &traces);
-
-    // chessboard board;
-
-    std::string cmd;
-    std::cout << "Hello There! This is Chess\r\n\r\n";
-    std::cout << "NEW Game, LOAD FileName, or QUIT?\r\n";
-
-    color_e my_col = c_white;
-    int level = 4;
-    std::string coll = "White";
+    set_prompt();
 
     while (true)
     {
-        std::cout << "> ";
-        std::getline(std::cin, cmd);
-        std::string cmdu = uppercase(cmd);
-        std::string cmdl = cmdu.substr(0, 1);
-
-        if (cmdl == "N")
+        if (humans.count(whose_turn))
         {
-            if (get_new_game_options(my_col, coll, level))
+            std::cout << prompt;
+            std::string cmd;
+            std::getline(std::cin, cmd);
+            std::string cmdu = uppercase(cmd);
+            std::string cmdl = cmdu.substr(0, 1);
+            if ((cmdu == "?") || (cmdu == "HELP") || (cmdu == "H"))
             {
-                game.new_game(my_col, level);
-                break;
-            }
-        }
-        else if (cmdl == "L")
-        {
-            if (load_game(cmd, game))
-            {
-                my_col = game.user_color();
-                coll = color_str(my_col);
-                break;
-            }
-        }
-        else if (cmdl == "Q")
-        {
-            exit(EXIT_SUCCESS);
-        }
-    }
-
-    game_state_e game_state = game.state();
-    color_e turn_col = game.turn_color();
-    color_e comp_col = other(turn_col);
-
-    while (game_state == play_e)
-    {
-        if (turn_col != my_col)
-        {
-            if (computer_move(turn_col, game) != e_none)
-            {
-                print_error(e_failed_move);
-                exit(EXIT_FAILURE);
-            }
-            turn_col = my_col;
-        }
-        // Is the game over?
-        game_state = game.state();
-        if (game_state != play_e)
-            break;
-        std::cout << coll << " Move > ";
-        std::getline(std::cin, cmd);
-        std::string cmdu = uppercase(cmd);
-        std::string cmdl = cmdu.substr(0, 1);
-        if ((cmdu == "?") || (cmdu == "HELP") || (cmdu == "H"))
-        {
-            std::cout << "Commands: NEW LOAD or L [FileName] SAVE or S [FileName] QUIT or Q MOVE or M [XX-XX]" << std::endl;
-            std::cout << "Also < [Turn], REMOVE or R [XX], and TRACE or T [RecLvl]" << std::endl;
-            continue;
-        }
-        if (cmdl == "N")
-        {
-            if (get_new_game_options(my_col, coll, level))
-            {
-                game.new_game(my_col, level);
-                turn_col = c_white;
-                comp_col = other(turn_col);
+                std::cout << "Commands: NEW LOAD or L [FileName] SAVE or S [FileName] QUIT or Q MOVE or M [XX-XX]" << std::endl;
+                std::cout << "Also < [Turn], REMOVE or R [XX]" << std::endl;
                 continue;
             }
-        }
-        else if (cmdl == "L")
-        {
-            if (load_game(cmd, game))
+            if (cmdl == "N")
             {
-                my_col = game.user_color();
-                coll = color_str(my_col);
-                turn_col = game.turn_color();
-                comp_col = other(turn_col);
+                if (new_game(lobby))
+                    continue;
+            }
+            else if (cmdl == "L")
+            {
+                if (load_game(cmd, lobby))
+                    continue;
+            }
+            else if (cmdl == "S")
+            {
+                save_game(cmd, lobby);
                 continue;
             }
-        }
-        else if (cmdl == "S")
-        {
-            save_game(cmd, game);
-            continue;
-        }
-        else if (cmdl == "Q")
-        {
-            exit(EXIT_SUCCESS);
-        }
-        else if (cmdl == "<")
-        {
-            cmdu = get_arg(cmdu);
-            if (cmdu == "")
+            else if (cmdl == "Q")
             {
-                print_error(e_rewind_missing);
-                continue;
+                exit(EXIT_SUCCESS);
             }
-            int moveno = atoi(cmdu.c_str());
-            if (game.rewind_game(moveno) != e_none)
-            {
-                print_error(e_rewind_failed);
-                continue;
-            }
-            turn_col = game.turn_color();
-        }
-        else if (cmdl == "R")
-        {
-            cmdu = get_arg(cmdu);
-            if (cmdu == "")
-            {
-                print_error(e_missing_coord);
-                continue;
-            }
-            coord_s p0;
-            if (coord_int(cmdu, p0) != e_none)
-            {
-                print_error(e_invalid_coord);
-                continue;
-            }
-            game.remove_piece(p0);
-        }
-        else if (cmdl == "P")
-        {
-            std::vector<std::string> args = get_args(cmd);
-            if (args.size() != 2)
-            {
-                print_error(e_missing_coord_piece);
-                continue;
-            }
-            coord_s p0;
-            if (coord_int(args[0], p0) != e_none)
-            {
-                print_error(e_invalid_coord);
-                continue;
-            }
-            if (args[1].size() != 1)
-            {
-                print_error(e_missing_piece);
-                continue;
-            }
-            chesspiece p1(args[1][0]);
-            if (p1.ptype == p_none)
-            {
-                print_error(e_invalid_piece);
-                continue;
-            }
-            game.add_piece(p0, p1);
-        }
-        else if (cmdl == "T")
-        {
-            // Poke a move for the CPU's next move search
-            cmdu = get_arg(cmd);
-            coord_s p0;
-            coord_s p1;
-            if (!get_move(cmdu, p0, p1))
-                continue;
-            game.suggest_move(p0, p1);
-        }
-        if (cmdl == "X")
-        {
-            // XFEN string
-            cmdu = get_arg(cmd);
-            if (cmdu == "")
-                std::cout << game.save_xfen() << std::endl;
-            else if (game.load_xfen(cmdu) != e_none)
-            {
-                print_error(e_xfen_read);
-                continue;
-            }
-        }
-        else
-        {
-            if (cmdl == "M")
+            else if (cmdl == "<")
             {
                 cmdu = get_arg(cmdu);
                 if (cmdu == "")
                 {
-                    print_error(e_missing_move);
+                    print_error(e_rewind_missing);
+                    continue;
+                }
+                int moveno = atoi(cmdu.c_str());
+                if (p_game->rewind_game(moveno) != e_none)
+                {
+                    whose_turn = p_game->turn_color();
+                    print_error(e_rewind_failed);
                     continue;
                 }
             }
-            coord_s p0, p1;
-            if (!get_move(cmdu, p0, p1))
-                continue;
-            if (game.move(my_col, p0, p1) != e_none)
+            else if (cmdl == "R")
             {
-                print_error(e_invalid_move);
-                continue;
+                cmdu = get_arg(cmdu);
+                if (cmdu == "")
+                {
+                    print_error(e_missing_coord);
+                    continue;
+                }
+                coord_s p0;
+                if (coord_int(cmdu, p0) != e_none)
+                {
+                    print_error(e_invalid_coord);
+                    continue;
+                }
+                p_game->remove_piece(p0);
             }
-            if ((game.check_state(my_col)) && (game.state() == play_e))
+            else if (cmdl == "P")
             {
-                print_error(e_check);
-                continue;
+                std::vector<std::string> args = get_args(cmd);
+                if (args.size() != 2)
+                {
+                    print_error(e_missing_coord_piece);
+                    continue;
+                }
+                coord_s p0;
+                if (coord_int(args[0], p0) != e_none)
+                {
+                    print_error(e_invalid_coord);
+                    continue;
+                }
+                if (args[1].size() != 1)
+                {
+                    print_error(e_missing_piece);
+                    continue;
+                }
+                chesspiece p1(args[1][0]);
+                if (p1.ptype == p_none)
+                {
+                    print_error(e_invalid_piece);
+                    continue;
+                }
+                p_game->add_piece(p0, p1);
             }
-            std::cout << std::endl;
-            turn_col = comp_col;
+            if (cmdl == "X")
+            {
+                // XFEN string
+                cmdu = get_arg(cmd);
+                if (cmdu == "")
+                    std::cout << p_game->save_xfen() << std::endl;
+                else if (p_game->load_xfen(cmdu) != e_none)
+                {
+                    print_error(e_xfen_read);
+                    continue;
+                }
+            }
+            else
+            {
+                if (cmdl == "M")
+                {
+                    cmdu = get_arg(cmdu);
+                    if (cmdu == "")
+                    {
+                        print_error(e_missing_move);
+                        continue;
+                    }
+                }
+                coord_s p0, p1;
+                if (!get_move(cmdu, p0, p1))
+                    continue;
+                if (p_game->move(whose_turn, p0, p1) != e_none)
+                {
+                    print_error(e_invalid_move);
+                    continue;
+                }
+                if ((p_game->check_state(whose_turn)) && (p_game->state() == play_e))
+                {
+                    print_error(e_check);
+                    continue;
+                }
+            }
         }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        if (p_game->state() != play_e)
+            break;
     }
-    */
 }

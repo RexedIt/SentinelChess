@@ -21,6 +21,7 @@ namespace chess
         chessgame();
 
         friend class chessplayer;
+        friend class chesscomputer;
         friend class chessgamelistener;
         friend class chesslobby;
 
@@ -47,20 +48,22 @@ namespace chess
         bool check_state(color_e col);
         std::string check_state();
 
-    protected:
         // Administrative / Lobby
         error_e remove_piece(coord_s p0);
         error_e add_piece(coord_s p0, chesspiece &p1);
+        error_e load_xfen(std::string contents);
+        error_e rewind_game(int move_no);
+
+    protected:
         error_e new_game();
         error_e load_game(std::ifstream &is);
         error_e save_game(std::ofstream &os);
-        error_e rewind_game(int move_no);
-        error_e load_xfen(std::string contents);
 
         error_e listen(std::shared_ptr<chessgamelistener>);
-        error_e unlisten(chessgamelistenertype);
+        error_e unlisten(int);
         error_e end_game(game_state_e, color_e);
         error_e chat(std::string, color_e);
+        error_e consider(move_s &, color_e, int8_t pct = -1);
 
     private:
         // Signallers
@@ -79,7 +82,7 @@ namespace chess
         chessboard m_board;
 
         std::mutex m_mutex;
-        std::map<chessgamelistenertype, std::shared_ptr<chessgamelistener>> mp_listeners;
+        std::map<int, std::shared_ptr<chessgamelistener>> mp_listeners;
     };
 
 }

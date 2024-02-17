@@ -53,6 +53,7 @@ namespace chess
         ~chessgamelistener();
 
         friend class chessgame;
+        friend class chesslobby;
 
     protected:
         virtual void signal_refresh_board(int16_t, chessboard &) = 0;
@@ -62,9 +63,11 @@ namespace chess
         virtual void signal_on_end(game_state_e, color_e) = 0;
         virtual void signal_chat(std::string, color_e) = 0;
 
+        int id();
         chessgamelistenertype listenertype();
         chessgamelistenertype m_listenertype;
         std::mutex m_mutex;
+        int m_id;
     };
 
     class chessgamelistener_direct : public chessgamelistener

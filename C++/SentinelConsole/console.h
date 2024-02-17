@@ -46,5 +46,5 @@ private:
     std::chrono::steady_clock::time_point start;
 };
 
-void board_to_console(int n, chess::chessboard &b);
+void board_to_console(int n, chess::chessboard &b, bool r);
 void move_to_console(chess::move_s &m, std::string s);

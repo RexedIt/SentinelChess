@@ -10,7 +10,7 @@ namespace chess
 
     public:
         chesscomputer();
-        chesscomputer(std::string name, int32_t skill);
+        chesscomputer(color_e color, std::string name, int32_t skill);
         ~chesscomputer();
 
     protected:

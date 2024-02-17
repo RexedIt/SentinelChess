@@ -21,16 +21,18 @@ namespace chess
 
     public:
         chessplayer();
-        chessplayer(std::string name, int32_t skill);
+        chessplayer(color_e color, std::string name, int32_t skill, chessplayertype_e _type);
         ~chessplayer();
 
         bool is(color_e);
+
         error_e forfeit();
         error_e move(move_s m0);
         error_e move(coord_s p0, coord_s p1, piece_e promote = p_none);
         chessboard board();
         std::vector<move_s> possible_moves();
         error_e chat(std::string msg);
+        error_e consider(move_s &, int8_t pct = -1);
 
         color_e playercolor();
         chessplayertype_e playertype();
@@ -40,7 +42,7 @@ namespace chess
         friend class chesslobby;
 
     protected:
-        void set_game(std::shared_ptr<chessgame> p_game);
+        virtual void set_game(std::shared_ptr<chessgame> p_game);
 
         color_e m_color;
         std::string m_name;
