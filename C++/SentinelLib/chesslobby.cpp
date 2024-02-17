@@ -221,7 +221,7 @@ namespace chess
                 int32_t skill;
                 is.read((char *)&skill, sizeof(skill));
                 chessplayertype_e ptype = t_none;
-                is.read((char *)ptype, sizeof(ptype));
+                is.read((char *)&ptype, sizeof(ptype));
                 if (add_player(color, name, skill, ptype) != e_none)
                     return e_loading;
             }

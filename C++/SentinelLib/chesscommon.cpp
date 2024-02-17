@@ -272,23 +272,22 @@ namespace chess
         return cmdu;
     }
 
+    char _lsbuf[1024];
     std::string load_string(std::ifstream &is)
     {
         int n = 0;
         is.read((char *)&n, sizeof(n));
-        if ((n < 0) || (n > 65535))
+        if ((n < 0) || (n > 1023))
             return "";
-        std::string s;
-        s.reserve(n + 1);
-        is.read((char *)s.c_str(), n);
-        return s;
+        is.read(_lsbuf, n);
+        return std::string(_lsbuf, n);
     }
 
     void save_string(std::string s, std::ofstream &os)
     {
         int n = s.length();
-        if (n > 65535)
-            n = 65535;
+        if (n > 1023)
+            n = 1023;
         os.write((char *)&n, sizeof(n));
         os.write(s.c_str(), n);
     }
