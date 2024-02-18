@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/ref_counted.hpp>
 
 #include "chesscommon.h"
+#include "chessgamelistener.h"
 
 using namespace chess;
 using namespace godot;
@@ -57,7 +58,6 @@ public:
     int promote() const;
     bool en_passant() const;
     bool check() const;
-    bool mate() const;
     bool is_valid();
 
     move_s get() { return m_move; }
@@ -71,5 +71,40 @@ private:
 protected:
     static void _bind_methods();
 };
+
+class ChessPlayer : public RefCounted
+{
+    GDCLASS(ChessPlayer, RefCounted)
+
+public:
+    ChessPlayer();
+    ~ChessPlayer();
+
+    enum ChessPlayerType
+    {
+        tNone = t_none,
+        Human = t_human,
+        Computer = t_computer
+    };
+
+    void set_name(String s);
+    String get_name();
+    void set_skill(const int s);
+    int get_skill();
+    void set_playertype(ChessPlayerType t);
+    ChessPlayerType get_playertype();
+
+    void get(std::string &, int &, chessplayertype_e &);
+
+private:
+    std::string m_name;
+    chessplayertype_e m_playertype;
+    int m_skill;
+
+protected:
+    static void _bind_methods();
+};
+
+VARIANT_ENUM_CAST(ChessPlayer::ChessPlayerType);
 
 #endif // GDSENTINELCOMMON_H

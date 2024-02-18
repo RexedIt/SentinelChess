@@ -104,7 +104,6 @@ void ChessMove::_bind_methods()
     ClassDB::bind_method(D_METHOD("en_passant"), &ChessMove::en_passant);
     ClassDB::bind_method(D_METHOD("promote"), &ChessMove::promote);
     ClassDB::bind_method(D_METHOD("check"), &ChessMove::check);
-    ClassDB::bind_method(D_METHOD("mate"), &ChessMove::mate);
     ClassDB::bind_method(D_METHOD("is_valid"), &ChessMove::is_valid);
 }
 
@@ -197,12 +196,73 @@ bool ChessMove::check() const
     return m_move.check;
 }
 
-bool ChessMove::mate() const
-{
-    return m_move.mate;
-}
-
 bool ChessMove::is_valid()
 {
     return m_move.is_valid();
+}
+
+ChessPlayer::ChessPlayer()
+{
+    m_name = "";
+    m_skill = 600;
+    m_playertype = t_none;
+}
+
+ChessPlayer::~ChessPlayer()
+{
+}
+
+void ChessPlayer::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("get_name"), &ChessPlayer::get_name);
+    ClassDB::bind_method(D_METHOD("set_name", "s"), &ChessPlayer::set_name);
+    ClassDB::add_property("Name", PropertyInfo(Variant::STRING, "s"), "set_name", "get_name");
+    ClassDB::bind_method(D_METHOD("get_skill"), &ChessPlayer::get_skill);
+    ClassDB::bind_method(D_METHOD("set_skill", "y"), &ChessPlayer::set_skill);
+    ClassDB::add_property("Skill", PropertyInfo(Variant::INT, "s"), "set_skill", "get_skill");
+    ClassDB::bind_method(D_METHOD("get_playertype"), &ChessPlayer::get_playertype);
+    ClassDB::bind_method(D_METHOD("set_playertype", "t"), &ChessPlayer::set_playertype);
+    ClassDB::add_property("PlayerType", PropertyInfo(Variant::INT, "s"), "set_playertype", "get_playertype");
+
+    // ChessPlayerType
+    BIND_ENUM_CONSTANT(tNone);
+    BIND_ENUM_CONSTANT(Human);
+    BIND_ENUM_CONSTANT(Computer);
+}
+
+void ChessPlayer::set_name(String s)
+{
+    m_name = std::string(s.ascii().get_data());
+}
+
+String ChessPlayer::get_name()
+{
+    return String(m_name.c_str());
+}
+
+void ChessPlayer::set_skill(const int s)
+{
+    m_skill = s;
+}
+
+int ChessPlayer::get_skill()
+{
+    return m_skill;
+}
+
+void ChessPlayer::set_playertype(ChessPlayerType t)
+{
+    m_playertype = (chessplayertype_e)t;
+}
+
+ChessPlayer::ChessPlayerType ChessPlayer::get_playertype()
+{
+    return (ChessPlayerType)m_playertype;
+}
+
+void ChessPlayer::get(std::string &n, int &s, chessplayertype_e &t)
+{
+    n = m_name;
+    s = m_skill;
+    t = m_playertype;
 }

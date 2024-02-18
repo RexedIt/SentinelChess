@@ -159,7 +159,6 @@ bool new_game(chesslobby &lobby)
     std::cout << "where type [optional] can be either Human or Computer" << std::endl;
     std::cout << "and skill [optional] can be 0-2000\r\n"
               << std::endl;
-	lobby.clear_players();
     if (!add_player(lobby, c_white))
         return false;
     if (!add_player(lobby, c_black))

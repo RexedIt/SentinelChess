@@ -7,7 +7,6 @@
     <ClCompile Include="chesspiece.cpp" />
     <ClCompile Include="chessturn.cpp" />
     <ClCompile Include="chesscomputer.cpp" />
-    <ClCompile Include="chessconsole.cpp" />
     <ClCompile Include="chesslobby.cpp" />
     <ClCompile Include="chessplayer.cpp" />
   </ItemGroup>
@@ -18,7 +17,6 @@
     <ClInclude Include="chesspiece.h" />
     <ClInclude Include="chessturn.h" />
     <ClInclude Include="chesscomputer.h" />
-    <ClInclude Include="chessconsole.h" />
     <ClInclude Include="chesslobby.h" />
     <ClInclude Include="chessplayer.h" />
   </ItemGroup>
