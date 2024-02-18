@@ -30,6 +30,7 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("load_xfen", "contents"), &SentinelChess::load_xfen);
     ClassDB::bind_method(D_METHOD("turn_color"), &SentinelChess::turn_color);
     ClassDB::bind_method(D_METHOD("win_color"), &SentinelChess::win_color);
+    ClassDB::bind_method(D_METHOD("computer_moving"), &SentinelChess::computer_moving);
     ClassDB::bind_method(D_METHOD("is_local"), &SentinelChess::is_local);
     ClassDB::bind_method(D_METHOD("is_computer"), &SentinelChess::is_computer);
     ClassDB::bind_method(D_METHOD("state"), &SentinelChess::state);
@@ -46,6 +47,9 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("cell_piece", "y", "x"), &SentinelChess::cell_piece);
     ClassDB::bind_method(D_METHOD("cell_dark", "y", "x"), &SentinelChess::cell_dark);
     ClassDB::bind_method(D_METHOD("cell_kill", "col", "y", "x"), &SentinelChess::cell_kill);
+
+    ClassDB::bind_method(D_METHOD("hasevent"), &SentinelChess::hasevent);
+    ClassDB::bind_method(D_METHOD("popevent"), &SentinelChess::popevent);
 
     ClassDB::bind_method(D_METHOD("lastmove"), &SentinelChess::lastmove);
     ClassDB::bind_method(D_METHOD("lastcolor"), &SentinelChess::lastcolor);
@@ -78,6 +82,22 @@ void SentinelChess::_bind_methods()
 String SentinelChess::errorstr(int num)
 {
     return String(::errorstr((error_e)num).c_str());
+}
+
+bool SentinelChess::hasevent()
+{
+    if (mp_listener)
+        return mp_listener->has_event();
+    return false;
+}
+
+Ref<ChessEvent> SentinelChess::popevent()
+{
+    chessevent e;
+    if (mp_listener)
+        e = mp_listener->pop_event();
+    Ref<ChessEvent> ce(memnew(ChessEvent(e)));
+    return ce;
 }
 
 Ref<ChessMove> SentinelChess::lastmove()
@@ -180,6 +200,13 @@ SentinelChess::ChessColor SentinelChess::turn_color()
 SentinelChess::ChessColor SentinelChess::win_color()
 {
     return (SentinelChess::ChessColor)mp_game->win_color();
+}
+
+bool SentinelChess::computer_moving()
+{
+    if (state() == play_e)
+        return m_computers.count(m_whose_turn) > 0;
+    return false;
 }
 
 bool SentinelChess::is_local(ChessColor col)

@@ -34,12 +34,6 @@ func _ready():
 	popNew.on_closed.connect(_on_closed_new)
 	popLoad.on_closed.connect(_on_closed_load)
 	popSave.on_closed.connect(_on_closed_save)
-	trace.connect(_trace)
-	draw_move.connect(_draw_move)
-	draw_board.connect(_draw_board)
-	#signals cannot be fired outside of ours so we poll.
-	#computer_moved.connect(_computer_moved)
-	thinking.connect(_thinking)
 	_gamestatereact(GameState.INIT)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -52,14 +46,26 @@ var thistime : float = 0.0
 func _physics_process(delta):
 	thistime += delta
 	# polling, unfortunately.
-	if gamestate == GameState.COMPUTERMOVE and statewait:
-		if thistime - lasttime > .1:
-			lasttime = thistime
-			if computer_moving() == false:
-				_computer_moved(null, turnno(), lastmove(), computer_color())
-			else:
-				print('wait')
-			
+	if hasevent():
+		var ce : ChessEvent = popevent()
+		match ce.event_type():
+			ChessEvent.ChessEventType.ceRefreshBoard:
+				print('ceRefreshBoard')
+				_draw_board(ce.move_no());
+			ChessEvent.ChessEventType.ceConsider:
+				print('ceConsider')
+			ChessEvent.ChessEventType.ceMove:
+				print('ceMove')
+				if is_computer(ce.color()):
+					_computer_moved(ce.move_no(), ce.move(), ce.color())
+				else:
+					_draw_move(ce.move_no(), ce.move(), ce.color())
+			ChessEvent.ChessEventType.ceTurn:
+				print('ceTurn *** REM *** TODO')
+			ChessEvent.ChessEventType.ceEnd:
+				print('ceEnd *** REM *** TODO')
+			ChessEvent.ChessEventType.ceChat:
+				print('ceChat *** REM *** TODO')
 
 func _gamestatereact(gs):
 	gamestate = gs
@@ -113,7 +119,7 @@ func _savegameprompt():
 	
 func _gameplay():
 	if (state() == SentinelChess.ChessGameState.Play):
-		if (turn_color() == user_color()):
+		if is_local(turn_color()):
 			_gamestatereact(GameState.USERMOVE)
 		else:
 			_gamestatereact(GameState.COMPUTERMOVE)
@@ -125,13 +131,10 @@ func _usermove():
 
 func _computermove():
 	statewait = true
-	var err = computer_move(computer_color())
-	if err > 0:
-		_on_error(err)
 	
 # Callbacks
 func _on_user_moved():
-	gameUI.append_move(turnno(), lastmove(), user_color())
+	gameUI.append_move(turnno(), lastmove(), turn_color())
 	_gamestatereact(GameState.PLAY)
 
 func _on_animated():
@@ -211,17 +214,17 @@ func _on_error_msg(msg : String):
 	gameUI.show_error(msg)
 	
 # Signal Handlers
-func _draw_move(node, n, m, c):
+func _draw_move(n, m, c):
 	print("move!")
 	
-func _draw_board(node, n):
+func _draw_board(n):
 	# we restrict when this gets
 	# executed to load and new game
 	if (gamestate < GameState.PLAY):
 		refresh_board()
 		
 func refresh_board():
-	board.setup(user_color())
+	board.setup(turn_color())
 	board.refreshpieces()
 
 func refresh_turn():
@@ -232,7 +235,7 @@ func _user_moved(m):
 	board.animate_move(m)
 	gamestate = GameState.ANIMATEMOVE
 		
-func _computer_moved(node, n, m, c):
+func _computer_moved(n, m, c):
 	# for now we ONLY will paint the board
 	# eventually we will animate the move
 	# which will force the board to be redrawn.

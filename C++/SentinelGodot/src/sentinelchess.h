@@ -13,6 +13,8 @@
 using namespace chess;
 using namespace godot;
 
+class ChessEvent;
+
 class SentinelChess : public Node
 {
     GDCLASS(SentinelChess, Node)
@@ -70,11 +72,15 @@ private:
     int remove_piece(const Ref<ChessCoord> &p0);
     int add_piece(const Ref<ChessCoord> &p0, ChessColor col, ChessPiece piece);
 
+    bool hasevent();
+    Ref<ChessEvent> popevent();
+
     Ref<ChessMove> lastmove();
     ChessColor lastcolor();
     int lastturnno();
     int turnno();
 
+    bool computer_moving();
     bool is_local(ChessColor col);
     bool is_computer(ChessColor col);
 
