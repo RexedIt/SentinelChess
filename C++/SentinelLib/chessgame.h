@@ -30,6 +30,8 @@ namespace chess
         std::string save_xfen();
 
         chessboard board();
+        void board_copy(chessboard& b);
+
         chessturn_s last_turn();
         game_state_e state();
 

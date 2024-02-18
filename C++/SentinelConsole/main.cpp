@@ -189,7 +189,9 @@ void on_move(int16_t t, move_s &m, color_e c)
         std::cout << std::endl;
         move_to_console(m, color_str(c));
     }
-    refresh_board(t, p_game->board());
+    chessboard b;
+    p_game->board_copy(b);
+    refresh_board(t, b);
 }
 
 void set_prompt(bool ch = false)

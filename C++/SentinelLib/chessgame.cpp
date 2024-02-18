@@ -16,6 +16,11 @@ namespace chess
         return b;
     }
 
+    void chessgame::board_copy(chessboard& b)
+    {
+        b.copy(m_board);
+    }
+
     game_state_e chessgame::state()
     {
         return m_state;
