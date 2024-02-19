@@ -1,18 +1,20 @@
-[gd_scene load_steps=20 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=23 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" uid="uid://o21q8fipo8cb" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
 [ext_resource type="Script" uid="uid://c2fxtcukqail3" path="res://Scripts/GameManager.gd" id="2_th60g"]
 [ext_resource type="Texture2D" uid="uid://b87etyr6ks3a8" path="res://Sprites/RetroWood/Board.png" id="3_2gi3p"]
 [ext_resource type="FontFile" uid="uid://dqmfxq4vf5b8g" path="res://Fonts/PressStart2P-vaV7.ttf" id="3_7nhen"]
-[ext_resource type="ButtonGroup" uid="uid://brly41b54bk0f" path="res://GroupColor.tres" id="4_ug52y"]
 [ext_resource type="Script" uid="uid://feu87e4pw2w" path="res://Scripts/Board.gd" id="5_8nr35"]
 [ext_resource type="Script" uid="uid://duly64wj4k304" path="res://Scripts/popNew.gd" id="5_bu5ts"]
 [ext_resource type="Script" uid="uid://jmkj3gw012fe" path="res://Scripts/Piece.gd" id="6_d12bf"]
+[ext_resource type="Script" uid="uid://b2fwbknmi4rb2" path="res://Scripts/popNew2.gd" id="9_vmht8"]
 [ext_resource type="Script" uid="uid://sach311s5oje" path="res://Scripts/GameUI.gd" id="10_0mwoa"]
+[ext_resource type="ButtonGroup" uid="uid://egpcffpdie8w" path="res://WhitePlayerType.tres" id="10_8y1dj"]
 [ext_resource type="Script" uid="uid://cu5mptv486reu" path="res://Scripts/popLoad.gd" id="10_we7ge"]
 [ext_resource type="Script" uid="uid://dlro2dej0frrj" path="res://Scripts/popSave.gd" id="11_dt7qr"]
 [ext_resource type="Texture2D" uid="uid://dgtgd7nmuptr6" path="res://Sprites/RetroWood/New.jpg" id="11_ehsup"]
+[ext_resource type="ButtonGroup" uid="uid://ddxnnfxmo2csx" path="res://BlackPlayerType.tres" id="11_ikrfp"]
 [ext_resource type="Texture2D" uid="uid://dt35fbefu60ls" path="res://Sprites/RetroWood/Open.jpg" id="12_5o0s6"]
 [ext_resource type="Texture2D" uid="uid://cphjjv5ttc3a3" path="res://Sprites/RetroWood/Save.jpg" id="15_pwrnu"]
 [ext_resource type="Texture2D" uid="uid://baiu161gnvfj0" path="res://Sprites/RetroWood/Pause.jpg" id="16_arl5w"]
@@ -20,6 +22,8 @@
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_55xmw"]
 size = Vector2(137, 96)
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_sbsoy"]
 
 [sub_resource type="FontVariation" id="FontVariation_h0o2n"]
 base_font = ExtResource("3_7nhen")
@@ -30,6 +34,8 @@ script = ExtResource("1_i2www")
 
 [node name="SentinelChess" type="SentinelChess" parent="."]
 script = ExtResource("2_th60g")
+gamestate = null
+statewait = null
 
 [node name="RetroWoodBackground" type="Sprite2D" parent="."]
 texture = ExtResource("2_4tyao")
@@ -104,14 +110,14 @@ alignment = 1
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
 button_pressed = true
-button_group = ExtResource("4_ug52y")
+button_group = SubResource("ButtonGroup_sbsoy")
 text = "White"
 alignment = 2
 
 [node name="Black" type="CheckBox" parent="popNew/MC/GC/HC"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
-button_group = ExtResource("4_ug52y")
+button_group = SubResource("ButtonGroup_sbsoy")
 text = "Black
 "
 
@@ -131,6 +137,191 @@ theme_override_fonts/font = ExtResource("3_7nhen")
 text = "OK"
 
 [node name="btnCancel" type="Button" parent="popNew"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -290.0
+offset_top = -40.0
+offset_right = -200.0
+offset_bottom = -9.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = " Cancel "
+
+[node name="popNew2" type="Window" parent="."]
+title = "New Game Options"
+position = Vector2i(405, 371)
+size = Vector2i(630, 400)
+popup_window = true
+theme_override_fonts/title_font = ExtResource("3_7nhen")
+theme_override_font_sizes/title_font_size = 24
+script = ExtResource("9_vmht8")
+cancelled = null
+level = null
+color = null
+
+[node name="MC" type="MarginContainer" parent="popNew2"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 630.0
+offset_bottom = 224.0
+
+[node name="VC" type="VBoxContainer" parent="popNew2/MC"]
+layout_mode = 2
+
+[node name="WhitePlayer" type="GridContainer" parent="popNew2/MC/VC"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 2
+
+[node name="lblWhite" type="Label" parent="popNew2/MC/VC/WhitePlayer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 20
+text = "White
+"
+
+[node name="txtWhiteName" type="TextEdit" parent="popNew2/MC/VC/WhitePlayer"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+
+[node name="lblSkill" type="Label" parent="popNew2/MC/VC/WhitePlayer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Skill (0-2500)
+"
+horizontal_alignment = 2
+
+[node name="lvlWhiteSkill" type="HSlider" parent="popNew2/MC/VC/WhitePlayer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+max_value = 2500.0
+step = 50.0
+value = 600.0
+rounded = true
+
+[node name="lblPlayerType" type="Label" parent="popNew2/MC/VC/WhitePlayer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Player Type
+"
+horizontal_alignment = 2
+
+[node name="HC" type="HBoxContainer" parent="popNew2/MC/VC/WhitePlayer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="optWhiteHuman" type="CheckBox" parent="popNew2/MC/VC/WhitePlayer/HC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_pressed = true
+button_group = ExtResource("10_8y1dj")
+text = "Human"
+alignment = 2
+
+[node name="optWhiteComputer" type="CheckBox" parent="popNew2/MC/VC/WhitePlayer/HC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("10_8y1dj")
+text = "Computer
+"
+
+[node name="Separator" type="Label" parent="popNew2/MC/VC"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "------------------------------------"
+vertical_alignment = 1
+
+[node name="BlackPlayer" type="GridContainer" parent="popNew2/MC/VC"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 2
+
+[node name="lblBlack" type="Label" parent="popNew2/MC/VC/BlackPlayer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 20
+text = "Black
+"
+vertical_alignment = 2
+
+[node name="txtName" type="TextEdit" parent="popNew2/MC/VC/BlackPlayer"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+
+[node name="lblSkill" type="Label" parent="popNew2/MC/VC/BlackPlayer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Skill (0-2500)
+"
+horizontal_alignment = 2
+
+[node name="lvlSkill" type="HSlider" parent="popNew2/MC/VC/BlackPlayer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+max_value = 2500.0
+step = 50.0
+value = 600.0
+rounded = true
+
+[node name="lblPlayerType" type="Label" parent="popNew2/MC/VC/BlackPlayer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Player Type
+"
+horizontal_alignment = 2
+
+[node name="HC" type="HBoxContainer" parent="popNew2/MC/VC/BlackPlayer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="optHuman" type="CheckBox" parent="popNew2/MC/VC/BlackPlayer/HC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("11_ikrfp")
+text = "Human"
+alignment = 2
+
+[node name="optComputer" type="CheckBox" parent="popNew2/MC/VC/BlackPlayer/HC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_pressed = true
+button_group = ExtResource("11_ikrfp")
+text = "Computer
+"
+
+[node name="btnOK" type="Button" parent="popNew2"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -40.0
+offset_right = -30.0004
+offset_bottom = -9.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "OK"
+
+[node name="btnCancel" type="Button" parent="popNew2"]
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
@@ -204,11 +395,12 @@ icon = ExtResource("17_fpd0j")
 
 [node name="lblHistory" type="RichTextLabel" parent="GameUI"]
 offset_left = 1441.0
-offset_top = 100.0
+offset_top = 102.0
 offset_right = 1894.0
-offset_bottom = 901.0
+offset_bottom = 903.0
 theme_override_fonts/normal_font = SubResource("FontVariation_h0o2n")
 theme_override_font_sizes/normal_font_size = 20
+metadata/_edit_lock_ = true
 
 [node name="lblCmd" type="Label" parent="GameUI"]
 offset_left = 1450.0

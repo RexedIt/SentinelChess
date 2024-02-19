@@ -3,7 +3,7 @@
 extends SentinelChess
 
 # siblings
-@onready var popNew : Window = get_parent().get_node("popNew")
+@onready var popNew2 : Window = get_parent().get_node("popNew2")
 @onready var popLoad : FileDialog = get_parent().get_node("popLoad")
 @onready var popSave : FileDialog = get_parent().get_node("popSave")
 @onready var board : Node2D = get_parent().get_node("Board")
@@ -31,7 +31,7 @@ var filename : String
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# connections
-	popNew.on_closed.connect(_on_closed_new)
+	popNew2.on_closed.connect(_on_closed_new)
 	popLoad.on_closed.connect(_on_closed_load)
 	popSave.on_closed.connect(_on_closed_save)
 	_gamestatereact(GameState.INIT)
@@ -56,7 +56,7 @@ func _physics_process(delta):
 				print('ceConsider')
 			ChessEvent.ChessEventType.ceMove:
 				print('ceMove')
-				if is_computer(ce.color()):
+				if ! is_local(ce.color()):
 					_computer_moved(ce.move_no(), ce.move(), ce.color())
 				else:
 					_draw_move(ce.move_no(), ce.move(), ce.color())
@@ -106,7 +106,7 @@ func _gamestatereact(gs):
 			_computermove()
 
 func _newgameprompt():
-	popNew.visible = true
+	popNew2.visible = true
 	statewait = true
 	
 func _loadgameprompt():
@@ -141,14 +141,14 @@ func _on_animated():
 	_gamestatereact(GameState.PLAY)
 	
 # Dialog Handlers
-func _on_closed_new(_cancelled, _level, _color):
+func _on_closed_new(_cancelled, _white, _black):
 	print("on_closed_new")
 	if _cancelled:
 		_gamestatereact(prepopgamestate)
 		return
 	# start new game
 	board.setup(_color)
-	new_game(_color, _level)
+	new_game(_white, _black)
 	gameUI.clear_history()
 	gameUI.append_history('New Game')
 	statewait = false
