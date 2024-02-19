@@ -78,6 +78,7 @@ class ChessPlayer : public RefCounted
 
 public:
     ChessPlayer();
+    ChessPlayer(std::shared_ptr<chessplayer>);
     ~ChessPlayer();
 
     enum ChessPlayerType
@@ -93,7 +94,6 @@ public:
     int get_skill();
     void set_playertype(ChessPlayerType t);
     ChessPlayerType get_playertype();
-
     void get(std::string &, int &, chessplayertype_e &);
 
 private:

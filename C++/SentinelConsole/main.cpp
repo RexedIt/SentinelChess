@@ -56,32 +56,12 @@ bool get_move(std::string cmdu, coord_s &p0, coord_s &p1)
 
 // *** Callbacks from Player Object(s)
 std::shared_ptr<chessgame> p_game = NULL;
-std::set<color_e> humans;
-std::set<color_e> computers;
-color_e whose_turn = c_none;
-std::string prompt;
+std::set<color_e> locals;
 
 void refresh_data(chesslobby &lobby)
 {
-    bool set_cb = false;
-    humans.clear();
-    computers.clear();
-
     p_game = lobby.game();
-
-    std::map<color_e, std::shared_ptr<chessplayer>> p_players = lobby.players();
-    for (const auto &kv : p_players)
-    {
-        if (kv.second->playertype() == t_human)
-        {
-            humans.insert(kv.second->playercolor());
-        }
-        else
-        {
-            computers.insert(kv.second->playercolor());
-        }
-    }
-    whose_turn = p_game->turn_color();
+    locals = lobby.local_players();
 }
 
 bool load_game(std::string cmd, chesslobby &lobby)
@@ -159,7 +139,7 @@ bool new_game(chesslobby &lobby)
     std::cout << "where type [optional] can be either Human or Computer" << std::endl;
     std::cout << "and skill [optional] can be 0-2000\r\n"
               << std::endl;
-	lobby.clear_players();
+    lobby.clear_players();
     if (!add_player(lobby, c_white))
         return false;
     if (!add_player(lobby, c_black))
@@ -173,7 +153,7 @@ bool new_game(chesslobby &lobby)
 
 void refresh_board(int16_t t, chessboard &b)
 {
-    bool r = humans.count(b.turn_color()) > 0;
+    bool r = locals.count(b.turn_color()) > 0;
     board_to_console(t, b, r);
 }
 
@@ -182,9 +162,13 @@ void on_consider(move_s &m, color_e c, int8_t p)
     std::cout << ".";
 }
 
+void on_turn(int16_t t, bool ch, chessboard &b, color_e c)
+{
+}
+
 void on_move(int16_t t, move_s &m, color_e c)
 {
-    if (!humans.count(c))
+    if (!locals.count(c))
     {
         std::cout << std::endl;
         move_to_console(m, color_str(c));
@@ -194,19 +178,15 @@ void on_move(int16_t t, move_s &m, color_e c)
     refresh_board(t, b);
 }
 
-void set_prompt(bool ch = false)
+std::string prompt()
 {
-    prompt = color_str(whose_turn) + " move ";
+    color_e c = p_game->turn_color();
+    bool ch = p_game->check_state(c);
+    std::string s = color_str(c) + " move ";
     if (ch)
-        prompt += "(Check) ";
-    prompt += "> ";
-}
-
-void on_turn(int16_t, bool ch, chessboard &b, color_e c)
-{
-    whose_turn = c;
-    if (humans.count(c))
-        set_prompt(ch);
+        s += "(Check) ";
+    s += "> ";
+    return s;
 }
 
 void on_end(game_state_e g, color_e c)
@@ -260,13 +240,11 @@ int main(void)
         }
     }
 
-    set_prompt();
-
     while (true)
     {
-        if (humans.count(whose_turn))
+        if (lobby.is_local_turn())
         {
-            std::cout << prompt;
+            std::cout << prompt();
             std::string cmd;
             std::getline(std::cin, cmd);
             std::string cmdu = uppercase(cmd);
@@ -307,7 +285,6 @@ int main(void)
                 int moveno = atoi(cmdu.c_str());
                 if (p_game->rewind_game(moveno) != e_none)
                 {
-                    whose_turn = p_game->turn_color();
                     print_error(e_rewind_failed);
                     continue;
                 }
@@ -381,6 +358,7 @@ int main(void)
                 coord_s p0, p1;
                 if (!get_move(cmdu, p0, p1))
                     continue;
+                color_e whose_turn = p_game->turn_color();
                 if (p_game->move(whose_turn, p0, p1) != e_none)
                 {
                     print_error(e_invalid_move);

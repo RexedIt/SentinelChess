@@ -82,7 +82,12 @@ private:
 
     bool computer_moving();
     bool is_local(ChessColor col);
-    bool is_computer(ChessColor col);
+    bool is_local_turn();
+    Ref<ChessPlayer> player(ChessColor col);
+    Array players();
+    Array local_players();
+    String player_name(ChessColor col);
+    Dictionary player_names();
 
     // Board helpers
     ChessColor cell_color(int y, int x);
@@ -98,9 +103,6 @@ private:
     std::shared_ptr<chessgamelistener_queue> mp_listener;
     chesslobby m_lobby;
     std::shared_ptr<chessgame> mp_game;
-    std::set<color_e> m_humans;
-    std::set<color_e> m_computers;
-    color_e m_whose_turn = c_none;
 };
 
 VARIANT_ENUM_CAST(SentinelChess::ChessColor);

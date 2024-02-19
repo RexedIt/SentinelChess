@@ -32,7 +32,14 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("win_color"), &SentinelChess::win_color);
     ClassDB::bind_method(D_METHOD("computer_moving"), &SentinelChess::computer_moving);
     ClassDB::bind_method(D_METHOD("is_local"), &SentinelChess::is_local);
-    ClassDB::bind_method(D_METHOD("is_computer"), &SentinelChess::is_computer);
+
+    ClassDB::bind_method(D_METHOD("is_local_turn"), &SentinelChess::is_local_turn);
+    ClassDB::bind_method(D_METHOD("player", "col"), &SentinelChess::player);
+    ClassDB::bind_method(D_METHOD("players"), &SentinelChess::players);
+    ClassDB::bind_method(D_METHOD("local_players"), &SentinelChess::local_players);
+    ClassDB::bind_method(D_METHOD("player_name", "col"), &SentinelChess::player_name);
+    ClassDB::bind_method(D_METHOD("player_names"), &SentinelChess::player_names);
+
     ClassDB::bind_method(D_METHOD("state"), &SentinelChess::state);
     ClassDB::bind_method(D_METHOD("check_state"), &SentinelChess::check_state);
     ClassDB::bind_method(D_METHOD("forfeit"), &SentinelChess::forfeit);
@@ -127,21 +134,7 @@ int SentinelChess::turnno()
 
 void SentinelChess::refresh_data()
 {
-    bool set_cb = false;
-    m_humans.clear();
-    m_computers.clear();
-
     mp_game = m_lobby.game();
-
-    std::map<color_e, std::shared_ptr<chessplayer>> p_players = m_lobby.players();
-    for (const auto &kv : p_players)
-    {
-        if (kv.second->playertype() == t_human)
-            m_humans.insert(kv.second->playercolor());
-        else
-            m_computers.insert(kv.second->playercolor());
-    }
-    m_whose_turn = mp_game->turn_color();
 }
 
 int SentinelChess::new_game(const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black)
@@ -205,18 +198,59 @@ SentinelChess::ChessColor SentinelChess::win_color()
 bool SentinelChess::computer_moving()
 {
     if (state() == play_e)
-        return m_computers.count(m_whose_turn) > 0;
+        return !m_lobby.is_local_turn();
     return false;
 }
 
 bool SentinelChess::is_local(ChessColor col)
 {
-    return m_humans.count((color_e)col) > 0;
+    return m_lobby.is_local((color_e)col);
 }
 
-bool SentinelChess::is_computer(ChessColor col)
+bool SentinelChess::is_local_turn()
 {
-    return m_computers.count((color_e)col) > 0;
+    return m_lobby.is_local_turn();
+}
+
+Ref<ChessPlayer> SentinelChess::player(ChessColor col)
+{
+    Ref<ChessPlayer> cp(memnew(ChessPlayer(m_lobby.player((color_e)col))));
+    return cp;
+}
+
+Array SentinelChess::players()
+{
+    Array a;
+    for (const auto &kv : m_lobby.players())
+    {
+        Ref<ChessPlayer> cp(memnew(ChessPlayer(kv.second)));
+        a.push_back(cp);
+    }
+    return a;
+}
+
+Array SentinelChess::local_players()
+{
+    Array a;
+    for (const auto &kv : m_lobby.local_players())
+        a.push_back(kv);
+    return a;
+}
+
+String SentinelChess::player_name(ChessColor col)
+{
+    return String(m_lobby.player_name((color_e)col).c_str());
+}
+
+Dictionary SentinelChess::player_names()
+{
+    Dictionary d;
+    for (const auto &kv : m_lobby.player_names())
+    {
+        String s(kv.second.c_str());
+        d[kv.first] = s;
+    }
+    return d;
 }
 
 bool SentinelChess::check_state(ChessColor col)

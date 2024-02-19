@@ -153,6 +153,7 @@ namespace chess
         case t_human:
         {
             std::shared_ptr<chessplayer> p_chessplayer(new chessplayer(color, name, skill, t_human));
+            m_locals.insert(color);
             mp_players[color] = p_chessplayer;
             return e_none;
         }
@@ -183,6 +184,7 @@ namespace chess
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         mp_players.clear();
+        m_locals.clear();
         return e_none;
     }
 
@@ -206,13 +208,50 @@ namespace chess
         return mp_players;
     }
 
+    std::set<color_e> chesslobby::local_players()
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        return m_locals;
+    }
+
+    bool chesslobby::is_local(color_e col)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        return m_locals.count(col) > 0;
+    }
+
+    bool chesslobby::is_local_turn()
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if (mp_game)
+            return m_locals.count(mp_game->turn_color()) > 0;
+        return false;
+    }
+
+    std::string chesslobby::player_name(color_e col)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if (mp_players.count(col))
+            return mp_players[col]->playername();
+        return "";
+    }
+
+    std::map<color_e, std::string> chesslobby::player_names()
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        std::map<color_e, std::string> ret;
+        for (const auto &kv : mp_players)
+            ret[kv.second->playercolor()] = kv.second->playername();
+        return ret;
+    }
+
     error_e chesslobby::load_players(std::ifstream &is)
     {
         try
         {
             int8_t n = 0;
             is.read((char *)&n, sizeof(n));
-            mp_players.clear();
+            clear_players();
             for (int8_t i = 0; i < n; i++)
             {
                 color_e color;

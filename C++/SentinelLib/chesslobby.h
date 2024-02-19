@@ -5,6 +5,8 @@
 #include "chessplayer.h"
 
 #include <mutex>
+#include <map>
+#include <set>
 
 namespace chess
 {
@@ -31,12 +33,18 @@ namespace chess
         std::shared_ptr<chessplayer> player(color_e col);
         std::map<color_e, std::shared_ptr<chessplayer>> players();
 
+        std::set<color_e> local_players();
+        bool is_local(color_e col);
+        bool is_local_turn();
+        std::string player_name(color_e col);
+        std::map<color_e, std::string> player_names();
+
     private:
         std::mutex m_mutex;
         std::shared_ptr<chessgamelistener> mp_listener;
         std::map<color_e, std::shared_ptr<chessplayer>> mp_players;
         std::shared_ptr<chessgame> mp_game;
-
+        std::set<color_e> m_locals;
         error_e load_players(std::ifstream &is);
         error_e save_players(std::ofstream &os);
 

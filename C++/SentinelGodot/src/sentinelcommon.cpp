@@ -208,6 +208,16 @@ ChessPlayer::ChessPlayer()
     m_playertype = t_none;
 }
 
+ChessPlayer::ChessPlayer(std::shared_ptr<chessplayer> p)
+{
+    if (p)
+    {
+        m_name = p->playername();
+        m_skill = p->playerskill();
+        m_playertype = p->playertype();
+    }
+}
+
 ChessPlayer::~ChessPlayer()
 {
 }
