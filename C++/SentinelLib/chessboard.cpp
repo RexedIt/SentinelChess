@@ -12,6 +12,11 @@
 namespace chess
 {
 
+    int cidx(color_e c)
+    {
+        return (c == c_white) ? 0 : 1;
+    }
+
     chessboard::chessboard()
     {
         memset(&m_cells, 0, sizeof(m_cells));
@@ -41,7 +46,10 @@ namespace chess
         m_castled_left = other.m_castled_left;
         m_castled_right = other.m_castled_right;
         m_ep = other.m_ep;
-        m_check = other.m_check;
+        m_check[0] = other.m_check[0];
+        m_check[1] = other.m_check[1];
+        m_king_pos[0] = other.m_king_pos[0];
+        m_king_pos[1] = other.m_king_pos[1];
         m_turn = other.m_turn;
         m_hash = 0;
         m_kill_updated = false;
@@ -58,8 +66,10 @@ namespace chess
         m_castled_right = 0;
         m_ep.y = -1;
         m_ep.x = -1;
-        m_king_pos.clear();
-        m_check.clear();
+        m_king_pos[0].clear();
+        m_king_pos[1].clear();
+        m_check[0] = false;
+        m_check[1] = false;
         m_turn = c_white;
         m_halfmove = 0;
         m_fullmove = 1;
@@ -72,8 +82,8 @@ namespace chess
         os.write((char *)&m_cells, sizeof(m_cells));
         os.write((char *)&m_castled_left, sizeof(m_castled_left));
         os.write((char *)&m_castled_right, sizeof(m_castled_right));
-        bool white_check = m_check[c_white];
-        bool black_check = m_check[c_black];
+        bool white_check = m_check[0];
+        bool black_check = m_check[1];
         os.write((char *)&white_check, sizeof(white_check));
         os.write((char *)&black_check, sizeof(black_check));
         os.write((char *)&m_turn, sizeof(m_turn));
@@ -143,8 +153,8 @@ namespace chess
         bool black_check;
         is.read((char *)&white_check, sizeof(white_check));
         is.read((char *)&black_check, sizeof(black_check));
-        m_check[c_white] = white_check;
-        m_check[c_black] = black_check;
+        m_check[0] = white_check;
+        m_check[1] = black_check;
         is.read((char *)&m_turn, sizeof(m_turn));
         is.read((char *)&m_ep, sizeof(m_ep));
         return e_none;
@@ -296,8 +306,8 @@ namespace chess
         }
 
         // opponent king capture?
-        bm.ch = m_check[col];
-        bm.och = m_check[other(col)];
+        bm.ch = m_check[cidx(col)];
+        bm.och = m_check[cidx(other(col))];
 
         return bm;
     }
@@ -339,7 +349,7 @@ namespace chess
         if (!m_kill_updated)
             update_kill_bits();
         unsigned char kill_mask = other(turn_col) * color_kill_mask_mult;
-        coord_s k = m_king_pos[turn_col];
+        coord_s k = m_king_pos[cidx(turn_col)];
         bool ret = (m_cells[k.y][k.x] & kill_mask) == kill_mask;
         return ret;
     }
@@ -370,7 +380,7 @@ namespace chess
         if (!in_range(p0))
             return e_invalid_coord;
         // Can't remove a king either.
-        if ((p0 == m_king_pos[c_white]) || (p0 == m_king_pos[c_black]))
+        if ((p0 == m_king_pos[0]) || (p0 == m_king_pos[1]))
             return e_cannot_remove_a_king;
         if ((m_cells[p0.y][p0.x] & piece_mask) == 0)
             return e_no_piece_there;
@@ -389,7 +399,7 @@ namespace chess
         if (p1.ptype == p_none)
             return e_piece_undefined;
         // Can't remove a king either.
-        if ((p0 == m_king_pos[c_white]) || (p0 == m_king_pos[c_black]))
+        if ((p0 == m_king_pos[0]) || (p0 == m_king_pos[1]))
             return e_cannot_add_over_king;
         m_cells[p0.y][p0.x] = p1.value;
         update_kill_bits();
@@ -420,15 +430,15 @@ namespace chess
 
     bool chessboard::check_state(color_e col)
     {
-        return m_check[col];
+        return m_check[cidx(col)];
     }
 
     std::string chessboard::check_state()
     {
         std::string s = "";
-        if (m_check[c_white])
+        if (m_check[0])
             s += "White in Check ";
-        if (m_check[c_black])
+        if (m_check[1])
             s += "Black in Check ";
         return s;
     }
@@ -500,92 +510,6 @@ namespace chess
                ((float)bm.bp) * bp_weight;
     }
 
-    error_e chessboard::suggest_move(move_s m)
-    {
-        m_suggestion = m;
-        return e_none;
-    }
-
-    move_s chessboard::computer_move(color_e turn_col, int rec)
-    {
-        m_cancel = false;
-        move_s best;
-        m_turn = turn_col;
-        std::vector<move_s> possible = possible_moves(turn_col);
-        // Figure move?
-        float alpha = -9999;
-        float beta = 9999;
-        for (size_t i = 0; i < possible.size(); i++)
-        {
-            if (m_cancel)
-                return best;
-            chessboard b(*this);
-            move_s candidate = b.execute_move(possible[i]);
-            float score = b.computer_move_min(other(turn_col), alpha, beta, rec - 1);
-            if (score >= beta)
-            {
-                best = candidate;
-                break;
-            }
-            else if (score > alpha)
-            {
-                best = candidate;
-                alpha = score;
-            }
-            thinking(candidate, i * 100 / possible.size());
-        }
-        evaluate_check_and_mate(turn_col, possible, best);
-        if (best.is_valid())
-        {
-            m_turn = other(m_turn);
-            best = execute_move(best);
-        }
-        return best;
-    }
-
-    float chessboard::computer_move_max(color_e turn_col, float _alpha, float _beta, int rec)
-    {
-        if ((rec == 0) || (m_cancel))
-            return weight(board_metric(turn_col));
-        float alpha = _alpha;
-        float beta = _beta;
-        std::vector<move_s> possible = possible_moves(turn_col);
-        for (size_t i = 0; i < possible.size(); i++)
-        {
-            chessboard b(*this);
-            // Execute the move
-            b.execute_move(possible[i]);
-            float score = b.computer_move_min(other(turn_col), alpha, beta, rec - 1);
-            if (score >= beta)
-                return beta;
-            if (score > alpha)
-                alpha = score;
-        }
-        return alpha;
-    }
-
-    float chessboard::computer_move_min(color_e turn_col, float _alpha, float _beta, int rec)
-    {
-        if ((rec == 0) || (m_cancel))
-            return -1.0f * weight(board_metric(turn_col));
-        float alpha = _alpha;
-        float beta = _beta;
-        std::vector<move_s> possible = possible_moves(turn_col);
-        for (size_t i = 0; i < possible.size(); i++)
-        {
-            chessboard b(*this);
-            // Execute the move
-            b.execute_move(possible[i]);
-            float score = b.computer_move_max(other(turn_col), alpha, beta, rec - 1);
-            if (score <= alpha)
-                return alpha;
-            if (score < beta)
-                beta = score;
-        }
-        return beta;
-    }
-    // *** MUST GO ***
-
     std::vector<move_s> chessboard::possible_moves(color_e turn_col)
     {
         std::vector<move_s> possible;
@@ -613,9 +537,9 @@ namespace chess
 
     void chessboard::update_check(color_e c)
     {
-        coord_s k = m_king_pos[c];
+        coord_s k = m_king_pos[cidx(c)];
         unsigned char kill_mask = other(c) * color_kill_mask_mult;
-        m_check[c] = ((m_cells[k.y][k.x] & kill_mask) == kill_mask);
+        m_check[cidx(c)] = ((m_cells[k.y][k.x] & kill_mask) == kill_mask);
     }
 
     void chessboard::update_kill_bits()
@@ -623,7 +547,8 @@ namespace chess
         for (int8_t y = 0; y < 8; y++)
             for (int8_t x = 0; x < 8; x++)
                 m_cells[y][x] &= 63;
-        m_king_pos.clear();
+        m_king_pos[0].clear();
+        m_king_pos[1].clear();
         // Set the ones of our color
         for (int8_t y = 0; y < 8; y++)
             for (int8_t x = 0; x < 8; x++)
@@ -638,7 +563,7 @@ namespace chess
                         int pc = 0;
                         piece.update_kill_bits(coord_s(y, x), m_cells, pc);
                         if ((m_cells[y][x] & piece_mask) == p_king)
-                            m_king_pos[content_col] = coord_s(y, x);
+                            m_king_pos[cidx(content_col)] = coord_s(y, x);
                     }
                 }
             }
@@ -707,7 +632,7 @@ namespace chess
         update_kill_bits();
 
         m_hash = 0;
-        m1.check = m_check[piece.color];
+        m1.check = m_check[cidx(piece.color)];
         if (m1.check)
             m1.error = e_check;
 

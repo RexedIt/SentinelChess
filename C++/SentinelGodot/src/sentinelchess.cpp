@@ -34,11 +34,13 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("is_local"), &SentinelChess::is_local);
 
     ClassDB::bind_method(D_METHOD("is_local_turn"), &SentinelChess::is_local_turn);
+    ClassDB::bind_method(D_METHOD("is_local_active", "col"), &SentinelChess::is_local_active);
     ClassDB::bind_method(D_METHOD("player", "col"), &SentinelChess::player);
     ClassDB::bind_method(D_METHOD("players"), &SentinelChess::players);
     ClassDB::bind_method(D_METHOD("local_players"), &SentinelChess::local_players);
     ClassDB::bind_method(D_METHOD("player_name", "col"), &SentinelChess::player_name);
     ClassDB::bind_method(D_METHOD("player_names"), &SentinelChess::player_names);
+    ClassDB::bind_method(D_METHOD("preferred_board_color"), &SentinelChess::preferred_board_color);
 
     ClassDB::bind_method(D_METHOD("state"), &SentinelChess::state);
     ClassDB::bind_method(D_METHOD("check_state"), &SentinelChess::check_state);
@@ -50,6 +52,7 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("remove_piece", "p0"), &SentinelChess::remove_piece);
     ClassDB::bind_method(D_METHOD("add_piece", "p0", "col", "piece"), &SentinelChess::add_piece);
 
+    ClassDB::bind_method(D_METHOD("cell_interactive", "y", "x"), &SentinelChess::cell_interactive);
     ClassDB::bind_method(D_METHOD("cell_color", "y", "x"), &SentinelChess::cell_color);
     ClassDB::bind_method(D_METHOD("cell_piece", "y", "x"), &SentinelChess::cell_piece);
     ClassDB::bind_method(D_METHOD("cell_dark", "y", "x"), &SentinelChess::cell_dark);
@@ -212,6 +215,11 @@ bool SentinelChess::is_local_turn()
     return m_lobby.is_local_turn();
 }
 
+bool SentinelChess::is_local_active(ChessColor col)
+{
+    return m_lobby.is_local_active((color_e)col);
+}
+
 Ref<ChessPlayer> SentinelChess::player(ChessColor col)
 {
     Ref<ChessPlayer> cp(memnew(ChessPlayer(m_lobby.player((color_e)col))));
@@ -251,6 +259,20 @@ Dictionary SentinelChess::player_names()
         d[kv.first] = s;
     }
     return d;
+}
+
+SentinelChess::ChessColor SentinelChess::preferred_board_color()
+{
+    std::set<color_e> locals = m_lobby.local_players();
+    // if both players local and white, return it.
+    if (locals.count(c_white))
+        return (ChessColor)c_white;
+    // Okay apparently one of the locals is not white, so return black
+    // if that is local
+    if (locals.count(c_black))
+        return (ChessColor)c_black;
+    // Other wise, return white.
+    return (ChessColor)c_white;
 }
 
 bool SentinelChess::check_state(ChessColor col)
@@ -321,6 +343,11 @@ int SentinelChess::add_piece(const Ref<ChessCoord> &p0, ChessColor col, ChessPie
 }
 
 // Board helpers
+bool SentinelChess::cell_interactive(int y, int x)
+{
+    return m_lobby.is_local_active((color_e)(mp_game->board().get(y, x) & color_mask));
+}
+
 SentinelChess::ChessColor SentinelChess::cell_color(int y, int x)
 {
     return (SentinelChess::ChessColor)(mp_game->board().get(y, x) & color_mask);

@@ -12,11 +12,12 @@ namespace chess
 
     chessboard chessgame::board()
     {
+        std::lock_guard<std::mutex> guard(m_mutex);
         chessboard b(m_board);
         return b;
     }
 
-    void chessgame::board_copy(chessboard& b)
+    void chessgame::board_copy(chessboard &b)
     {
         b.copy(m_board);
     }
@@ -69,13 +70,12 @@ namespace chess
 
     error_e chessgame::forfeit(color_e col)
     {
-        m_state = forfeit_e;
-        m_win_color = other(col);
-        return e_none;
+        return end_game(forfeit_e, other(col));
     }
 
     error_e chessgame::move(color_e col, move_s m0)
     {
+        std::unique_lock<std::mutex> guard(m_mutex);
         if (m_state != play_e)
             return e_invalid_game_state;
         if (col == m_board.turn_color())
@@ -85,6 +85,7 @@ namespace chess
                 return m.error;
             m_state = is_game_over(col, m);
             m_turn.push_back(new_turn(m_board, m, col));
+            guard.unlock();
             signal_on_move(m, col);
             signal_on_turn();
             if (m_state != play_e)
@@ -263,8 +264,10 @@ namespace chess
 
     error_e chessgame::end_game(game_state_e end_state, color_e win_color)
     {
+        std::unique_lock<std::mutex> guard(m_mutex);
         m_state = end_state;
         m_win_color = win_color;
+        guard.unlock();
         signal_on_end();
         return e_none;
     }

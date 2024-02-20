@@ -83,13 +83,17 @@ private:
     bool computer_moving();
     bool is_local(ChessColor col);
     bool is_local_turn();
+    bool is_local_active(ChessColor col);
+
     Ref<ChessPlayer> player(ChessColor col);
     Array players();
     Array local_players();
     String player_name(ChessColor col);
     Dictionary player_names();
+    ChessColor preferred_board_color();
 
     // Board helpers
+    bool cell_interactive(int y, int x);
     ChessColor cell_color(int y, int x);
     ChessPiece cell_piece(int y, int x);
     bool cell_dark(int y, int x);

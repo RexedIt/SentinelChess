@@ -36,6 +36,7 @@ namespace chess
         std::set<color_e> local_players();
         bool is_local(color_e col);
         bool is_local_turn();
+        bool is_local_active(color_e col);
         std::string player_name(color_e col);
         std::map<color_e, std::string> player_names();
 

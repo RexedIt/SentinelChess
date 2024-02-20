@@ -95,10 +95,10 @@ func board_c(s: Vector2) -> ChessCoord:
 func drag_start(y : int, x : int) -> bool:
 	if game.gamestate != game.GameState.USERMOVE:
 		return false
-	if game.cell_color(y,x) == game.user_color():
+	if game.cell_interactive(y,x):
 		last_drag_y = y
 		last_drag_x = x
-		possible_moves = game.possible_moves(game.user_color())
+		possible_moves = game.possible_moves(game.turn_color())
 		return true
 	return false
 	
@@ -118,16 +118,19 @@ func drop_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
 		return false
 	if not can_drop(p0, p1):
 		return false
-	var err : int = game.user_move_c(game.user_color(), p0, p1, SentinelChess.ChessPiece.pNone)
+	var c : SentinelChess.ChessColor = game.turn_color();
+	var err : int = game.move_c(c, p0, p1, SentinelChess.ChessPiece.pNone)
+	var n : int = game.lastturnno();
+	var m: ChessMove = game.lastmove();
 	if err != 0:
 		handle_error(err)
 		return false
-	if game.check_state(game.user_color()):
+	if game.check_state(c):
 		if game.state() == SentinelChess.ChessGameState.Play:
 			handle_error_msg("You are in Check.")
 			return false
 		# *** REM *** TODO Extra Checks?
-	game._on_user_moved()
+	game._on_user_moved(n,m,c)
 	return true
 
 func move_piece(p0 : ChessCoord, p1 : ChessCoord):

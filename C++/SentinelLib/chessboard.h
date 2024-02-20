@@ -48,10 +48,6 @@ namespace chess
         move_s attempt_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
         std::vector<move_s> possible_moves(color_e col);
 
-        // Best Move
-        move_s computer_move(color_e col, int rec);
-        error_e suggest_move(move_s m);
-
         move_s is_game_over(color_e color);
         // Remove a piece
         error_e remove(coord_s p0);
@@ -77,9 +73,8 @@ namespace chess
         unsigned char m_castled_left;
         unsigned char m_castled_right;
         coord_s m_ep;
-        std::map<color_e, coord_s> m_king_pos;
-        std::map<color_e, bool> m_check;
-        move_s m_suggestion;
+        coord_s m_king_pos[2];
+        bool m_check[2];
         color_e m_turn;
         int m_halfmove;
         int m_fullmove;
@@ -94,10 +89,6 @@ namespace chess
         bool find_check(color_e col);
 
         void evaluate_check_and_mate(color_e col, std::vector<move_s> &possible, move_s &m);
-
-        // move_s computer_move(std::vector<move_s> &possible, color_e col, coord_s p0, int rec, bool root = true);
-        float computer_move_max(color_e turn_col, float alpha, float beta, int rec);
-        float computer_move_min(color_e turn_col, float alpha, float beta, int rec);
 
         void possible_moves(std::vector<move_s> &possible, coord_s c);
         void update_kill_bits();

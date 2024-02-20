@@ -226,13 +226,13 @@ void ChessPlayer::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("get_name"), &ChessPlayer::get_name);
     ClassDB::bind_method(D_METHOD("set_name", "s"), &ChessPlayer::set_name);
-    ClassDB::add_property("Name", PropertyInfo(Variant::STRING, "s"), "set_name", "get_name");
+    ClassDB::add_property("ChessPlayer", PropertyInfo(Variant::STRING, "Name"), "set_name", "get_name");
     ClassDB::bind_method(D_METHOD("get_skill"), &ChessPlayer::get_skill);
     ClassDB::bind_method(D_METHOD("set_skill", "y"), &ChessPlayer::set_skill);
-    ClassDB::add_property("Skill", PropertyInfo(Variant::INT, "s"), "set_skill", "get_skill");
+    ClassDB::add_property("ChessPlayer", PropertyInfo(Variant::INT, "Skill"), "set_skill", "get_skill");
     ClassDB::bind_method(D_METHOD("get_playertype"), &ChessPlayer::get_playertype);
     ClassDB::bind_method(D_METHOD("set_playertype", "t"), &ChessPlayer::set_playertype);
-    ClassDB::add_property("PlayerType", PropertyInfo(Variant::INT, "s"), "set_playertype", "get_playertype");
+    ClassDB::add_property("ChessPlayer", PropertyInfo(Variant::INT, "PlayerType"), "set_playertype", "get_playertype");
 
     // ChessPlayerType
     BIND_ENUM_CONSTANT(tNone);

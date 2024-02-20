@@ -109,6 +109,10 @@ namespace chess
         {
             return coord_s(y + c1.y, x + c1.x);
         }
+        void clear()
+        {
+            y = x = -1;
+        }
         int8_t y = -1;
         int8_t x = -1;
     } coord_s;

@@ -5,7 +5,7 @@ extends CanvasLayer
 @onready var lblHistory : RichTextLabel = get_node('lblHistory')
 @onready var txtCmd : LineEdit = get_node('txtCmd')
 @onready var lblError : Label = get_node('lblError')
-
+@onready var lblCmd : Label = get_node('lblCmd')
 @export var step : int
 
 # Called when the node enters the scene tree for the first time.
@@ -71,6 +71,12 @@ func append_history(msg : String, color : String = 'blue'):
 	lblHistory.newline()
 	lblHistory.pop()
 
+func refreshPrompt(col : SentinelChess.ChessColor):
+	var crgb : Color = Color(1,1,1)
+	if col == SentinelChess.ChessColor.Black:
+		crgb = Color(0,0,0)
+	lblCmd.set('theme_override_colors/font_color', crgb)	
+	
 func append_load(msg: String):
 	append_history('Load Game - ' + msg)
 	# for last move info

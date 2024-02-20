@@ -228,6 +228,14 @@ namespace chess
         return false;
     }
 
+    bool chesslobby::is_local_active(color_e col)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if (mp_game)
+            return ((m_locals.count(col) > 0) && (mp_game->turn_color() == col));
+        return false;
+    }
+
     std::string chesslobby::player_name(color_e col)
     {
         std::lock_guard<std::mutex> guard(m_mutex);

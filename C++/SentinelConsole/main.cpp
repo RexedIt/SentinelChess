@@ -175,6 +175,11 @@ void on_move(int16_t t, move_s &m, color_e c)
     }
     chessboard b;
     p_game->board_copy(b);
+    // *** REM *** Temp
+    if (b.check_state(c_black))
+        std::cout << "Black in Check." << std::endl;
+    else if (b.check_state(c_white))
+        std::cout << "White in Check." << std::endl;
     refresh_board(t, b);
 }
 

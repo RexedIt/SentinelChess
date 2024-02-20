@@ -34,8 +34,6 @@ script = ExtResource("1_i2www")
 
 [node name="SentinelChess" type="SentinelChess" parent="."]
 script = ExtResource("2_th60g")
-gamestate = null
-statewait = null
 
 [node name="RetroWoodBackground" type="Sprite2D" parent="."]
 texture = ExtResource("2_4tyao")
@@ -155,13 +153,11 @@ text = " Cancel "
 title = "New Game Options"
 position = Vector2i(405, 371)
 size = Vector2i(630, 400)
+visible = false
 popup_window = true
 theme_override_fonts/title_font = ExtResource("3_7nhen")
 theme_override_font_sizes/title_font_size = 24
 script = ExtResource("9_vmht8")
-cancelled = null
-level = null
-color = null
 
 [node name="MC" type="MarginContainer" parent="popNew2"]
 offset_left = 24.0
@@ -185,7 +181,7 @@ theme_override_font_sizes/font_size = 20
 text = "White
 "
 
-[node name="txtWhiteName" type="TextEdit" parent="popNew2/MC/VC/WhitePlayer"]
+[node name="txtName" type="TextEdit" parent="popNew2/MC/VC/WhitePlayer"]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
@@ -199,7 +195,7 @@ text = "Skill (0-2500)
 "
 horizontal_alignment = 2
 
-[node name="lvlWhiteSkill" type="HSlider" parent="popNew2/MC/VC/WhitePlayer"]
+[node name="lvlSkill" type="HSlider" parent="popNew2/MC/VC/WhitePlayer"]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 max_value = 2500.0
@@ -219,7 +215,7 @@ layout_mode = 2
 theme_override_constants/separation = 30
 alignment = 1
 
-[node name="optWhiteHuman" type="CheckBox" parent="popNew2/MC/VC/WhitePlayer/HC"]
+[node name="optHuman" type="CheckBox" parent="popNew2/MC/VC/WhitePlayer/HC"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
 button_pressed = true
@@ -227,7 +223,7 @@ button_group = ExtResource("10_8y1dj")
 text = "Human"
 alignment = 2
 
-[node name="optWhiteComputer" type="CheckBox" parent="popNew2/MC/VC/WhitePlayer/HC"]
+[node name="optComputer" type="CheckBox" parent="popNew2/MC/VC/WhitePlayer/HC"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("10_8y1dj")
@@ -407,6 +403,7 @@ offset_left = 1450.0
 offset_top = 980.0
 offset_right = 1554.0
 offset_bottom = 1011.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("3_7nhen")
 theme_override_font_sizes/font_size = 26
 text = "CMD>"

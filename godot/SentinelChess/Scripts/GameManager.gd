@@ -51,9 +51,9 @@ func _physics_process(delta):
 		match ce.event_type():
 			ChessEvent.ChessEventType.ceRefreshBoard:
 				print('ceRefreshBoard')
-				_draw_board(ce.move_no());
+				refresh_board()
 			ChessEvent.ChessEventType.ceConsider:
-				print('ceConsider')
+				pass
 			ChessEvent.ChessEventType.ceMove:
 				print('ceMove')
 				if ! is_local(ce.color()):
@@ -61,7 +61,8 @@ func _physics_process(delta):
 				else:
 					_draw_move(ce.move_no(), ce.move(), ce.color())
 			ChessEvent.ChessEventType.ceTurn:
-				print('ceTurn *** REM *** TODO')
+				print('ceTurn')
+				_on_turn(ce.move_no(),ce.color())
 			ChessEvent.ChessEventType.ceEnd:
 				print('ceEnd *** REM *** TODO')
 			ChessEvent.ChessEventType.ceChat:
@@ -133,8 +134,8 @@ func _computermove():
 	statewait = true
 	
 # Callbacks
-func _on_user_moved():
-	gameUI.append_move(turnno(), lastmove(), turn_color())
+func _on_user_moved(n, m, c):
+	gameUI.append_move(n, m, c)
 	_gamestatereact(GameState.PLAY)
 
 func _on_animated():
@@ -147,8 +148,8 @@ func _on_closed_new(_cancelled, _white, _black):
 		_gamestatereact(prepopgamestate)
 		return
 	# start new game
-	board.setup(_color)
 	new_game(_white, _black)
+	board.setup(preferred_board_color())
 	gameUI.clear_history()
 	gameUI.append_history('New Game')
 	statewait = false
@@ -215,14 +216,15 @@ func _on_error_msg(msg : String):
 	
 # Signal Handlers
 func _draw_move(n, m, c):
-	print("move!")
+	gameUI.append_move(n,m,c)
+	board.move_piece(m.p0, m.p1)
+	board.refreshpieces()	
 	
-func _draw_board(n):
-	# we restrict when this gets
-	# executed to load and new game
-	if (gamestate < GameState.PLAY):
+func _on_turn(n, c):
+	if is_local_active(c):
 		refresh_board()
-		
+	gameUI.refreshPrompt(c)
+	
 func refresh_board():
 	board.setup(turn_color())
 	board.refreshpieces()
@@ -240,10 +242,15 @@ func _computer_moved(n, m, c):
 	# eventually we will animate the move
 	# which will force the board to be redrawn.
 	statewait = false
-	gameUI.append_move(n,m,c)
-	board.animate_move(m)
-	gamestate = GameState.ANIMATEMOVE
-	
+	# if the opponent is ALSO computer, do not
+	# animate as we will miss the action.
+	if is_local_turn():
+		gameUI.append_move(n,m,c)
+		board.animate_move(m)
+		gamestate = GameState.ANIMATEMOVE
+	else:
+		_draw_move(n, m, c)
+			
 func _thinking(node, m, p):
 	print("thinking!")
 	

@@ -10,6 +10,8 @@ namespace chess
         etype = e.etype;
         check = e.check;
         color = e.color;
+        move_no = e.move_no;
+        check = e.check;
         turn_color = e.turn_color;
         win_color = e.win_color;
         game_state = e.game_state;
