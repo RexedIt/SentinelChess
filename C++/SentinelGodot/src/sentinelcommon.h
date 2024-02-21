@@ -10,6 +10,52 @@
 using namespace chess;
 using namespace godot;
 
+typedef enum ChessColor
+{
+    cNone = c_none,
+    White = c_white,
+    Black = c_black
+} ChessColor;
+
+typedef enum ChessGameState
+{
+    Play = play_e,
+    CheckMate = checkmate_e,
+    StaleMate = stalemate_e,
+    Forfeit = forfeit_e,
+    Time = time_e,
+    Terminate = terminate_e
+} ChessGameState;
+
+typedef enum ChessPiece
+{
+    pNone = p_none,
+    Pawn = p_pawn,
+    Bishop = p_bishop,
+    Knight = p_knight,
+    Rook = p_rook,
+    Queen = p_queen,
+    King = p_king
+} ChessPiece;
+
+typedef enum ChessPlayerType
+{
+    tNone = t_none,
+    Human = t_human,
+    Computer = t_computer
+} ChessPlayerType;
+
+typedef enum ChessEventType
+{
+    ceNone = ce_empty,
+    ceRefreshBoard = ce_refresh_board,
+    ceConsider = ce_consider,
+    ceMove = ce_move,
+    ceTurn = ce_turn,
+    ceEnd = ce_end,
+    ceChat = ce_chat
+} ChessEventType;
+
 class ChessCoord : public RefCounted
 {
     GDCLASS(ChessCoord, RefCounted)
@@ -81,13 +127,6 @@ public:
     ChessPlayer(std::shared_ptr<chessplayer>);
     ~ChessPlayer();
 
-    enum ChessPlayerType
-    {
-        tNone = t_none,
-        Human = t_human,
-        Computer = t_computer
-    };
-
     void set_name(String s);
     String get_name();
     void set_skill(const int s);
@@ -105,6 +144,10 @@ protected:
     static void _bind_methods();
 };
 
-VARIANT_ENUM_CAST(ChessPlayer::ChessPlayerType);
+VARIANT_ENUM_CAST(ChessColor);
+VARIANT_ENUM_CAST(ChessGameState);
+VARIANT_ENUM_CAST(ChessPiece);
+VARIANT_ENUM_CAST(ChessPlayerType);
+VARIANT_ENUM_CAST(ChessEventType);
 
 #endif // GDSENTINELCOMMON_H

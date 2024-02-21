@@ -34,6 +34,7 @@ namespace chess
         std::map<color_e, std::shared_ptr<chessplayer>> players();
 
         std::set<color_e> local_players();
+        bool has_local();
         bool is_local(color_e col);
         bool is_local_turn();
         bool is_local_active(color_e col);

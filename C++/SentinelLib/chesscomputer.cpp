@@ -42,7 +42,7 @@ namespace chess
         while (m_thread_running)
         {
             m_cancel = true;
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(25));
         }
     }
 

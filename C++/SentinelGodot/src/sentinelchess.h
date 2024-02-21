@@ -14,40 +14,13 @@ using namespace chess;
 using namespace godot;
 
 class ChessEvent;
+class ChessBoard;
 
 class SentinelChess : public Node
 {
     GDCLASS(SentinelChess, Node)
 
 public:
-    enum ChessColor
-    {
-        cNone = c_none,
-        White = c_white,
-        Black = c_black
-    };
-
-    enum ChessGameState
-    {
-        Play = play_e,
-        CheckMate = checkmate_e,
-        StaleMate = stalemate_e,
-        Forfeit = forfeit_e,
-        Time = time_e,
-        Terminate = terminate_e
-    };
-
-    enum ChessPiece
-    {
-        pNone = p_none,
-        Pawn = p_pawn,
-        Bishop = p_bishop,
-        Knight = p_knight,
-        Rook = p_rook,
-        Queen = p_queen,
-        King = p_king
-    };
-
     SentinelChess();
     ~SentinelChess();
 
@@ -81,6 +54,7 @@ private:
     int turnno();
 
     bool computer_moving();
+    bool has_local();
     bool is_local(ChessColor col);
     bool is_local_turn();
     bool is_local_active(ChessColor col);
@@ -94,10 +68,7 @@ private:
 
     // Board helpers
     bool cell_interactive(int y, int x);
-    ChessColor cell_color(int y, int x);
-    ChessPiece cell_piece(int y, int x);
-    bool cell_dark(int y, int x);
-    bool cell_kill(ChessColor col, int y, int x);
+    Ref<ChessBoard> board();
 
 protected:
     static void _bind_methods();
@@ -109,9 +80,28 @@ private:
     std::shared_ptr<chessgame> mp_game;
 };
 
-VARIANT_ENUM_CAST(SentinelChess::ChessColor);
-VARIANT_ENUM_CAST(SentinelChess::ChessGameState);
-VARIANT_ENUM_CAST(SentinelChess::ChessPiece);
+class ChessBoard : public RefCounted
+{
+    GDCLASS(ChessBoard, RefCounted)
+
+public:
+    ChessBoard();
+    ChessBoard(chessboard &b);
+    ~ChessBoard();
+
+    ChessColor color_(int y, int x);
+    ChessPiece piece(int y, int x);
+    bool dark(int y, int x);
+    bool kill(ChessColor col, int y, int x);
+    bool check_state(ChessColor col);
+    String save_xfen();
+
+private:
+    chessboard m_board;
+
+protected:
+    static void _bind_methods();
+};
 
 class ChessEvent : public RefCounted
 {
@@ -122,25 +112,15 @@ public:
     ChessEvent(chessevent &e);
     ~ChessEvent();
 
-    enum ChessEventType
-    {
-        ceNone = ce_empty,
-        ceRefreshBoard = ce_refresh_board,
-        ceConsider = ce_consider,
-        ceMove = ce_move,
-        ceTurn = ce_turn,
-        ceEnd = ce_end,
-        ceChat = ce_chat
-    };
-
     ChessEventType event_type();
     int move_no();
     bool check();
-    SentinelChess::ChessColor color();
-    SentinelChess::ChessColor turn_color();
-    SentinelChess::ChessColor win_color();
-    SentinelChess::ChessGameState game_state();
+    ChessColor color();
+    ChessColor turn_color();
+    ChessColor win_color();
+    ChessGameState game_state();
     Ref<ChessMove> move();
+    Ref<ChessBoard> board();
     int percent();
     String msg();
 
@@ -152,7 +132,5 @@ private:
 protected:
     static void _bind_methods();
 };
-
-VARIANT_ENUM_CAST(ChessEvent::ChessEventType);
 
 #endif // GDSENTINELCHESS_H

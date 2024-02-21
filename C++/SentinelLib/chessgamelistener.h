@@ -41,6 +41,7 @@ namespace chess
         color_e win_color = c_none;
         game_state_e game_state = none_e;
         move_s move;
+        chessboard board;
         int8_t percent = 0;
         std::string msg;
     } chessevent;

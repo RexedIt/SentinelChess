@@ -1,4 +1,4 @@
-@uid("uid://c2fxtcukqail3") # Generated automatically, do not modify.
+@uid("uid://b1pg13u8nfix6") # Generated automatically, do not modify.
 
 extends SentinelChess
 
@@ -51,18 +51,19 @@ func _physics_process(delta):
 		match ce.event_type():
 			ChessEvent.ChessEventType.ceRefreshBoard:
 				print('ceRefreshBoard')
-				refresh_board()
+				refresh_board(ce.board())
 			ChessEvent.ChessEventType.ceConsider:
 				pass
 			ChessEvent.ChessEventType.ceMove:
 				print('ceMove')
-				if ! is_local(ce.color()):
+				if has_local() and !is_local(ce.color()):
 					_computer_moved(ce.move_no(), ce.move(), ce.color())
 				else:
 					_draw_move(ce.move_no(), ce.move(), ce.color())
 			ChessEvent.ChessEventType.ceTurn:
 				print('ceTurn')
-				_on_turn(ce.move_no(),ce.color())
+				if gamestate != GameState.ANIMATEMOVE:
+					_on_turn(ce.move_no(),ce.board(),ce.color())
 			ChessEvent.ChessEventType.ceEnd:
 				print('ceEnd *** REM *** TODO')
 			ChessEvent.ChessEventType.ceChat:
@@ -135,10 +136,15 @@ func _computermove():
 	
 # Callbacks
 func _on_user_moved(n, m, c):
-	gameUI.append_move(n, m, c)
+	#gameUI.append_move(n, m, c)
 	_gamestatereact(GameState.PLAY)
 
 func _on_animated():
+	var c : ChessColor = turn_color();
+	if is_local_active(c):
+		var b : ChessBoard = get_board()
+		refresh_board(b)
+		gameUI.refreshPrompt(c)
 	_gamestatereact(GameState.PLAY)
 	
 # Dialog Handlers
@@ -218,19 +224,19 @@ func _on_error_msg(msg : String):
 func _draw_move(n, m, c):
 	gameUI.append_move(n,m,c)
 	board.move_piece(m.p0, m.p1)
-	board.refreshpieces()	
+	board.refreshpieces(self.get_board())	
 	
-func _on_turn(n, c):
+func _on_turn(n, b, c):
 	if is_local_active(c):
-		refresh_board()
+		refresh_board(b)
 	gameUI.refreshPrompt(c)
 	
-func refresh_board():
+func refresh_board(b : ChessBoard):
 	board.setup(turn_color())
-	board.refreshpieces()
+	board.refreshpieces(b)
 
-func refresh_turn():
-	board.refreshpieces()
+func refresh_turn(b : ChessBoard):
+	board.refreshpieces(b)
 	_gamestatereact(GameState.PLAY)
 	
 func _user_moved(m):
@@ -244,15 +250,7 @@ func _computer_moved(n, m, c):
 	statewait = false
 	# if the opponent is ALSO computer, do not
 	# animate as we will miss the action.
-	if is_local_turn():
-		gameUI.append_move(n,m,c)
-		board.animate_move(m)
-		gamestate = GameState.ANIMATEMOVE
-	else:
-		_draw_move(n, m, c)
+	gameUI.append_move(n,m,c)
+	board.animate_move(m)
+	gamestate = GameState.ANIMATEMOVE
 			
-func _thinking(node, m, p):
-	print("thinking!")
-	
-func _trace(node, msg):
-	print(":" + msg)

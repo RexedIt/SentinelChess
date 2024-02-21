@@ -208,6 +208,12 @@ namespace chess
         return mp_players;
     }
 
+    bool chesslobby::has_local()
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        return m_locals.size() > 0;
+    }
+
     std::set<color_e> chesslobby::local_players()
     {
         std::lock_guard<std::mutex> guard(m_mutex);

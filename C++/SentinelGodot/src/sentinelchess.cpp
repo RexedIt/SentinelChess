@@ -31,6 +31,7 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("turn_color"), &SentinelChess::turn_color);
     ClassDB::bind_method(D_METHOD("win_color"), &SentinelChess::win_color);
     ClassDB::bind_method(D_METHOD("computer_moving"), &SentinelChess::computer_moving);
+    ClassDB::bind_method(D_METHOD("has_local"), &SentinelChess::has_local);
     ClassDB::bind_method(D_METHOD("is_local"), &SentinelChess::is_local);
 
     ClassDB::bind_method(D_METHOD("is_local_turn"), &SentinelChess::is_local_turn);
@@ -53,11 +54,7 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("add_piece", "p0", "col", "piece"), &SentinelChess::add_piece);
 
     ClassDB::bind_method(D_METHOD("cell_interactive", "y", "x"), &SentinelChess::cell_interactive);
-    ClassDB::bind_method(D_METHOD("cell_color", "y", "x"), &SentinelChess::cell_color);
-    ClassDB::bind_method(D_METHOD("cell_piece", "y", "x"), &SentinelChess::cell_piece);
-    ClassDB::bind_method(D_METHOD("cell_dark", "y", "x"), &SentinelChess::cell_dark);
-    ClassDB::bind_method(D_METHOD("cell_kill", "col", "y", "x"), &SentinelChess::cell_kill);
-
+    ClassDB::bind_method(D_METHOD("get_board"), &SentinelChess::board);
     ClassDB::bind_method(D_METHOD("hasevent"), &SentinelChess::hasevent);
     ClassDB::bind_method(D_METHOD("popevent"), &SentinelChess::popevent);
 
@@ -117,7 +114,7 @@ Ref<ChessMove> SentinelChess::lastmove()
     return cm;
 }
 
-SentinelChess::ChessColor SentinelChess::lastcolor()
+ChessColor SentinelChess::lastcolor()
 {
     chessturn_s t = mp_game->last_turn();
     return (ChessColor)t.c;
@@ -188,14 +185,14 @@ String SentinelChess::save_xfen()
     return String(mp_game->save_xfen().c_str());
 }
 
-SentinelChess::ChessColor SentinelChess::turn_color()
+ChessColor SentinelChess::turn_color()
 {
-    return (SentinelChess::ChessColor)mp_game->turn_color();
+    return (ChessColor)mp_game->turn_color();
 }
 
-SentinelChess::ChessColor SentinelChess::win_color()
+ChessColor SentinelChess::win_color()
 {
-    return (SentinelChess::ChessColor)mp_game->win_color();
+    return (ChessColor)mp_game->win_color();
 }
 
 bool SentinelChess::computer_moving()
@@ -203,6 +200,11 @@ bool SentinelChess::computer_moving()
     if (state() == play_e)
         return !m_lobby.is_local_turn();
     return false;
+}
+
+bool SentinelChess::has_local()
+{
+    return m_lobby.has_local();
 }
 
 bool SentinelChess::is_local(ChessColor col)
@@ -261,7 +263,7 @@ Dictionary SentinelChess::player_names()
     return d;
 }
 
-SentinelChess::ChessColor SentinelChess::preferred_board_color()
+ChessColor SentinelChess::preferred_board_color()
 {
     std::set<color_e> locals = m_lobby.local_players();
     // if both players local and white, return it.
@@ -280,9 +282,9 @@ bool SentinelChess::check_state(ChessColor col)
     return mp_game->check_state((color_e)col);
 }
 
-SentinelChess::ChessGameState SentinelChess::state()
+ChessGameState SentinelChess::state()
 {
-    return (SentinelChess::ChessGameState)mp_game->state();
+    return (ChessGameState)mp_game->state();
 }
 
 int SentinelChess::forfeit(ChessColor col)
@@ -348,28 +350,87 @@ bool SentinelChess::cell_interactive(int y, int x)
     return m_lobby.is_local_active((color_e)(mp_game->board().get(y, x) & color_mask));
 }
 
-SentinelChess::ChessColor SentinelChess::cell_color(int y, int x)
+Ref<ChessBoard> SentinelChess::board()
 {
-    return (SentinelChess::ChessColor)(mp_game->board().get(y, x) & color_mask);
+    Ref<ChessBoard> cb(memnew(ChessBoard(mp_game->board())));
+    return cb;
 }
 
-SentinelChess::ChessPiece SentinelChess::cell_piece(int y, int x)
+// ChessBoard
+ChessBoard::ChessBoard()
 {
-    return (SentinelChess::ChessPiece)(mp_game->board().get(y, x) & piece_mask);
 }
 
-bool SentinelChess::cell_dark(int y, int x)
+ChessBoard::ChessBoard(chessboard &b)
+{
+    m_board.copy(b);
+}
+
+ChessBoard::~ChessBoard()
+{
+}
+
+void ChessBoard::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("color_", "y", "x"), &ChessBoard::color_);
+    ClassDB::bind_method(D_METHOD("piece", "y", "x"), &ChessBoard::piece);
+    ClassDB::bind_method(D_METHOD("dark", "y", "x"), &ChessBoard::dark);
+    ClassDB::bind_method(D_METHOD("kill", "y", "x"), &ChessBoard::kill);
+    ClassDB::bind_method(D_METHOD("check_state", "col"), &ChessBoard::check_state);
+    ClassDB::bind_method(D_METHOD("save_xfen"), &ChessBoard::save_xfen);
+}
+
+ChessColor ChessBoard::color_(int y, int x)
+{
+    return (ChessColor)(m_board.get(y, x) & color_mask);
+}
+
+ChessPiece ChessBoard::piece(int y, int x)
+{
+    return (ChessPiece)(m_board.get(y, x) & piece_mask);
+}
+
+bool ChessBoard::dark(int y, int x)
 {
     int cell = y * 8 + x + y % 2;
     return (cell % 2 == 0);
 }
 
-bool SentinelChess::cell_kill(ChessColor col, int y, int x)
+bool ChessBoard::kill(ChessColor col, int y, int x)
 {
     unsigned char mask_to_use = ((color_e)col == c_white) ? white_kill_mask : black_kill_mask;
-    return (SentinelChess::ChessColor)(mp_game->board().get(y, x) & mask_to_use);
+    return (ChessColor)(m_board.get(y, x) & mask_to_use);
 }
 
+bool ChessBoard::check_state(ChessColor col)
+{
+    return m_board.check_state((color_e)col);
+}
+
+String ChessBoard::save_xfen()
+{
+    return String(m_board.save_xfen().c_str());
+}
+
+/*
+class ChessBoard : public RefCounted
+{
+    GDCLASS(ChessBoard, RefCounted)
+
+public:
+    bool kill(ChessColor col, int y, int x);
+    bool check_state(ChessColor col);
+    String save_xfen();
+
+private:
+    chessboard m_board;
+
+protected:
+    static void _bind_methods();
+};
+*/
+
+// Chess Event
 ChessEvent::ChessEvent()
 {
 }
@@ -393,6 +454,7 @@ void ChessEvent::_bind_methods()
     ClassDB::bind_method(D_METHOD("win_color"), &ChessEvent::win_color);
     ClassDB::bind_method(D_METHOD("game_state"), &ChessEvent::game_state);
     ClassDB::bind_method(D_METHOD("move"), &ChessEvent::move);
+    ClassDB::bind_method(D_METHOD("board"), &ChessEvent::board);
     ClassDB::bind_method(D_METHOD("percent"), &ChessEvent::percent);
     ClassDB::bind_method(D_METHOD("msg"), &ChessEvent::msg);
 
@@ -406,7 +468,7 @@ void ChessEvent::_bind_methods()
     BIND_ENUM_CONSTANT(ceChat);
 }
 
-ChessEvent::ChessEventType ChessEvent::event_type()
+ChessEventType ChessEvent::event_type()
 {
     return (ChessEventType)m_event.etype;
 }
@@ -421,30 +483,36 @@ bool ChessEvent::check()
     return m_event.check;
 }
 
-SentinelChess::ChessColor ChessEvent::color()
+ChessColor ChessEvent::color()
 {
-    return (SentinelChess::ChessColor)m_event.color;
+    return (ChessColor)m_event.color;
 }
 
-SentinelChess::ChessColor ChessEvent::turn_color()
+ChessColor ChessEvent::turn_color()
 {
-    return (SentinelChess::ChessColor)m_event.turn_color;
+    return (ChessColor)m_event.turn_color;
 }
 
-SentinelChess::ChessColor ChessEvent::win_color()
+ChessColor ChessEvent::win_color()
 {
-    return (SentinelChess::ChessColor)m_event.win_color;
+    return (ChessColor)m_event.win_color;
 }
 
-SentinelChess::ChessGameState ChessEvent::game_state()
+ChessGameState ChessEvent::game_state()
 {
-    return (SentinelChess::ChessGameState)m_event.game_state;
+    return (ChessGameState)m_event.game_state;
 }
 
 Ref<ChessMove> ChessEvent::move()
 {
     Ref<ChessMove> cm(memnew(ChessMove(m_event.move)));
     return cm;
+}
+
+Ref<ChessBoard> ChessEvent::board()
+{
+    Ref<ChessBoard> cb(memnew(ChessBoard(m_event.board)));
+    return cb;
 }
 
 int ChessEvent::percent()

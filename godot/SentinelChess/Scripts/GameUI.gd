@@ -88,10 +88,11 @@ func append_move(n : int, m : ChessMove, col : SentinelChess.ChessColor):
 	if col == SentinelChess.ChessColor.Black:
 		color = 'black'
 	append_history(str(n) + ' ' + color + ' ' + movestr(m), color)
-	if (game_manager.check_state(SentinelChess.Black)):
-		append_history('Black in Check.', 'black')	
-	if (game_manager.check_state(SentinelChess.White)):
-		append_history('White in Check.', 'white')
+	if game_manager.has_local():
+		if (game_manager.check_state(SentinelChess.Black)):
+			append_history('Black in Check.', 'black')	
+		if (game_manager.check_state(SentinelChess.White)):
+			append_history('White in Check.', 'white')
 		
 # UI Handlers
 
@@ -125,7 +126,7 @@ func handle_rewind(move_no: int) -> bool:
 		show_error('!' + game_manager.errorstr(err))
 		return false
 	append_history('Rewind - ' + str(move_no))
-	game_manager.refresh_turn()
+	game_manager.refresh_turn(game_manager.get_board())
 	return true
 	
 func _on_txt_cmd_text_submitted(new_text):
@@ -161,7 +162,7 @@ func _on_txt_cmd_text_submitted(new_text):
 	return
 
 func possible_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
-	var possible_moves : Array = game_manager.possible_moves(game_manager.user_color())
+	var possible_moves : Array = game_manager.possible_moves(game_manager.turn_color())
 	for possible_move in possible_moves:
 		if possible_move.matches_p0p1(p0,p1):
 			return true
@@ -198,17 +199,18 @@ func handle_move(cmd: String) -> bool:
 				# time to check
 				if possible_move(p0,p1):
 					var m : ChessMove = ChessMove.new()
+					var c : SentinelChess.ChessColor = game_manager.turn_color()
 					m.p0=p0
 					m.p1=p1
-					var err : int = game_manager.user_move_m(game_manager.user_color(), m)
+					var err : int = game_manager.move_m(c, m)
 					if err != 0:
 						show_error('!' + game_manager.errorstr(err))
 						return false
-					if game_manager.check_state(game_manager.user_color()):
+					if game_manager.check_state(c):
 						if game_manager.state() == SentinelChess.ChessGameState.Play:
 							show_error("You are in Check.")
 							return false
-					append_move(game_manager.turnno(), m, game_manager.user_color())
+					append_move(game_manager.turnno(), m, c)
 					game_manager._user_moved(m)
 					return true				
 	return false

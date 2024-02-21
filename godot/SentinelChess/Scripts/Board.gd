@@ -19,8 +19,6 @@ var possible_moves : Array
 func _ready():
 	piece_arr.resize(64)
 	
-
-
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
@@ -31,10 +29,10 @@ func setup(_color):
 	else:
 		rotation_degrees = 180
 	
-func refreshpieces():
+func refreshpieces(b : ChessBoard):
 	for y in 8:
 		for x in 8:
-			var pc : SentinelChess.ChessColor = game.cell_color(y,x)
+			var pc : SentinelChess.ChessColor = b.color_(y,x)
 			var po = piece_arr[y*8+x]
 			if (pc == SentinelChess.ChessColor.cNone):
 				if (po!=null):
@@ -42,7 +40,7 @@ func refreshpieces():
 					po.queue_free()
 					po=null
 			else:
-				var pt : SentinelChess.ChessPiece = game.cell_piece(y,x)
+				var pt : SentinelChess.ChessPiece = b.piece(y,x)
 				if (po!=null):
 					po.refresh(pc,pt,rotation_degrees)
 				else:
@@ -165,7 +163,7 @@ func coordstr(p0 : ChessCoord) -> String:
 func _on_animated(p0 : ChessCoord, p1 : ChessCoord):
 	move_piece(p0,p1)
 	# we do this just in case of moves like promotion or castling, en passant
-	refreshpieces()
+	refreshpieces(game.get_board())
 	# print('_on_animated ' + coordstr(p0) + ' to ' + coordstr(p1))
 	game._on_animated()			
 		

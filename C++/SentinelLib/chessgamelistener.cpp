@@ -16,6 +16,7 @@ namespace chess
         win_color = e.win_color;
         game_state = e.game_state;
         move = e.move;
+        board.copy(e.board);
         percent = e.percent;
         msg = e.msg;
     }
@@ -128,6 +129,7 @@ namespace chess
         std::lock_guard<std::mutex> guard(m_mutex);
         chessevent e(ce_refresh_board);
         e.move_no = n;
+        e.board.copy(b);
         m_events.push(e);
     }
 
@@ -157,6 +159,7 @@ namespace chess
         chessevent e(ce_turn);
         e.move_no = n;
         e.check = ch;
+        e.board.copy(b);
         e.color = c;
         m_events.push(e);
     }

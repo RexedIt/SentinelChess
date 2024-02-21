@@ -265,7 +265,7 @@ void ChessPlayer::set_playertype(ChessPlayerType t)
     m_playertype = (chessplayertype_e)t;
 }
 
-ChessPlayer::ChessPlayerType ChessPlayer::get_playertype()
+ChessPlayerType ChessPlayer::get_playertype()
 {
     return (ChessPlayerType)m_playertype;
 }
