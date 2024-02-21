@@ -1,4 +1,3 @@
-@uid("uid://o21q8fipo8cb") # Generated automatically, do not modify.
 extends Node2D
 
 # Called when the node enters the scene tree for the first time.

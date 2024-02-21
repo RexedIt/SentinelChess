@@ -1,4 +1,3 @@
-@uid("uid://feu87e4pw2w") # Generated automatically, do not modify.
 extends Sprite2D
 
 @onready var game : SentinelChess = get_parent().get_node('SentinelChess')

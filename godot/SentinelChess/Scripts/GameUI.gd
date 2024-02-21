@@ -1,4 +1,3 @@
-@uid("uid://sach311s5oje") # Generated automatically, do not modify.
 extends CanvasLayer
 
 @onready var game_manager : SentinelChess = get_parent().get_node('SentinelChess')

@@ -1,4 +1,3 @@
-@uid("uid://no557lyo44m") # Generated automatically, do not modify.
 extends Sprite2D
 
 @export var endalpha : float

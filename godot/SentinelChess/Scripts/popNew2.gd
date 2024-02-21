@@ -1,4 +1,3 @@
-@uid("uid://b2fwbknmi4rb2") # Generated automatically, do not modify.
 extends Window
 
 @export var cancelled : bool = false

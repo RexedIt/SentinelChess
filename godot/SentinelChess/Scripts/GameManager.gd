@@ -1,5 +1,3 @@
-@uid("uid://b1pg13u8nfix6") # Generated automatically, do not modify.
-
 extends SentinelChess
 
 # siblings

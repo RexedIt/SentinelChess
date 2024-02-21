@@ -1,4 +1,3 @@
-@uid("uid://cu5mptv486reu") # Generated automatically, do not modify.
 extends FileDialog
 
 @export var cancelled : bool = false
