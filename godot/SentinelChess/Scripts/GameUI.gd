@@ -86,15 +86,15 @@ func append_move(n : int, m : ChessMove, col : SentinelChess.ChessColor):
 	var color : String = 'white'
 	if col == SentinelChess.ChessColor.Black:
 		color = 'black'
+	#print(color + ' ' + movestr(m))
 	append_history(str(n) + ' ' + color + ' ' + movestr(m), color)
 	if game_manager.has_local():
 		if (game_manager.check_state(SentinelChess.Black)):
 			append_history('Black in Check.', 'black')	
 		if (game_manager.check_state(SentinelChess.White)):
 			append_history('White in Check.', 'white')
-		
-# UI Handlers
 
+# UI Handlers
 func show_error(msg : String):
 	errortime = 3
 	lblError.text = msg

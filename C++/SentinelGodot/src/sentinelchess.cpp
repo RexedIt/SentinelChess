@@ -73,7 +73,7 @@ void SentinelChess::_bind_methods()
     BIND_ENUM_CONSTANT(CheckMate);
     BIND_ENUM_CONSTANT(StaleMate);
     BIND_ENUM_CONSTANT(Forfeit);
-    BIND_ENUM_CONSTANT(Time);
+    BIND_ENUM_CONSTANT(TimeUp);
     BIND_ENUM_CONSTANT(Terminate);
 
     // Pieces
@@ -462,7 +462,6 @@ void ChessEvent::_bind_methods()
     BIND_ENUM_CONSTANT(ceNone);
     BIND_ENUM_CONSTANT(ceRefreshBoard);
     BIND_ENUM_CONSTANT(ceConsider);
-    BIND_ENUM_CONSTANT(ceMove);
     BIND_ENUM_CONSTANT(ceTurn);
     BIND_ENUM_CONSTANT(ceEnd);
     BIND_ENUM_CONSTANT(ceChat);

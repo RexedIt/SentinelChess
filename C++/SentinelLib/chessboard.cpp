@@ -29,6 +29,7 @@ namespace chess
         m_kill_updated = false;
         mp_cb_thinking = NULL;
         mp_cb_traces = NULL;
+        m_check[0] = m_check[1] = false;
     }
 
     chessboard::chessboard(chessboard &other)

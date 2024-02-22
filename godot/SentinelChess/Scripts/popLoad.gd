@@ -19,7 +19,7 @@ func _VisibilityChanged():
 	if (visible):
 		cancelled = false
 	else:
-		loadfile = current_file
+		loadfile = current_path
 		on_closed.emit(cancelled, loadfile)
 	
 func _OnCancel():

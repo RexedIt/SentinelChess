@@ -23,7 +23,7 @@ typedef enum ChessGameState
     CheckMate = checkmate_e,
     StaleMate = stalemate_e,
     Forfeit = forfeit_e,
-    Time = time_e,
+    TimeUp = time_up_e,
     Terminate = terminate_e
 } ChessGameState;
 
@@ -50,7 +50,6 @@ typedef enum ChessEventType
     ceNone = ce_empty,
     ceRefreshBoard = ce_refresh_board,
     ceConsider = ce_consider,
-    ceMove = ce_move,
     ceTurn = ce_turn,
     ceEnd = ce_end,
     ceChat = ce_chat

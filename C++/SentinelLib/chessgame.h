@@ -30,7 +30,7 @@ namespace chess
         std::string save_xfen();
 
         chessboard board();
-        void board_copy(chessboard& b);
+        void board_copy(chessboard &b);
 
         chessturn_s last_turn();
         game_state_e state();
@@ -44,8 +44,7 @@ namespace chess
         error_e move(color_e col, move_s m0);
         error_e move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
         std::vector<move_s> possible_moves(color_e col);
-        game_state_e is_game_over(color_e col, move_s &m);
-
+        game_state_e is_game_over(color_e col, move_s m);
         // Check?
         bool check_state(color_e col);
         std::string check_state();
@@ -65,13 +64,12 @@ namespace chess
         error_e unlisten(int);
         error_e end_game(game_state_e, color_e);
         error_e chat(std::string, color_e);
-        error_e consider(move_s &, color_e, int8_t pct = -1);
+        error_e consider(move_s, color_e, int8_t pct = -1);
 
     private:
         // Signallers
         void signal_refresh_board();
-        void signal_on_consider(move_s &, color_e, int8_t pct = -1);
-        void signal_on_move(move_s &, color_e);
+        void signal_on_consider(move_s, color_e, int8_t pct = -1);
         void signal_on_turn();
         void signal_on_end();
         void signal_chat(std::string, color_e);

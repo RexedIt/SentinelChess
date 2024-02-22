@@ -157,30 +157,27 @@ void refresh_board(int16_t t, chessboard &b)
     board_to_console(t, b, r);
 }
 
-void on_consider(move_s &m, color_e c, int8_t p)
+void on_consider(move_s m, color_e c, int8_t p)
 {
     std::cout << ".";
 }
 
-void on_turn(int16_t t, bool ch, chessboard &b, color_e c)
+void on_turn(int16_t t, move_s m, bool ch, chessboard &b, color_e tc)
 {
-}
-
-void on_move(int16_t t, move_s &m, color_e c)
-{
-    if (!locals.count(c))
+    if (m.is_valid())
     {
-        std::cout << std::endl;
-        move_to_console(m, color_str(c));
+        color_e c = other(tc);
+        if (!locals.count(c))
+        {
+            std::cout << std::endl;
+            move_to_console(m, color_str(c));
+        }
+        if (b.check_state(c_black))
+            std::cout << "Black in Check." << std::endl;
+        else if (b.check_state(c_white))
+            std::cout << "White in Check." << std::endl;
+        refresh_board(t, b);
     }
-    chessboard b;
-    p_game->board_copy(b);
-    // *** REM *** Temp
-    if (b.check_state(c_black))
-        std::cout << "Black in Check." << std::endl;
-    else if (b.check_state(c_white))
-        std::cout << "White in Check." << std::endl;
-    refresh_board(t, b);
 }
 
 std::string prompt()
@@ -213,7 +210,6 @@ int main(void)
         new chessgamelistener_direct(cl_user,
                                      &refresh_board,
                                      &on_consider,
-                                     &on_move,
                                      &on_turn,
                                      &on_end,
                                      &chat));

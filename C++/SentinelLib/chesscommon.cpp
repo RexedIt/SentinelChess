@@ -161,8 +161,8 @@ namespace chess
             return "Stalemate";
         case forfeit_e:
             return "Forfeit";
-        case time_e:
-            return "Time";
+        case time_up_e:
+            return "Time Up";
         case terminate_e:
             return "Terminated";
         }

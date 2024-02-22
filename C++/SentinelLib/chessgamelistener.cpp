@@ -45,7 +45,6 @@ namespace chess
         chessgamelistenertype listenertype,
         refresh_board_cb p_refresh_board_cb,
         on_consider_cb p_on_consider_cb,
-        on_move_cb p_on_move_cb,
         on_turn_cb p_on_turn_cb,
         on_end_cb p_on_end_cb,
         chat_cb p_chat_cb)
@@ -53,7 +52,6 @@ namespace chess
         m_listenertype = listenertype;
         mp_refresh_board_cb = p_refresh_board_cb;
         mp_on_consider_cb = p_on_consider_cb;
-        mp_on_move_cb = p_on_move_cb;
         mp_on_turn_cb = p_on_turn_cb;
         mp_on_end_cb = p_on_end_cb;
         mp_chat_cb = p_chat_cb;
@@ -66,25 +64,18 @@ namespace chess
             (mp_refresh_board_cb)(n, b);
     }
 
-    void chessgamelistener_direct::signal_on_consider(move_s &m, color_e c, int8_t p)
+    void chessgamelistener_direct::signal_on_consider(move_s m, color_e c, int8_t p)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         if (mp_on_consider_cb)
             (*mp_on_consider_cb)(m, c, p);
     }
 
-    void chessgamelistener_direct::signal_on_move(int16_t n, move_s &m, color_e c)
-    {
-        std::lock_guard<std::mutex> guard(m_mutex);
-        if (mp_on_move_cb)
-            (*mp_on_move_cb)(n, m, c);
-    }
-
-    void chessgamelistener_direct::signal_on_turn(int16_t n, bool ch, chessboard &b, color_e c)
+    void chessgamelistener_direct::signal_on_turn(int16_t n, move_s m, bool ch, chessboard &b, color_e c)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         if (mp_on_turn_cb)
-            (*mp_on_turn_cb)(n, ch, b, c);
+            (*mp_on_turn_cb)(n, m, ch, b, c);
     }
 
     void chessgamelistener_direct::signal_on_end(game_state_e g, color_e w)
@@ -133,7 +124,7 @@ namespace chess
         m_events.push(e);
     }
 
-    void chessgamelistener_queue::signal_on_consider(move_s &m, color_e c, int8_t p)
+    void chessgamelistener_queue::signal_on_consider(move_s m, color_e c, int8_t p)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         chessevent e(ce_consider);
@@ -143,21 +134,12 @@ namespace chess
         m_events.push(e);
     }
 
-    void chessgamelistener_queue::signal_on_move(int16_t n, move_s &m, color_e c)
-    {
-        std::lock_guard<std::mutex> guard(m_mutex);
-        chessevent e(ce_move);
-        e.move_no = n;
-        e.move = m;
-        e.color = c;
-        m_events.push(e);
-    }
-
-    void chessgamelistener_queue::signal_on_turn(int16_t n, bool ch, chessboard &b, color_e c)
+    void chessgamelistener_queue::signal_on_turn(int16_t n, move_s m, bool ch, chessboard &b, color_e c)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         chessevent e(ce_turn);
         e.move_no = n;
+        e.move = m;
         e.check = ch;
         e.board.copy(b);
         e.color = c;

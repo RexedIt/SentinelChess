@@ -52,20 +52,29 @@ func _physics_process(delta):
 				refresh_board(ce.board())
 			ChessEvent.ChessEventType.ceConsider:
 				pass
-			ChessEvent.ChessEventType.ceMove:
-				print('ceMove')
-				if has_local() and !is_local(ce.color()):
-					_computer_moved(ce.move_no(), ce.move(), ce.color())
-				else:
-					_draw_move(ce.move_no(), ce.move(), ce.color())
 			ChessEvent.ChessEventType.ceTurn:
 				print('ceTurn')
+				var n : int = ce.move_no()
+				var m : ChessMove = ce.move()
+				var ch : bool = ce.check()
+				var b : ChessBoard = ce.board()
+				var c : ChessColor = ce.color()
+				if m.is_valid():
+					print('ceMove')
+					var cm : ChessColor = ChessColor.White
+					if c == ChessColor.White:
+						cm = ChessColor.Black
+					if has_local() and !is_local(cm):
+						_computer_moved(n, m, cm)
+					else:
+						_draw_move(n, m, cm)
 				if gamestate != GameState.ANIMATEMOVE:
-					_on_turn(ce.move_no(),ce.board(),ce.color())
+					_on_turn(n,b,c)
 			ChessEvent.ChessEventType.ceEnd:
 				print('ceEnd *** REM *** TODO')
 			ChessEvent.ChessEventType.ceChat:
 				print('ceChat *** REM *** TODO')
+
 
 func _gamestatereact(gs):
 	gamestate = gs

@@ -46,14 +46,15 @@ namespace chess
         }
     }
 
-    void chesscomputer::signal_on_turn(int16_t turn_no, bool check, chessboard &board, color_e color)
+    void chesscomputer::signal_on_turn(int16_t turn_no, move_s m, bool check, chessboard &board, color_e color)
     {
         // This is where we will determine game state, move, or forfeit.
         // move:
         if ((!m_thread_running) && (color == m_color))
         {
+            m_board.copy(board);
             m_thread_running = true;
-            std::thread background(&chesscomputer::computer_move, this, std::ref(board));
+            std::thread background(&chesscomputer::computer_move, this, std::ref(m_board));
             m_thread_id = background.get_id();
             background.detach();
         }
@@ -96,23 +97,24 @@ namespace chess
             }
             chessboard b(board);
             move_s candidate = b.execute_move(possible[i]);
-            float score = computer_move_min(b, other(m_color), alpha, beta, rec - 1);
-            if (score >= beta)
+            if (candidate.is_valid())
             {
-                best = candidate;
-                break;
-            }
-            else if (score > alpha)
-            {
-                best = candidate;
-                alpha = score;
+                float score = computer_move_min(b, other(m_color), alpha, beta, rec - 1);
+                if (score >= beta)
+                {
+                    best = candidate;
+                    break;
+                }
+                else if (score > alpha)
+                {
+                    best = candidate;
+                    alpha = score;
+                }
             }
             consider(candidate, (int8_t)(i * 100 / possible.size()));
         }
-        // We will need to do this in the game move function now. evaluate_check_and_mate(m_color, possible, best);
-        error_e err = e_none;
-        if (best.is_valid())
-            err = move(best);
+        // We call move on the best outcome as it will not actually move if not valid but evaluate end of game.
+        error_e err = move(best);
         m_thread_running = false;
         return err;
     }
@@ -128,12 +130,15 @@ namespace chess
         {
             chessboard b(board);
             // Execute the move
-            b.execute_move(possible[i]);
-            float score = computer_move_min(b, other(turn_col), alpha, beta, rec - 1);
-            if (score >= beta)
-                return beta;
-            if (score > alpha)
-                alpha = score;
+            move_s candidate = b.execute_move(possible[i]);
+            if (candidate.is_valid())
+            {
+                float score = computer_move_min(b, other(turn_col), alpha, beta, rec - 1);
+                if (score >= beta)
+                    return beta;
+                if (score > alpha)
+                    alpha = score;
+            }
         }
         return alpha;
     }
@@ -149,12 +154,15 @@ namespace chess
         {
             chessboard b(board);
             // Execute the move
-            b.execute_move(possible[i]);
-            float score = computer_move_max(b, other(turn_col), alpha, beta, rec - 1);
-            if (score <= alpha)
-                return alpha;
-            if (score < beta)
-                beta = score;
+            move_s candidate = b.execute_move(possible[i]);
+            if (candidate.is_valid())
+            {
+                float score = computer_move_max(b, other(turn_col), alpha, beta, rec - 1);
+                if (score <= alpha)
+                    return alpha;
+                if (score < beta)
+                    beta = score;
+            }
         }
         return beta;
     }

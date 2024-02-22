@@ -52,7 +52,7 @@ namespace chess
         return (int16_t)m_turn.size();
     }
 
-    game_state_e chessgame::is_game_over(color_e col, move_s &m)
+    game_state_e chessgame::is_game_over(color_e col, move_s m)
     {
         if (m_state == play_e)
         {
@@ -81,13 +81,13 @@ namespace chess
         if (col == m_board.turn_color())
         {
             move_s m = m_board.attempt_move(col, m0);
-            if (!m.is_valid())
-                return m.error;
             m_state = is_game_over(col, m);
-            m_turn.push_back(new_turn(m_board, m, col));
             guard.unlock();
-            signal_on_move(m, col);
-            signal_on_turn();
+            if (m.is_valid())
+            {
+                m_turn.push_back(new_turn(m_board, m, col));
+                signal_on_turn();
+            }
             if (m_state != play_e)
                 return end_game(m_state, m_win_color);
         }
@@ -278,7 +278,7 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::consider(move_s &m, color_e c, int8_t p)
+    error_e chessgame::consider(move_s m, color_e c, int8_t p)
     {
         signal_on_consider(m, c, p);
         return e_none;
@@ -291,26 +291,20 @@ namespace chess
             kv.second->signal_refresh_board(n, m_board);
     }
 
-    void chessgame::signal_on_consider(move_s &m, color_e c, int8_t p)
+    void chessgame::signal_on_consider(move_s m, color_e c, int8_t p)
     {
         for (const auto &kv : mp_listeners)
             kv.second->signal_on_consider(m, c, p);
     }
 
-    void chessgame::signal_on_move(move_s &m, color_e c)
-    {
-        int16_t n = turnno();
-        for (const auto &kv : mp_listeners)
-            kv.second->signal_on_move(n, m, c);
-    }
-
     void chessgame::signal_on_turn()
     {
         int16_t n = turnno();
-        color_e c = m_board.turn_color();
-        bool ch = m_board.check_state(c);
+        chessturn_s l = last_turn();
+        color_e c = turn_color();
+        bool ch = l.b.check_state(c);
         for (const auto &kv : mp_listeners)
-            kv.second->signal_on_turn(n, ch, m_board, c);
+            kv.second->signal_on_turn(n, l.m, ch, m_board, c);
     }
 
     void chessgame::signal_on_end()

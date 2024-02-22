@@ -14,11 +14,10 @@ namespace chess
         ~chesscomputer();
 
     protected:
-        virtual void signal_on_turn(int16_t, bool, chessboard &, color_e);
+        virtual void signal_on_turn(int16_t, move_s, bool, chessboard &, color_e);
         virtual void signal_on_end(game_state_e, color_e);
         virtual void signal_refresh_board(int16_t, chessboard &) { ; }
-        virtual void signal_on_consider(move_s &, color_e, int8_t pct = -1) { ; }
-        virtual void signal_on_move(int16_t, move_s &, color_e) { ; }
+        virtual void signal_on_consider(move_s, color_e, int8_t pct = -1) { ; }
         virtual void signal_chat(std::string, color_e) { ; }
 
     private:
@@ -30,6 +29,7 @@ namespace chess
 
         int32_t m_level;
 
+        chessboard m_board;
         std::thread::id m_thread_id;
         bool m_thread_running;
         volatile bool m_cancel;

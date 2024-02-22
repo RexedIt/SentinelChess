@@ -47,7 +47,7 @@ func refreshpieces(b : ChessBoard):
 					add_child(po)
 					po.initialize(pc,pt,y,x,screen_y(y),screen_x(x),rotation_degrees)
 			piece_arr[y*8+x]=po
-					
+
 func screen_y(by : int) -> int:
 	var sy = board_y0 - by * board_dy
 	if sy < board_y0 - 8 * board_dy or sy > board_y0:

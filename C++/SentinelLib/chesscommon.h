@@ -181,7 +181,7 @@ namespace chess
         checkmate_e = 1,
         stalemate_e = 2,
         forfeit_e = 3,
-        time_e = 4,
+        time_up_e = 4,
         terminate_e = 5
     } game_state_e;
 

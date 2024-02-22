@@ -19,7 +19,7 @@ func _VisibilityChanged():
 	if (visible):
 		cancelled = false
 	else:
-		savefile = current_file
+		savefile = current_path
 		on_closed.emit(cancelled, savefile)
 	
 func _OnCancel():
