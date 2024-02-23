@@ -53,14 +53,12 @@ func _physics_process(delta):
 			ChessEvent.ChessEventType.ceConsider:
 				pass
 			ChessEvent.ChessEventType.ceTurn:
-				print('ceTurn')
 				var n : int = ce.turn_no()
 				var m : ChessMove = ce.move()
 				var ch : bool = ce.check()
 				var b : ChessBoard = ce.board()
 				var c : ChessColor = ce.color()
 				if m.is_valid():
-					print('ceMove')
 					var cm : ChessColor = ChessColor.White
 					if c == ChessColor.White:
 						cm = ChessColor.Black

@@ -233,14 +233,13 @@ int main(void)
 {
 
     /*
-        std::shared_ptr<chessgamelistener_direct> p_listener(
-            new chessgamelistener_direct(cl_user,
-                                         &refresh_board,
-                                         &on_consider,
-                                         &on_turn,
-                                         &on_end,
-                                         &chat));
-    */
+    std::shared_ptr<chessgamelistener_direct> p_listener(
+        new chessgamelistener_direct(cl_user,
+                                     &refresh_board,
+                                     &on_consider,
+                                     &on_turn,
+                                     &on_end,
+                                     &on_chat)); */
 
     std::shared_ptr<chessgamelistener_queue> p_listener(
         new chessgamelistener_queue(cl_user));

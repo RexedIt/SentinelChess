@@ -127,11 +127,14 @@ namespace chess
     void chessgamelistener_queue::signal_on_consider(move_s m, color_e c, int8_t p)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        chessevent e(ce_consider);
-        e.move = m;
-        e.color = c;
-        e.percent = p;
-        m_events.push(e);
+        if (m_events.size() == 0)
+        {
+            chessevent e(ce_consider);
+            e.move = m;
+            e.color = c;
+            e.percent = p;
+            m_events.push(e);
+        }
     }
 
     void chessgamelistener_queue::signal_on_turn(int16_t n, move_s m, bool ch, chessboard &b, color_e c)

@@ -69,7 +69,7 @@ func append_history(msg : String, color : String = 'blue'):
 	lblHistory.add_text(msg.to_upper())
 	lblHistory.newline()
 	lblHistory.pop()
-
+	
 func refreshPrompt(col : SentinelChess.ChessColor):
 	var crgb : Color = Color(1,1,1)
 	if col == SentinelChess.ChessColor.Black:
