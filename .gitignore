@@ -8,3 +8,5 @@
 /C++/SentinelGodot/.sconsign.dblite
 /.vs
 /Assets
+C++/SentinelGodot/demo/bin/libgdsentinel*.*
+godot/SentinelChess/bin/libgdsentinel*.*
