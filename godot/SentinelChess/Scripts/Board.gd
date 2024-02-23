@@ -139,6 +139,8 @@ func move_piece(p0 : ChessCoord, p1 : ChessCoord):
 		pd.queue_free()
 	piece_arr[p0.y*8+p0.x] = null
 	piece_arr[p1.y*8+p1.x] = pc
+	pc.position.y = screen_y(p1.y)
+	pc.position.x = screen_x(p1.x)
 	
 func handle_error(err : int):
 	game._on_error(err)

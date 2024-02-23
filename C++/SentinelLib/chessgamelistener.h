@@ -32,7 +32,7 @@ namespace chess
         chessevent(chesseventtype e) { etype = e; }
         chessevent(const chessevent &e);
         chesseventtype etype = ce_empty;
-        int16_t move_no = 0;
+        int16_t turn_no = 0;
         bool check = false;
         color_e color = c_none;
         color_e turn_color = c_none;

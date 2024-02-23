@@ -10,13 +10,13 @@ namespace chess
         etype = e.etype;
         check = e.check;
         color = e.color;
-        move_no = e.move_no;
+        turn_no = e.turn_no;
         check = e.check;
         turn_color = e.turn_color;
         win_color = e.win_color;
         game_state = e.game_state;
         move = e.move;
-        board.copy(e.board);
+        board = e.board;
         percent = e.percent;
         msg = e.msg;
     }
@@ -119,8 +119,8 @@ namespace chess
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         chessevent e(ce_refresh_board);
-        e.move_no = n;
-        e.board.copy(b);
+        e.turn_no = n;
+        e.board = b;
         m_events.push(e);
     }
 
@@ -138,10 +138,10 @@ namespace chess
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         chessevent e(ce_turn);
-        e.move_no = n;
+        e.turn_no = n;
         e.move = m;
         e.check = ch;
-        e.board.copy(b);
+        e.board = b;
         e.color = c;
         m_events.push(e);
     }

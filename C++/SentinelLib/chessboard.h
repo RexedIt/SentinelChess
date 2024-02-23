@@ -13,9 +13,6 @@ namespace chess
 
     class chesspiece;
 
-    typedef void (*thinking_callback)(move_s, int);
-    typedef void (*traces_callback)(std::string);
-
     class chessboard
     {
         // first index is a-h, second index is 1-8.  Note
@@ -24,9 +21,11 @@ namespace chess
 
     public:
         chessboard();
-        chessboard(chessboard &other);
+        chessboard(const chessboard &other);
 
         void copy(const chessboard &other);
+        void operator=(const chessboard &other);
+
         error_e load(std::ifstream &is);
         error_e save(std::ofstream &os);
 
@@ -59,9 +58,7 @@ namespace chess
         color_e turn_color();
         uint32_t hash(int rec);
 
-        void set_callbacks(thinking_callback _thinking, traces_callback _traces);
         void cancel(bool c) { m_cancel = c; }
-        void trace(std::string msg);
 
         friend class chesscomputer;
 
@@ -97,8 +94,6 @@ namespace chess
         uint32_t m_hash;
         bool m_kill_updated;
         volatile bool m_cancel;
-        thinking_callback mp_cb_thinking;
-        traces_callback mp_cb_traces;
     };
 
 }

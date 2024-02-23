@@ -52,7 +52,7 @@ namespace chess
         // move:
         if ((!m_thread_running) && (color == m_color))
         {
-            m_board.copy(board);
+            m_board = board;
             m_thread_running = true;
             std::thread background(&chesscomputer::computer_move, this, std::ref(m_board));
             m_thread_id = background.get_id();

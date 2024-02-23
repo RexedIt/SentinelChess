@@ -14,9 +14,9 @@ namespace chess
     chessplayertype_e playertypefromstring(std::string p)
     {
         std::string pu = uppercase(p);
-        if (pu == "HUMAN")
+        if ((pu == "HUMAN") || (pu == "H"))
             return t_human;
-        if (pu == "COMPUTER")
+        if ((pu == "COMPUTER") || (pu == "C"))
             return t_computer;
         return t_none;
     }
@@ -112,10 +112,7 @@ namespace chess
 
     chessboard chessplayer::board()
     {
-        chessboard b;
-        if (mp_game == NULL)
-            b.copy(mp_game->board());
-        return b;
+        return mp_game->board();
     }
 
     std::vector<move_s> chessplayer::possible_moves()

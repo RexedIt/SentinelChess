@@ -17,11 +17,6 @@ namespace chess
         return b;
     }
 
-    void chessgame::board_copy(chessboard &b)
-    {
-        b.copy(m_board);
-    }
-
     game_state_e chessgame::state()
     {
         return m_state;
@@ -163,7 +158,6 @@ namespace chess
         m_win_color = c_none;
         m_board.new_board();
         m_turn.clear();
-        m_board.trace("cg:new_game");
         signal_refresh_board();
         signal_on_turn();
         return e_none;

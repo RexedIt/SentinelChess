@@ -54,7 +54,7 @@ func _physics_process(delta):
 				pass
 			ChessEvent.ChessEventType.ceTurn:
 				print('ceTurn')
-				var n : int = ce.move_no()
+				var n : int = ce.turn_no()
 				var m : ChessMove = ce.move()
 				var ch : bool = ce.check()
 				var b : ChessBoard = ce.board()
@@ -65,9 +65,9 @@ func _physics_process(delta):
 					if c == ChessColor.White:
 						cm = ChessColor.Black
 					if has_local() and !is_local(cm):
-						_computer_moved(n, m, cm)
+						_computer_moved(n, m, b, cm)
 					else:
-						_draw_move(n, m, cm)
+						_draw_move(n, m, b, cm)
 				if gamestate != GameState.ANIMATEMOVE:
 					_on_turn(n,b,c)
 			ChessEvent.ChessEventType.ceEnd:
@@ -143,7 +143,7 @@ func _computermove():
 	
 # Callbacks
 func _on_user_moved(n, m, c):
-	#gameUI.append_move(n, m, c)
+	#gameUI.append_move(n, m, get_board(), c)
 	_gamestatereact(GameState.PLAY)
 
 func _on_animated():
@@ -228,10 +228,10 @@ func _on_error_msg(msg : String):
 	gameUI.show_error(msg)
 	
 # Signal Handlers
-func _draw_move(n, m, c):
-	gameUI.append_move(n,m,c)
+func _draw_move(n, m, b, c):
+	gameUI.append_move(n,m,b,c)
 	board.move_piece(m.p0, m.p1)
-	board.refreshpieces(self.get_board())	
+	board.refreshpieces(b)	
 	
 func _on_turn(n, b, c):
 	if is_local_active(c):
@@ -250,14 +250,14 @@ func _user_moved(m):
 	board.animate_move(m)
 	gamestate = GameState.ANIMATEMOVE
 		
-func _computer_moved(n, m, c):
+func _computer_moved(n, m, b, c):
 	# for now we ONLY will paint the board
 	# eventually we will animate the move
 	# which will force the board to be redrawn.
 	statewait = false
 	# if the opponent is ALSO computer, do not
 	# animate as we will miss the action.
-	gameUI.append_move(n,m,c)
+	gameUI.append_move(n,m,b,c)
 	board.animate_move(m)
 	gamestate = GameState.ANIMATEMOVE
 			

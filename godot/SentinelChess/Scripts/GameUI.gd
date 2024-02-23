@@ -80,19 +80,18 @@ func append_load(msg: String):
 	append_history('Load Game - ' + msg)
 	# for last move info
 	if game_manager.turnno()>1:
-		append_move(game_manager.lastturnno(),game_manager.lastmove(), game_manager.lastcolor())
+		append_move(game_manager.lastturnno(), game_manager.lastmove(), game_manager.get_board(), game_manager.lastcolor())
 		
-func append_move(n : int, m : ChessMove, col : SentinelChess.ChessColor):
+func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.ChessColor):
 	var color : String = 'white'
 	if col == SentinelChess.ChessColor.Black:
 		color = 'black'
 	#print(color + ' ' + movestr(m))
 	append_history(str(n) + ' ' + color + ' ' + movestr(m), color)
-	if game_manager.has_local():
-		if (game_manager.check_state(SentinelChess.Black)):
-			append_history('Black in Check.', 'black')	
-		if (game_manager.check_state(SentinelChess.White)):
-			append_history('White in Check.', 'white')
+	if (b.check_state(SentinelChess.Black)):
+		append_history('Black in Check.', 'black')	
+	if (b.check_state(SentinelChess.White)):
+		append_history('White in Check.', 'white')
 
 # UI Handlers
 func show_error(msg : String):
@@ -209,7 +208,7 @@ func handle_move(cmd: String) -> bool:
 						if game_manager.state() == SentinelChess.ChessGameState.Play:
 							show_error("You are in Check.")
 							return false
-					append_move(game_manager.turnno(), m, c)
+					append_move(game_manager.turnno(), m, game_manager.get_board(), c)
 					game_manager._user_moved(m)
 					return true				
 	return false

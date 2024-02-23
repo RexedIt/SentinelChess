@@ -27,17 +27,16 @@ namespace chess
         m_halfmove = 0;
         m_fullmove = 1;
         m_kill_updated = false;
-        mp_cb_thinking = NULL;
-        mp_cb_traces = NULL;
         m_check[0] = m_check[1] = false;
     }
 
-    chessboard::chessboard(chessboard &other)
+    chessboard::chessboard(const chessboard &other)
     {
-        mp_cb_thinking = other.mp_cb_thinking;
-        mp_cb_traces = other.mp_cb_traces;
-        m_halfmove = other.m_halfmove;
-        m_fullmove = other.m_fullmove;
+        copy(other);
+    }
+
+    void chessboard::operator=(const chessboard &other)
+    {
         copy(other);
     }
 
@@ -52,6 +51,8 @@ namespace chess
         m_king_pos[0] = other.m_king_pos[0];
         m_king_pos[1] = other.m_king_pos[1];
         m_turn = other.m_turn;
+        m_halfmove = other.m_halfmove;
+        m_fullmove = other.m_fullmove;
         m_hash = 0;
         m_kill_updated = false;
     }
@@ -661,24 +662,6 @@ namespace chess
         m_hash ^= rec;
 
         return m_hash;
-    }
-
-    void chessboard::set_callbacks(thinking_callback _thinking, traces_callback _traces)
-    {
-        mp_cb_thinking = _thinking;
-        mp_cb_traces = _traces;
-    }
-
-    void chessboard::thinking(move_s m, int pct)
-    {
-        if (mp_cb_thinking)
-            (mp_cb_thinking)(m, pct);
-    }
-
-    void chessboard::trace(std::string msg)
-    {
-        if (mp_cb_traces)
-            (mp_cb_traces)(msg);
     }
 
 }

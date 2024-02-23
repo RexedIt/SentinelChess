@@ -113,7 +113,7 @@ public:
     ~ChessEvent();
 
     ChessEventType event_type();
-    int move_no();
+    int turn_no();
     bool check();
     ChessColor color();
     ChessColor turn_color();

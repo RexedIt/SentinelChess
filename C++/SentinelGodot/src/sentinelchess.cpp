@@ -363,7 +363,7 @@ ChessBoard::ChessBoard()
 
 ChessBoard::ChessBoard(chessboard &b)
 {
-    m_board.copy(b);
+    m_board = b;
 }
 
 ChessBoard::~ChessBoard()
@@ -412,24 +412,6 @@ String ChessBoard::save_xfen()
     return String(m_board.save_xfen().c_str());
 }
 
-/*
-class ChessBoard : public RefCounted
-{
-    GDCLASS(ChessBoard, RefCounted)
-
-public:
-    bool kill(ChessColor col, int y, int x);
-    bool check_state(ChessColor col);
-    String save_xfen();
-
-private:
-    chessboard m_board;
-
-protected:
-    static void _bind_methods();
-};
-*/
-
 // Chess Event
 ChessEvent::ChessEvent()
 {
@@ -447,7 +429,7 @@ ChessEvent::~ChessEvent()
 void ChessEvent::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("event_type"), &ChessEvent::event_type);
-    ClassDB::bind_method(D_METHOD("move_no"), &ChessEvent::move_no);
+    ClassDB::bind_method(D_METHOD("turn_no"), &ChessEvent::turn_no);
     ClassDB::bind_method(D_METHOD("check"), &ChessEvent::check);
     ClassDB::bind_method(D_METHOD("color"), &ChessEvent::color);
     ClassDB::bind_method(D_METHOD("turn_color"), &ChessEvent::turn_color);
@@ -472,9 +454,9 @@ ChessEventType ChessEvent::event_type()
     return (ChessEventType)m_event.etype;
 }
 
-int ChessEvent::move_no()
+int ChessEvent::turn_no()
 {
-    return m_event.move_no;
+    return m_event.turn_no;
 }
 
 bool ChessEvent::check()

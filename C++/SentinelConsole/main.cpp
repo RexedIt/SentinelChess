@@ -199,25 +199,57 @@ void on_end(game_state_e g, color_e c)
     std::cout << "****" << std::endl;
 }
 
-void chat(std::string msg, color_e c)
+void on_chat(std::string msg, color_e c)
 {
+}
+
+void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
+{
+    if (p_listener->has_event())
+    {
+        chessevent e = p_listener->pop_event();
+        switch (e.etype)
+        {
+        case ce_refresh_board:
+            refresh_board(e.turn_no, e.board);
+            break;
+        case ce_consider:
+            on_consider(e.move, e.color, e.percent);
+            break;
+        case ce_turn:
+            on_turn(e.turn_no, e.move, e.check, e.board, e.color);
+            break;
+        case ce_end:
+            on_end(e.game_state, e.color);
+            break;
+        case ce_chat:
+            on_chat(e.msg, e.color);
+            break;
+        }
+    }
 }
 
 int main(void)
 {
 
-    std::shared_ptr<chessgamelistener_direct> p_listener(
-        new chessgamelistener_direct(cl_user,
-                                     &refresh_board,
-                                     &on_consider,
-                                     &on_turn,
-                                     &on_end,
-                                     &chat));
+    /*
+        std::shared_ptr<chessgamelistener_direct> p_listener(
+            new chessgamelistener_direct(cl_user,
+                                         &refresh_board,
+                                         &on_consider,
+                                         &on_turn,
+                                         &on_end,
+                                         &chat));
+    */
+
+    std::shared_ptr<chessgamelistener_queue> p_listener(
+        new chessgamelistener_queue(cl_user));
 
     chesslobby lobby(p_listener);
 
     while (true)
     {
+        process_queue_listener(p_listener);
         std::cout << "\r\nWelcome to Sentinel Console Chess!!!\r\n";
         std::cout << "\r\nNEW, LOAD FileName, or QUIT?\r\n";
         std::string cmd;
@@ -243,6 +275,7 @@ int main(void)
 
     while (true)
     {
+        process_queue_listener(p_listener);
         if (lobby.is_local_turn())
         {
             std::cout << prompt();
