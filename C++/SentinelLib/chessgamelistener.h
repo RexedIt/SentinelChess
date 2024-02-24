@@ -12,8 +12,8 @@ namespace chess
     // for direct callbacks
     typedef void (*refresh_board_cb)(int16_t, chessboard &);
     typedef void (*on_consider_cb)(move_s, color_e, int8_t pct);
-    typedef void (*on_turn_cb)(int16_t, move_s, bool, chessboard &, color_e);
-    typedef void (*on_end_cb)(game_state_e, color_e);
+    typedef void (*on_turn_cb)(int16_t, move_s, bool, chessboard &, color_e, int32_t, int32_t);
+    typedef void (*on_state_cb)(game_state_e, color_e);
     typedef void (*chat_cb)(std::string, color_e);
 
     typedef enum chesseventtype
@@ -22,7 +22,7 @@ namespace chess
         ce_refresh_board,
         ce_consider,
         ce_turn,
-        ce_end,
+        ce_state,
         ce_chat
     } chesseventtype;
 
@@ -41,6 +41,8 @@ namespace chess
         move_s move;
         chessboard board;
         int8_t percent = 0;
+        int32_t wt = 0;
+        int32_t bt = 0;
         std::string msg;
     } chessevent;
 
@@ -57,8 +59,8 @@ namespace chess
     protected:
         virtual void signal_refresh_board(int16_t, chessboard &) = 0;
         virtual void signal_on_consider(move_s, color_e, int8_t pct = -1) = 0;
-        virtual void signal_on_turn(int16_t, move_s, bool, chessboard &, color_e) = 0;
-        virtual void signal_on_end(game_state_e, color_e) = 0;
+        virtual void signal_on_turn(int16_t, move_s, bool, chessboard &, color_e, int32_t, int32_t) = 0;
+        virtual void signal_on_state(game_state_e, color_e) = 0;
         virtual void signal_chat(std::string, color_e) = 0;
 
         int id();
@@ -77,21 +79,21 @@ namespace chess
             refresh_board_cb p_refresh_board_cb = NULL,
             on_consider_cb p_on_consider_cb = NULL,
             on_turn_cb p_on_turn_cb = NULL,
-            on_end_cb p_on_end_cb = NULL,
+            on_state_cb p_on_state_cb = NULL,
             chat_cb p_chat_cb = NULL);
 
     protected:
         virtual void signal_refresh_board(int16_t, chessboard &);
         virtual void signal_on_consider(move_s, color_e, int8_t pct = -1);
-        virtual void signal_on_turn(int16_t, move_s, bool, chessboard &, color_e);
-        virtual void signal_on_end(game_state_e, color_e);
+        virtual void signal_on_turn(int16_t, move_s, bool, chessboard &, color_e, int32_t, int32_t);
+        virtual void signal_on_state(game_state_e, color_e);
         virtual void signal_chat(std::string, color_e);
 
     private:
         refresh_board_cb mp_refresh_board_cb;
         on_consider_cb mp_on_consider_cb;
         on_turn_cb mp_on_turn_cb;
-        on_end_cb mp_on_end_cb;
+        on_state_cb mp_on_state_cb;
         chat_cb mp_chat_cb;
     };
 
@@ -107,8 +109,8 @@ namespace chess
     protected:
         virtual void signal_refresh_board(int16_t, chessboard &);
         virtual void signal_on_consider(move_s, color_e, int8_t pct = -1);
-        virtual void signal_on_turn(int16_t, move_s, bool, chessboard &, color_e);
-        virtual void signal_on_end(game_state_e, color_e);
+        virtual void signal_on_turn(int16_t, move_s, bool, chessboard &, color_e, int32_t, int32_t);
+        virtual void signal_on_state(game_state_e, color_e);
         virtual void signal_chat(std::string, color_e);
 
     private:

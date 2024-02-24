@@ -12,11 +12,6 @@
 namespace chess
 {
 
-    int cidx(color_e c)
-    {
-        return (c == c_white) ? 0 : 1;
-    }
-
     chessboard::chessboard()
     {
         memset(&m_cells, 0, sizeof(m_cells));
@@ -308,8 +303,8 @@ namespace chess
         }
 
         // opponent king capture?
-        bm.ch = m_check[cidx(col)];
-        bm.och = m_check[cidx(other(col))];
+        bm.ch = m_check[color_idx(col)];
+        bm.och = m_check[color_idx(other(col))];
 
         return bm;
     }
@@ -351,7 +346,7 @@ namespace chess
         if (!m_kill_updated)
             update_kill_bits();
         unsigned char kill_mask = other(turn_col) * color_kill_mask_mult;
-        coord_s k = m_king_pos[cidx(turn_col)];
+        coord_s k = m_king_pos[color_idx(turn_col)];
         bool ret = (m_cells[k.y][k.x] & kill_mask) == kill_mask;
         return ret;
     }
@@ -432,7 +427,7 @@ namespace chess
 
     bool chessboard::check_state(color_e col)
     {
-        return m_check[cidx(col)];
+        return m_check[color_idx(col)];
     }
 
     std::string chessboard::check_state()
@@ -539,9 +534,9 @@ namespace chess
 
     void chessboard::update_check(color_e c)
     {
-        coord_s k = m_king_pos[cidx(c)];
+        coord_s k = m_king_pos[color_idx(c)];
         unsigned char kill_mask = other(c) * color_kill_mask_mult;
-        m_check[cidx(c)] = ((m_cells[k.y][k.x] & kill_mask) == kill_mask);
+        m_check[color_idx(c)] = ((m_cells[k.y][k.x] & kill_mask) == kill_mask);
     }
 
     void chessboard::update_kill_bits()
@@ -565,7 +560,7 @@ namespace chess
                         int pc = 0;
                         piece.update_kill_bits(coord_s(y, x), m_cells, pc);
                         if ((m_cells[y][x] & piece_mask) == p_king)
-                            m_king_pos[cidx(content_col)] = coord_s(y, x);
+                            m_king_pos[color_idx(content_col)] = coord_s(y, x);
                     }
                 }
             }
@@ -634,7 +629,7 @@ namespace chess
         update_kill_bits();
 
         m_hash = 0;
-        m1.check = m_check[cidx(piece.color)];
+        m1.check = m_check[color_idx(piece.color)];
         if (m1.check)
             m1.error = e_check;
 

@@ -14,15 +14,15 @@ namespace chess
         ~chesscomputer();
 
     protected:
-        virtual void signal_on_turn(int16_t, move_s, bool, chessboard &, color_e);
-        virtual void signal_on_end(game_state_e, color_e);
+        virtual void signal_on_turn(int16_t, move_s, bool, chessboard &, color_e, int32_t, int32_t);
+        virtual void signal_on_state(game_state_e, color_e);
         virtual void signal_refresh_board(int16_t, chessboard &) { ; }
         virtual void signal_on_consider(move_s, color_e, int8_t pct = -1) { ; }
         virtual void signal_chat(std::string, color_e) { ; }
 
     private:
         float weight(chessboard &board, color_e col);
-        error_e computer_move(chessboard &board);
+        error_e computer_move(chessboard &board, int32_t wt, int32_t bt);
         float computer_move_max(chessboard &board, color_e turn_col, float _alpha, float _beta, int32_t rec);
         float computer_move_min(chessboard &board, color_e turn_col, float _alpha, float _beta, int32_t rec);
         void cancel_execution();

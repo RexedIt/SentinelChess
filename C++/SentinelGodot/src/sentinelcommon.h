@@ -51,7 +51,7 @@ typedef enum ChessEventType
     ceRefreshBoard = ce_refresh_board,
     ceConsider = ce_consider,
     ceTurn = ce_turn,
-    ceEnd = ce_end,
+    ceState = ce_state,
     ceChat = ce_chat
 } ChessEventType;
 

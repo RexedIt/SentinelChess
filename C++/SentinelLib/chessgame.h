@@ -44,6 +44,8 @@ namespace chess
         error_e move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
         std::vector<move_s> possible_moves(color_e col);
         game_state_e is_game_over(color_e col, move_s m);
+        void clock_remaining(color_e col, int32_t &wt, int32_t &bt);
+
         // Check?
         bool check_state(color_e col);
         std::string check_state();
@@ -66,11 +68,14 @@ namespace chess
         error_e consider(move_s, color_e, int8_t pct = -1);
 
     private:
+        void set_state(game_state_e g);
+        void push_new_turn(move_s m);
+
         // Signallers
         void signal_refresh_board();
         void signal_on_consider(move_s, color_e, int8_t pct = -1);
         void signal_on_turn();
-        void signal_on_end();
+        void signal_on_state();
         void signal_chat(std::string, color_e);
 
         game_state_e m_state;

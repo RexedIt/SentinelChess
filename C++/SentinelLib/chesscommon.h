@@ -51,6 +51,15 @@ namespace chess
 
     std::string errorstr(error_e num);
 
+    typedef enum chessclock_e
+    {
+        cc_none,
+        cc_suddendeath,
+        cc_increment,
+        cc_bronstein_delay,
+        cc_simple_delay
+    } chessclock_e;
+
     class chessboard;
     struct move_s;
 
@@ -92,6 +101,21 @@ namespace chess
     const unsigned char color_kill_mask_mult = 4;
 
 #pragma pack(push, 1)
+
+    typedef struct chessclock_s
+    {
+        chessclock_s();
+        chessclock_s(const chessclock_s &);
+        void operator=(const chessclock_s &);
+        bool operator==(const chessclock_s &);
+        chessclock_e ctype;
+        // these are black[0] and white[1]
+        // you can use the color_idx function to map from a color_e to the
+        // appropriate index
+        int32_t allowedms[2];
+        int32_t remainms[2];
+        int32_t addms[2];
+    } gameclock_s;
 
     typedef struct coord_s
     {
@@ -177,12 +201,14 @@ namespace chess
     typedef enum game_state_e
     {
         none_e = -1,
-        play_e = 0,
-        checkmate_e = 1,
-        stalemate_e = 2,
-        forfeit_e = 3,
-        time_up_e = 4,
-        terminate_e = 5
+        idle_e = 1,
+        play_e = 0, // all end game conditions follow
+        checkmate_e = 2,
+        stalemate_e = 3,
+        draw_e = 4,
+        forfeit_e = 5,
+        time_up_e = 6,
+        terminate_e = 7
     } game_state_e;
 
     typedef enum chessplayertype_e
@@ -202,6 +228,7 @@ namespace chess
 
     game_state_e is_game_over(color_e col, move_s &m);
     bool contains_move(std::vector<move_s> possible_moves, move_s &m, bool inherit = false);
+    int color_idx(color_e c);
     std::string color_str(color_e col);
     std::string game_state_str(game_state_e g);
     std::string coord_str(coord_s c);

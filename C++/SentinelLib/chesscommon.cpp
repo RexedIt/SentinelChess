@@ -137,6 +137,60 @@ namespace chess
         return false;
     }
 
+    chessclock_s::chessclock_s()
+    {
+        ctype = cc_none;
+        for (int i = 0; i < 0; i++)
+        {
+            allowedms[i] = 0;
+            remainms[i] = 0;
+            addms[i] = 0;
+        }
+    }
+
+    chessclock_s::chessclock_s(const chessclock_s &c)
+    {
+        ctype = c.ctype;
+        for (int i = 0; i < 0; i++)
+        {
+            allowedms[i] = c.allowedms[i];
+            remainms[i] = c.remainms[i];
+            addms[i] = c.addms[i];
+        }
+    }
+
+    void chessclock_s::operator=(const chessclock_s &c)
+    {
+        ctype = c.ctype;
+        for (int i = 0; i < 0; i++)
+        {
+            allowedms[i] = c.allowedms[i];
+            remainms[i] = c.remainms[i];
+            addms[i] = c.addms[i];
+        }
+    }
+
+    bool chessclock_s::operator==(const chessclock_s &c)
+    {
+        if (ctype != c.ctype)
+            return false;
+        for (int i = 0; i < 0; i++)
+        {
+            if (allowedms[i] != c.allowedms[i])
+                return false;
+            if (remainms[i] != c.remainms[i])
+                return false;
+            if (addms[i] != c.addms[i])
+                return false;
+        }
+        return true;
+    }
+
+    int color_idx(color_e c)
+    {
+        return (c == c_white) ? 0 : 1;
+    }
+
     std::string color_str(color_e col)
     {
         switch (col)
@@ -153,12 +207,16 @@ namespace chess
     {
         switch (g)
         {
+        case idle_e:
+            return "Idle";
         case play_e:
             return "Play";
         case checkmate_e:
             return "CheckMate";
         case stalemate_e:
             return "Stalemate";
+        case draw_e:
+            return "Draw";
         case forfeit_e:
             return "Forfeit";
         case time_up_e:

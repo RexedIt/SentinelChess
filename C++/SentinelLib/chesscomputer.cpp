@@ -46,7 +46,7 @@ namespace chess
         }
     }
 
-    void chesscomputer::signal_on_turn(int16_t turn_no, move_s m, bool check, chessboard &board, color_e color)
+    void chesscomputer::signal_on_turn(int16_t turn_no, move_s m, bool check, chessboard &board, color_e color, int32_t wt, int32_t bt)
     {
         // This is where we will determine game state, move, or forfeit.
         // move:
@@ -54,15 +54,16 @@ namespace chess
         {
             m_board = board;
             m_thread_running = true;
-            std::thread background(&chesscomputer::computer_move, this, std::ref(m_board));
+            std::thread background(&chesscomputer::computer_move, this, std::ref(m_board), wt, bt);
             m_thread_id = background.get_id();
             background.detach();
         }
     }
 
-    void chesscomputer::signal_on_end(game_state_e game_state, color_e win_color)
+    void chesscomputer::signal_on_state(game_state_e game_state, color_e win_color)
     {
-        cancel_execution();
+        if (game_state != play_e)
+            cancel_execution();
     }
 
     float chesscomputer::weight(chessboard &board, color_e col)
@@ -79,7 +80,7 @@ namespace chess
                ((float)bm.bp) * bp_weight;
     }
 
-    error_e chesscomputer::computer_move(chessboard &board)
+    error_e chesscomputer::computer_move(chessboard &board, int32_t wt, int32_t bt)
     {
         m_cancel = false;
         int rec = m_level;

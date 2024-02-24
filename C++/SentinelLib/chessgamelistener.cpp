@@ -19,6 +19,8 @@ namespace chess
         board = e.board;
         percent = e.percent;
         msg = e.msg;
+        wt = e.wt;
+        bt = e.bt;
     }
 
     chessgamelistener::chessgamelistener(chessgamelistenertype listenertype)
@@ -46,14 +48,14 @@ namespace chess
         refresh_board_cb p_refresh_board_cb,
         on_consider_cb p_on_consider_cb,
         on_turn_cb p_on_turn_cb,
-        on_end_cb p_on_end_cb,
+        on_state_cb p_on_state_cb,
         chat_cb p_chat_cb)
     {
         m_listenertype = listenertype;
         mp_refresh_board_cb = p_refresh_board_cb;
         mp_on_consider_cb = p_on_consider_cb;
         mp_on_turn_cb = p_on_turn_cb;
-        mp_on_end_cb = p_on_end_cb;
+        mp_on_state_cb = p_on_state_cb;
         mp_chat_cb = p_chat_cb;
     }
 
@@ -71,18 +73,18 @@ namespace chess
             (*mp_on_consider_cb)(m, c, p);
     }
 
-    void chessgamelistener_direct::signal_on_turn(int16_t n, move_s m, bool ch, chessboard &b, color_e c)
+    void chessgamelistener_direct::signal_on_turn(int16_t n, move_s m, bool ch, chessboard &b, color_e c, int32_t wt, int32_t bt)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         if (mp_on_turn_cb)
-            (*mp_on_turn_cb)(n, m, ch, b, c);
+            (*mp_on_turn_cb)(n, m, ch, b, c, wt, bt);
     }
 
-    void chessgamelistener_direct::signal_on_end(game_state_e g, color_e w)
+    void chessgamelistener_direct::signal_on_state(game_state_e g, color_e w)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        if (mp_on_end_cb)
-            (*mp_on_end_cb)(g, w);
+        if (mp_on_state_cb)
+            (*mp_on_state_cb)(g, w);
     }
 
     void chessgamelistener_direct::signal_chat(std::string msg, color_e c)
@@ -137,7 +139,7 @@ namespace chess
         }
     }
 
-    void chessgamelistener_queue::signal_on_turn(int16_t n, move_s m, bool ch, chessboard &b, color_e c)
+    void chessgamelistener_queue::signal_on_turn(int16_t n, move_s m, bool ch, chessboard &b, color_e c, int32_t wt, int32_t bt)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         chessevent e(ce_turn);
@@ -146,13 +148,15 @@ namespace chess
         e.check = ch;
         e.board = b;
         e.color = c;
+        e.wt = wt;
+        e.bt = bt;
         m_events.push(e);
     }
 
-    void chessgamelistener_queue::signal_on_end(game_state_e g, color_e w)
+    void chessgamelistener_queue::signal_on_state(game_state_e g, color_e w)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        chessevent e(ce_end);
+        chessevent e(ce_state);
         e.game_state = g;
         e.win_color = w;
         m_events.push(e);

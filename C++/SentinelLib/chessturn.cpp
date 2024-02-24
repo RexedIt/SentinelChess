@@ -3,30 +3,37 @@
 namespace chess
 {
 
-    chessturn_s new_turn(chessboard &_b, move_s &_m, color_e _c, int16_t _r)
+    chessturn_s new_turn(int16_t _t, move_s &_m, bool _ch, chessboard &_b, color_e _c, int32_t _wt, int32_t _bt)
     {
         chessturn_s t;
-        t.b = _b;
+        t.t = _t;
         t.m = _m;
+        t.ch = _ch;
         t.c = _c;
-        t.r = _r;
+        t.wt = _wt;
+        t.bt = _bt;
         return t;
     }
 
-    chessturn_s::chessturn_s(chessboard &_b, move_s &_m, color_e _c, int16_t _r)
+    chessturn_s::chessturn_s(int16_t _t, move_s &_m, bool _ch, chessboard &_b, color_e _c, int32_t _wt, int32_t _bt)
     {
-        b = _b;
+        t = _t;
         m = _m;
+        ch = _ch;
         c = _c;
-        r = _r;
+        wt = _wt;
+        bt = _bt;
     }
 
     chessturn_s::chessturn_s(const chessturn_s &oth)
     {
-        b = oth.b;
+        t = oth.t;
         m = oth.m;
+        ch = oth.ch;
+        b = oth.b;
         c = oth.c;
-        r = oth.r;
+        wt = oth.wt;
+        bt = oth.bt;
     }
 
     bool chessturn_s::load(std::ifstream &is)

@@ -6,7 +6,7 @@ namespace chess
 
     chessgame::chessgame()
     {
-        m_state = play_e;
+        m_state = none_e;
         m_win_color = c_none;
     }
 
@@ -49,18 +49,33 @@ namespace chess
 
     game_state_e chessgame::is_game_over(color_e col, move_s m)
     {
-        if (m_state == play_e)
+        game_state_e g = m_state;
+        if (g == play_e)
         {
             color_e winner_col = col == c_white ? c_black : c_white;
             if (m.mate)
             {
                 if (m.check)
-                    m_state = checkmate_e;
+                {
+                    g = checkmate_e;
+                    m_win_color = winner_col;
+                }
                 else
-                    m_state = stalemate_e;
+                    g = stalemate_e;
             }
         }
-        return m_state;
+        return g;
+    }
+
+    void chessgame::clock_remaining(color_e col, int32_t &wt, int32_t &bt)
+    {
+        // *** NATHANAEL ***
+        // This can be the event that gets called 'on turn' that would cause you
+        // to return the current remaining times as well as internally call
+        // your method to start counting in behalf of the player designated
+        // as color_e col (c_white or c_black)
+        wt = 0;
+        bt = 0;
     }
 
     error_e chessgame::forfeit(color_e col)
@@ -76,15 +91,9 @@ namespace chess
         if (col == m_board.turn_color())
         {
             move_s m = m_board.attempt_move(col, m0);
-            m_state = is_game_over(col, m);
             guard.unlock();
-            if (m.is_valid())
-            {
-                m_turn.push_back(new_turn(m_board, m, col));
-                signal_on_turn();
-            }
-            if (m_state != play_e)
-                return end_game(m_state, m_win_color);
+            set_state(is_game_over(col, m));
+            push_new_turn(m);
         }
         return e_none;
     }
@@ -154,10 +163,16 @@ namespace chess
 
     error_e chessgame::new_game()
     {
-        m_state = play_e;
         m_win_color = c_none;
+        // *** NATHANAEL ***
+        // I recommend you act sort of like
+        // the board, and just have a method to reset
+        // the clock to default settings
+        // maybe something like
+        // m_clock.new();
         m_board.new_board();
         m_turn.clear();
+        set_state(play_e);
         signal_refresh_board();
         signal_on_turn();
         return e_none;
@@ -167,6 +182,14 @@ namespace chess
     {
         try
         {
+            // *** NATHANAEL ***
+            // Read in to your class would be done here, for load game.
+            // I recommend using something like my chessclock_s structure (common.h)
+            // at any rate, your function signature might look like
+            // if (m_clock.load(is) != e_none)
+            //     return e_loading;
+            // note you would immediately begin functioning your clock
+            // as per the settings loaded.
             is.read((char *)&m_state, sizeof(m_state));
             is.read((char *)&m_win_color, sizeof(m_win_color));
             int16_t num_turns = 0;
@@ -186,6 +209,7 @@ namespace chess
             if (m_board.load(is) != e_none)
                 return e_loading;
             is.close();
+            set_state(play_e);
             signal_refresh_board();
             signal_on_turn();
             return e_none;
@@ -200,6 +224,17 @@ namespace chess
     {
         try
         {
+            // *** NATHANAEL ***
+            // Here is where your class would write settings to a save
+            // game file, this would be consistent with that of
+            // the load function in terms of content strategy.  I recommend
+            // utilizing chessclock_s structure but within your class
+            // this code might look like
+            // if (m_clock.save(os) != e_none)
+            // {
+            //     os.close();
+            //     return e_saving;
+            // }
             os.write((char *)&m_state, sizeof(m_state));
             os.write((char *)&m_win_color, sizeof(m_win_color));
             int16_t num_turns = turnno();
@@ -258,11 +293,21 @@ namespace chess
 
     error_e chessgame::end_game(game_state_e end_state, color_e win_color)
     {
+        // *** NATHANAEL ***
+        // You are going to need to be able to call this function
+        // with a time_up_e value for end_state, and declare the winner.
+        // It is a bit of a conundrum with how to get the reference
+        // to the game object for the clock.  I suppose it would be
+        // OK to use a traditional pointer with a set_game function
+        // Alternatively we could do all of this up above at the lobby level
+        // where a shared pointer to the game exists.  A third option
+        // that might be cleanest, is to give the clock a pointer to
+        // this function as a callback.
         std::unique_lock<std::mutex> guard(m_mutex);
-        m_state = end_state;
         m_win_color = win_color;
+        set_state(end_state);
         guard.unlock();
-        signal_on_end();
+        signal_on_state();
         return e_none;
     }
 
@@ -276,6 +321,30 @@ namespace chess
     {
         signal_on_consider(m, c, p);
         return e_none;
+    }
+
+    void chessgame::set_state(game_state_e g)
+    {
+        if (g != m_state)
+        {
+            m_state = g;
+            signal_on_state();
+        }
+    }
+
+    void chessgame::push_new_turn(move_s m)
+    {
+        if (m.is_valid())
+        {
+            int16_t n = turnno() + 1;
+            color_e col = turn_color();
+            bool ch = check_state(col);
+            int32_t wt = 0;
+            int32_t bt = 0;
+            clock_remaining(col, wt, bt);
+            m_turn.push_back(new_turn(n, m, ch, m_board, col, wt, bt));
+            signal_on_turn();
+        }
     }
 
     void chessgame::signal_refresh_board()
@@ -293,18 +362,24 @@ namespace chess
 
     void chessgame::signal_on_turn()
     {
-        int16_t n = turnno();
         chessturn_s l = last_turn();
+        int16_t n = turnno();
         color_e c = turn_color();
-        bool ch = l.b.check_state(c);
+        bool ch = check_state(c);
+        if (l.t == 0)
+            clock_remaining(c, l.wt, l.bt);
         for (const auto &kv : mp_listeners)
-            kv.second->signal_on_turn(n, l.m, ch, m_board, c);
+            kv.second->signal_on_turn(n, l.m, ch, m_board, c, l.wt, l.bt);
     }
 
-    void chessgame::signal_on_end()
+    void chessgame::signal_on_state()
     {
         for (const auto &kv : mp_listeners)
-            kv.second->signal_on_end(m_state, m_win_color);
+            kv.second->signal_on_state(m_state, m_win_color);
+        // *** NATHANAEL ***
+        // See above, you will need to react to this event.  later
+        // we will add a pause or resume event but for now it's just
+        // this
     }
 
     void chessgame::signal_chat(std::string msg, color_e c)

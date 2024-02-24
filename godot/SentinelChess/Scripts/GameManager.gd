@@ -14,6 +14,7 @@ enum GameState {
 		LOAD,
 		SAVE,
 		PLAY,
+		IDLE,
 		USERMOVE,
 		COMPUTERMOVE,
 		ANIMATEMOVE,
@@ -68,8 +69,8 @@ func _physics_process(delta):
 						_draw_move(n, m, b, cm)
 				if gamestate != GameState.ANIMATEMOVE:
 					_on_turn(n,b,c)
-			ChessEvent.ChessEventType.ceEnd:
-				print('ceEnd *** REM *** TODO')
+			ChessEvent.ChessEventType.ceState:
+				print('ceState *** REM *** TODO')
 			ChessEvent.ChessEventType.ceChat:
 				print('ceChat *** REM *** TODO')
 
@@ -105,6 +106,8 @@ func _gamestatereact(gs):
 		GameState.PLAY:
 			print("GS: Game Play")
 			_gameplay()
+		GameState.IDLE:
+			print("GS: Idle")
 		GameState.USERMOVE:
 			print("GS: User Move")
 			_usermove()

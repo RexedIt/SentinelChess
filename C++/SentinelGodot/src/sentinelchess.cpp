@@ -445,7 +445,7 @@ void ChessEvent::_bind_methods()
     BIND_ENUM_CONSTANT(ceRefreshBoard);
     BIND_ENUM_CONSTANT(ceConsider);
     BIND_ENUM_CONSTANT(ceTurn);
-    BIND_ENUM_CONSTANT(ceEnd);
+    BIND_ENUM_CONSTANT(ceState);
     BIND_ENUM_CONSTANT(ceChat);
 }
 

@@ -162,7 +162,7 @@ void on_consider(move_s m, color_e c, int8_t p)
     std::cout << ".";
 }
 
-void on_turn(int16_t t, move_s m, bool ch, chessboard &b, color_e tc)
+void on_turn(int16_t t, move_s m, bool ch, chessboard &b, color_e tc, int32_t wt, int32_t bt)
 {
     if (m.is_valid())
     {
@@ -191,12 +191,16 @@ std::string prompt()
     return s;
 }
 
-void on_end(game_state_e g, color_e c)
+void on_state(game_state_e g, color_e c)
 {
-    std::cout << "\r\n**** Game Over! ";
-    std::cout << game_state_str(g) + " ";
-    std::cout << color_str(c) + " Wins! ";
-    std::cout << "****" << std::endl;
+    if (g > play_e)
+    {
+        std::cout << "\r\n**** Game Over! ";
+        std::cout << game_state_str(g) + " ";
+        if (c != c_none)
+            std::cout << color_str(c) + " Wins! ";
+        std::cout << "****" << std::endl;
+    }
 }
 
 void on_chat(std::string msg, color_e c)
@@ -217,10 +221,10 @@ void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
             on_consider(e.move, e.color, e.percent);
             break;
         case ce_turn:
-            on_turn(e.turn_no, e.move, e.check, e.board, e.color);
+            on_turn(e.turn_no, e.move, e.check, e.board, e.color, e.wt, e.bt);
             break;
-        case ce_end:
-            on_end(e.game_state, e.color);
+        case ce_state:
+            on_state(e.game_state, e.color);
             break;
         case ce_chat:
             on_chat(e.msg, e.color);
@@ -238,7 +242,7 @@ int main(void)
                                      &refresh_board,
                                      &on_consider,
                                      &on_turn,
-                                     &on_end,
+                                     &on_state,
                                      &on_chat)); */
 
     std::shared_ptr<chessgamelistener_queue> p_listener(
