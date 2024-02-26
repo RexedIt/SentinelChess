@@ -209,7 +209,7 @@ void on_chat(std::string msg, color_e c)
 
 void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
 {
-    if (p_listener->has_event())
+    while (p_listener->has_event())
     {
         chessevent e = p_listener->pop_event();
         switch (e.etype)
