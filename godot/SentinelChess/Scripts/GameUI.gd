@@ -5,6 +5,9 @@ extends CanvasLayer
 @onready var txtCmd : LineEdit = get_node('txtCmd')
 @onready var lblError : Label = get_node('lblError')
 @onready var lblCmd : Label = get_node('lblCmd')
+@onready var lblWhiteClock : Label = get_node('lblWhiteClock')
+@onready var lblBlackClock : Label = get_node('lblBlackClock')
+
 @export var step : int
 
 # Called when the node enters the scene tree for the first time.
@@ -28,6 +31,7 @@ func _physics_process(delta):
 				var pct = int(smooth * 100) / step * step
 				smooth = float(pct)/100.0
 			lblError.modulate.a = smooth
+	clock_update(delta)
 	
 func clear_history():
 	lblHistory.clear()
@@ -212,3 +216,36 @@ func handle_move(cmd: String) -> bool:
 					game_manager._user_moved(m)
 					return true				
 	return false
+
+var countdown : float = 0
+var countcol : SentinelChess.ChessColor
+
+func time_str(t : int) -> String:
+	if t > 0:
+		var tenths = int((t % 1000) / 100)
+		var seconds = int(t / 1000)
+		var minutes = int(seconds/60)
+		var hours = int(minutes/60)
+		#returns a string with the format "HH:MM:SS"
+		return "%01d:%02d:%02d.%1d" % [hours, minutes%60, seconds%60, tenths%10]
+	else:
+		return ""
+	
+func clock_turn(col : SentinelChess.ChessColor, wt : int, bt : int):
+	lblWhiteClock.text = time_str(wt)
+	lblBlackClock.text = time_str(wt)
+	countcol = col
+	if col == SentinelChess.White:
+		countdown = float(wt) / 1000.0
+	if col == SentinelChess.Black:
+		countdown = float(bt) / 1000.0
+		
+func clock_update(delta : float):
+	if countdown>=0.0:
+		countdown -= delta
+		var countms : int = int(countdown*1000)
+		if countcol == SentinelChess.White:
+			lblWhiteClock.text = time_str(countms)
+		if countcol == SentinelChess.Black:
+			lblBlackClock.text = time_str(countms)
+	

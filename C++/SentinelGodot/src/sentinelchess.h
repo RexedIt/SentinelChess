@@ -121,6 +121,8 @@ public:
     ChessGameState game_state();
     Ref<ChessMove> move();
     Ref<ChessBoard> board();
+    int white_time();
+    int black_time();
     int percent();
     String msg();
 

@@ -435,6 +435,8 @@ void ChessEvent::_bind_methods()
     ClassDB::bind_method(D_METHOD("turn_color"), &ChessEvent::turn_color);
     ClassDB::bind_method(D_METHOD("win_color"), &ChessEvent::win_color);
     ClassDB::bind_method(D_METHOD("game_state"), &ChessEvent::game_state);
+    ClassDB::bind_method(D_METHOD("white_time"), &ChessEvent::white_time);
+    ClassDB::bind_method(D_METHOD("black_time"), &ChessEvent::black_time);
     ClassDB::bind_method(D_METHOD("move"), &ChessEvent::move);
     ClassDB::bind_method(D_METHOD("board"), &ChessEvent::board);
     ClassDB::bind_method(D_METHOD("percent"), &ChessEvent::percent);
@@ -482,6 +484,16 @@ ChessColor ChessEvent::win_color()
 ChessGameState ChessEvent::game_state()
 {
     return (ChessGameState)m_event.game_state;
+}
+
+int ChessEvent::white_time()
+{
+    return m_event.wt;
+}
+
+int ChessEvent::black_time()
+{
+    return m_event.bt;
 }
 
 Ref<ChessMove> ChessEvent::move()

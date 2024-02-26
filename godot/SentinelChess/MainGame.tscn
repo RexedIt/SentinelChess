@@ -431,15 +431,25 @@ horizontal_alignment = 1
 vertical_alignment = 2
 autowrap_mode = 3
 
-[node name="lblClock" type="Label" parent="GameUI"]
+[node name="lblWhiteClock" type="Label" parent="GameUI"]
 offset_left = 1439.0
-offset_top = 1041.0
-offset_right = 1907.0
-offset_bottom = 1075.0
+offset_top = 1040.0
+offset_right = 1646.0
+offset_bottom = 1074.0
 theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 29
-text = "GAME 00:00 00:00"
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 24
+text = "
+"
+vertical_alignment = 1
+
+[node name="lblBlackClock" type="Label" parent="GameUI"]
+offset_left = 1685.0
+offset_top = 1039.0
+offset_right = 1901.0
+offset_bottom = 1073.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 24
 vertical_alignment = 1
 
 [connection signal="canceled" from="popLoad" to="popLoad" method="_on_canceled"]

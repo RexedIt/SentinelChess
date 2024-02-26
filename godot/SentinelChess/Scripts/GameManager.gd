@@ -59,6 +59,8 @@ func _physics_process(delta):
 				var ch : bool = ce.check()
 				var b : ChessBoard = ce.board()
 				var c : ChessColor = ce.color()
+				var wt : int = ce.white_time()
+				var bt : int = ce.black_time()
 				if m.is_valid():
 					var cm : ChessColor = ChessColor.White
 					if c == ChessColor.White:
@@ -69,6 +71,7 @@ func _physics_process(delta):
 						_draw_move(n, m, b, cm)
 				if gamestate != GameState.ANIMATEMOVE:
 					_on_turn(n,b,c)
+				gameUI.clock_turn(c, wt, bt)
 			ChessEvent.ChessEventType.ceState:
 				print('ceState *** REM *** TODO')
 			ChessEvent.ChessEventType.ceChat:
