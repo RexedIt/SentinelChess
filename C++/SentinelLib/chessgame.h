@@ -57,7 +57,7 @@ namespace chess
         error_e rewind_game(int move_no);
 
     protected:
-        error_e new_game();
+        error_e new_game(const chessclock_s &clock);
         error_e load_game(std::ifstream &is);
         error_e save_game(std::ofstream &os);
 

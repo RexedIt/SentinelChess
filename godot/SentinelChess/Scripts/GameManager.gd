@@ -1,7 +1,7 @@
 extends SentinelChess
 
 # siblings
-@onready var popNew2 : Window = get_parent().get_node("popNew2")
+@onready var popNew : Window = get_parent().get_node("popNew")
 @onready var popLoad : FileDialog = get_parent().get_node("popLoad")
 @onready var popSave : FileDialog = get_parent().get_node("popSave")
 @onready var board : Node2D = get_parent().get_node("Board")
@@ -30,7 +30,7 @@ var filename : String
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# connections
-	popNew2.on_closed.connect(_on_closed_new)
+	popNew.on_closed.connect(_on_closed_new)
 	popLoad.on_closed.connect(_on_closed_load)
 	popSave.on_closed.connect(_on_closed_save)
 	_gamestatereact(GameState.INIT)
@@ -119,7 +119,7 @@ func _gamestatereact(gs):
 			_computermove()
 
 func _newgameprompt():
-	popNew2.visible = true
+	popNew.visible = true
 	statewait = true
 	
 func _loadgameprompt():
@@ -159,13 +159,13 @@ func _on_animated():
 	_gamestatereact(GameState.PLAY)
 	
 # Dialog Handlers
-func _on_closed_new(_cancelled, _white, _black):
+func _on_closed_new(_cancelled, _white, _black, _clock):
 	print("on_closed_new")
 	if _cancelled:
 		_gamestatereact(prepopgamestate)
 		return
 	# start new game
-	new_game(_white, _black)
+	new_game(_white, _black, _clock)
 	board.setup(preferred_board_color())
 	gameUI.clear_history()
 	gameUI.append_history('New Game')

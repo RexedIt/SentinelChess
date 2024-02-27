@@ -161,10 +161,13 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::new_game()
+    error_e chessgame::new_game(const chessclock_s &clock)
     {
         m_win_color = c_none;
         // *** NATHANAEL ***
+        // Your class could take clock and use it for it's
+        // data storage and read and write a chessclock_s
+        // in the load and save functions.
         // I recommend you act sort of like
         // the board, and just have a method to reset
         // the clock to default settings

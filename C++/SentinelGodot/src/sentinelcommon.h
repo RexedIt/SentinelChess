@@ -55,6 +55,15 @@ typedef enum ChessEventType
     ceChat = ce_chat
 } ChessEventType;
 
+typedef enum ChessClockType
+{
+    ccNone = cc_none,
+    ccSuddenDeath = cc_suddendeath,
+    ccIncrement = cc_increment,
+    ccBronsteinDelay = cc_bronstein_delay,
+    ccSimpleDelay = cc_simple_delay
+} ChessClockType;
+
 class ChessCoord : public RefCounted
 {
     GDCLASS(ChessCoord, RefCounted)
@@ -117,6 +126,39 @@ protected:
     static void _bind_methods();
 };
 
+class ChessClock : public RefCounted
+{
+    GDCLASS(ChessClock, RefCounted)
+
+public:
+    ChessClock();
+    ChessClock(chessclock_s &cc);
+    ~ChessClock();
+
+    void set_ctype(ChessClockType);
+    ChessClockType get_ctype();
+    void set_allowed_white(const int);
+    int get_allowed_white();
+    void set_allowed_black(const int);
+    int get_allowed_black();
+    void set_add_white(const int);
+    int get_add_white();
+    void set_add_black(const int);
+    int get_add_black();
+    void set_remain_white(const int);
+    int get_remain_white();
+    void set_remain_black(const int);
+    int get_remain_black();
+
+    chessclock_s get();
+
+private:
+    chessclock_s m_clock;
+
+protected:
+    static void _bind_methods();
+};
+
 class ChessPlayer : public RefCounted
 {
     GDCLASS(ChessPlayer, RefCounted)
@@ -148,5 +190,6 @@ VARIANT_ENUM_CAST(ChessGameState);
 VARIANT_ENUM_CAST(ChessPiece);
 VARIANT_ENUM_CAST(ChessPlayerType);
 VARIANT_ENUM_CAST(ChessEventType);
+VARIANT_ENUM_CAST(ChessClockType);
 
 #endif // GDSENTINELCOMMON_H

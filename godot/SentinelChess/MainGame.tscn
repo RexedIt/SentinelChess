@@ -8,22 +8,21 @@
 [ext_resource type="Script" path="res://Scripts/Board.gd" id="5_8nr35"]
 [ext_resource type="Script" path="res://Scripts/popNew.gd" id="5_bu5ts"]
 [ext_resource type="Script" path="res://Scripts/Piece.gd" id="6_d12bf"]
-[ext_resource type="Script" path="res://Scripts/popNew2.gd" id="9_vmht8"]
 [ext_resource type="Script" path="res://Scripts/GameUI.gd" id="10_0mwoa"]
 [ext_resource type="ButtonGroup" uid="uid://egpcffpdie8w" path="res://WhitePlayerType.tres" id="10_8y1dj"]
 [ext_resource type="Script" path="res://Scripts/popLoad.gd" id="10_we7ge"]
 [ext_resource type="Script" path="res://Scripts/popSave.gd" id="11_dt7qr"]
 [ext_resource type="Texture2D" uid="uid://dgtgd7nmuptr6" path="res://Sprites/RetroWood/New.jpg" id="11_ehsup"]
 [ext_resource type="ButtonGroup" uid="uid://ddxnnfxmo2csx" path="res://BlackPlayerType.tres" id="11_ikrfp"]
+[ext_resource type="ButtonGroup" uid="uid://3jisntyevh10" path="res://ClockType.tres" id="11_vfgdq"]
 [ext_resource type="Texture2D" uid="uid://dt35fbefu60ls" path="res://Sprites/RetroWood/Open.jpg" id="12_5o0s6"]
+[ext_resource type="Script" path="res://Scripts/TimeSlider.gd" id="12_jf3ul"]
 [ext_resource type="Texture2D" uid="uid://cphjjv5ttc3a3" path="res://Sprites/RetroWood/Save.jpg" id="15_pwrnu"]
 [ext_resource type="Texture2D" uid="uid://baiu161gnvfj0" path="res://Sprites/RetroWood/Pause.jpg" id="16_arl5w"]
 [ext_resource type="Texture2D" uid="uid://bxdtqof8robqc" path="res://Sprites/RetroWood/Rewind.jpg" id="17_fpd0j"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_55xmw"]
 size = Vector2(137, 96)
-
-[sub_resource type="ButtonGroup" id="ButtonGroup_sbsoy"]
 
 [sub_resource type="FontVariation" id="FontVariation_h0o2n"]
 base_font = ExtResource("3_7nhen")
@@ -61,9 +60,8 @@ shape = SubResource("RectangleShape2D_55xmw")
 
 [node name="popNew" type="Window" parent="."]
 title = "New Game Options"
-position = Vector2i(405, 416)
-size = Vector2i(630, 200)
-visible = false
+position = Vector2i(395, 269)
+size = Vector2i(750, 600)
 popup_window = true
 theme_override_fonts/title_font = ExtResource("3_7nhen")
 theme_override_font_sizes/title_font_size = 24
@@ -72,52 +70,329 @@ script = ExtResource("5_bu5ts")
 [node name="MC" type="MarginContainer" parent="popNew"]
 offset_left = 24.0
 offset_top = 24.0
-offset_right = 630.0
-offset_bottom = 224.0
+offset_right = 724.0
+offset_bottom = 574.0
 
-[node name="GC" type="GridContainer" parent="popNew/MC"]
+[node name="VC" type="VBoxContainer" parent="popNew/MC"]
 layout_mode = 2
-theme_override_constants/h_separation = 30
-theme_override_constants/v_separation = 30
+
+[node name="WhitePlayer" type="GridContainer" parent="popNew/MC/VC"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
 columns = 2
 
-[node name="Label" type="Label" parent="popNew/MC/GC"]
+[node name="lblWhite" type="Label" parent="popNew/MC/VC/WhitePlayer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 20
+text = "White
+"
+
+[node name="txtName" type="TextEdit" parent="popNew/MC/VC/WhitePlayer"]
+custom_minimum_size = Vector2(425, 24)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+
+[node name="lblSkill" type="Label" parent="popNew/MC/VC/WhitePlayer"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
-text = "Difficulty (1-5)"
+text = "Skill (0-2500)
+"
+horizontal_alignment = 2
 
-[node name="Level" type="HSlider" parent="popNew/MC/GC"]
+[node name="lvlSkill" type="HSlider" parent="popNew/MC/VC/WhitePlayer"]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
-min_value = 1.0
-max_value = 5.0
-value = 3.0
+max_value = 2500.0
+step = 50.0
+value = 600.0
 rounded = true
 
-[node name="Label2" type="Label" parent="popNew/MC/GC"]
+[node name="lblPlayerType" type="Label" parent="popNew/MC/VC/WhitePlayer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
-text = "Color"
+text = "Player Type
+"
+horizontal_alignment = 2
 
-[node name="HC" type="HBoxContainer" parent="popNew/MC/GC"]
+[node name="HC" type="HBoxContainer" parent="popNew/MC/VC/WhitePlayer"]
 layout_mode = 2
+theme_override_constants/separation = 30
 alignment = 1
 
-[node name="White" type="CheckBox" parent="popNew/MC/GC/HC"]
+[node name="optHuman" type="CheckBox" parent="popNew/MC/VC/WhitePlayer/HC"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
 button_pressed = true
-button_group = SubResource("ButtonGroup_sbsoy")
-text = "White"
+button_group = ExtResource("10_8y1dj")
+text = "Human"
 alignment = 2
 
-[node name="Black" type="CheckBox" parent="popNew/MC/GC/HC"]
+[node name="optComputer" type="CheckBox" parent="popNew/MC/VC/WhitePlayer/HC"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
-button_group = SubResource("ButtonGroup_sbsoy")
+button_group = ExtResource("10_8y1dj")
+text = "Computer
+"
+
+[node name="Separator" type="Label" parent="popNew/MC/VC"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "--------------------------------------------
+"
+vertical_alignment = 1
+
+[node name="BlackPlayer" type="GridContainer" parent="popNew/MC/VC"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 2
+
+[node name="lblBlack" type="Label" parent="popNew/MC/VC/BlackPlayer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 20
 text = "Black
 "
+vertical_alignment = 2
+
+[node name="txtName" type="TextEdit" parent="popNew/MC/VC/BlackPlayer"]
+custom_minimum_size = Vector2(425, 24)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+
+[node name="lblSkill" type="Label" parent="popNew/MC/VC/BlackPlayer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Skill (0-2500)
+"
+horizontal_alignment = 2
+
+[node name="lvlSkill" type="HSlider" parent="popNew/MC/VC/BlackPlayer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+max_value = 2500.0
+step = 50.0
+value = 600.0
+rounded = true
+
+[node name="lblPlayerType" type="Label" parent="popNew/MC/VC/BlackPlayer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Player Type
+"
+horizontal_alignment = 2
+
+[node name="HC" type="HBoxContainer" parent="popNew/MC/VC/BlackPlayer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="optHuman" type="CheckBox" parent="popNew/MC/VC/BlackPlayer/HC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("11_ikrfp")
+text = "Human"
+alignment = 2
+
+[node name="optComputer" type="CheckBox" parent="popNew/MC/VC/BlackPlayer/HC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_pressed = true
+button_group = ExtResource("11_ikrfp")
+text = "Computer
+"
+
+[node name="Separator2" type="Label" parent="popNew/MC/VC"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "--------------------------------------------"
+vertical_alignment = 1
+
+[node name="Clock" type="GridContainer" parent="popNew/MC/VC"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 2
+
+[node name="HC" type="HBoxContainer" parent="popNew/MC/VC/Clock"]
+layout_mode = 2
+
+[node name="VC" type="VBoxContainer" parent="popNew/MC/VC/Clock/HC"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="popNew/MC/VC/Clock/HC/VC"]
+custom_minimum_size = Vector2(260, 28)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Clock Type"
+
+[node name="optNone" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_pressed = true
+button_group = ExtResource("11_vfgdq")
+text = "None"
+
+[node name="optSuddenDeath" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("11_vfgdq")
+text = "Sudden Death
+"
+
+[node name="optIncrement" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("11_vfgdq")
+text = "Increment
+"
+
+[node name="optBronstein" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("11_vfgdq")
+text = "Bronstein
+"
+
+[node name="optSimple" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("11_vfgdq")
+text = "Simple
+
+"
+
+[node name="TVC" type="VBoxContainer" parent="popNew/MC/VC/Clock/HC"]
+visible = false
+layout_mode = 2
+
+[node name="chkSame" type="CheckBox" parent="popNew/MC/VC/Clock/HC/TVC"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Separate Black/White Time"
+
+[node name="AllowWhite" type="HBoxContainer" parent="popNew/MC/VC/Clock/HC/TVC"]
+layout_mode = 2
+script = ExtResource("12_jf3ul")
+def = 30
+mult = 60000.0
+
+[node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AllowWhite"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Allow (m)"
+
+[node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AllowWhite"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 480.0
+value = 60.0
+tick_count = 5
+ticks_on_borders = true
+
+[node name="lblTime" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AllowWhite"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "60"
+horizontal_alignment = 2
+
+[node name="AllowBlack" type="HBoxContainer" parent="popNew/MC/VC/Clock/HC/TVC"]
+visible = false
+layout_mode = 2
+script = ExtResource("12_jf3ul")
+def = 30
+mult = 60000.0
+
+[node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AllowBlack"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Allow (m)"
+
+[node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AllowBlack"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 480.0
+value = 60.0
+tick_count = 5
+ticks_on_borders = true
+
+[node name="lblTime" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AllowBlack"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "60
+"
+horizontal_alignment = 2
+
+[node name="AddWhite" type="HBoxContainer" parent="popNew/MC/VC/Clock/HC/TVC"]
+layout_mode = 2
+script = ExtResource("12_jf3ul")
+def = 10
+mult = 1000.0
+
+[node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AddWhite"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Add (s)  "
+
+[node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AddWhite"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 120.0
+value = 15.0
+tick_count = 5
+ticks_on_borders = true
+
+[node name="lblTime" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AddWhite"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "10"
+horizontal_alignment = 2
+
+[node name="AddBlack" type="HBoxContainer" parent="popNew/MC/VC/Clock/HC/TVC"]
+visible = false
+layout_mode = 2
+script = ExtResource("12_jf3ul")
+def = 10
+mult = 1000.0
+
+[node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AddBlack"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Add (s)  "
+
+[node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AddBlack"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 120.0
+value = 15.0
+tick_count = 5
+ticks_on_borders = true
+
+[node name="lblTime" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AddBlack"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "10"
+horizontal_alignment = 2
 
 [node name="btnOK" type="Button" parent="popNew"]
 anchors_preset = 7
@@ -135,189 +410,6 @@ theme_override_fonts/font = ExtResource("3_7nhen")
 text = "OK"
 
 [node name="btnCancel" type="Button" parent="popNew"]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -290.0
-offset_top = -40.0
-offset_right = -200.0
-offset_bottom = -9.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_fonts/font = ExtResource("3_7nhen")
-text = " Cancel "
-
-[node name="popNew2" type="Window" parent="."]
-title = "New Game Options"
-position = Vector2i(405, 371)
-size = Vector2i(630, 400)
-visible = false
-popup_window = true
-theme_override_fonts/title_font = ExtResource("3_7nhen")
-theme_override_font_sizes/title_font_size = 24
-script = ExtResource("9_vmht8")
-
-[node name="MC" type="MarginContainer" parent="popNew2"]
-offset_left = 24.0
-offset_top = 24.0
-offset_right = 630.0
-offset_bottom = 224.0
-
-[node name="VC" type="VBoxContainer" parent="popNew2/MC"]
-layout_mode = 2
-
-[node name="WhitePlayer" type="GridContainer" parent="popNew2/MC/VC"]
-layout_mode = 2
-theme_override_constants/h_separation = 20
-theme_override_constants/v_separation = 20
-columns = 2
-
-[node name="lblWhite" type="Label" parent="popNew2/MC/VC/WhitePlayer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 20
-text = "White
-"
-
-[node name="txtName" type="TextEdit" parent="popNew2/MC/VC/WhitePlayer"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
-
-[node name="lblSkill" type="Label" parent="popNew2/MC/VC/WhitePlayer"]
-custom_minimum_size = Vector2(250, 0)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-text = "Skill (0-2500)
-"
-horizontal_alignment = 2
-
-[node name="lvlSkill" type="HSlider" parent="popNew2/MC/VC/WhitePlayer"]
-custom_minimum_size = Vector2(300, 0)
-layout_mode = 2
-max_value = 2500.0
-step = 50.0
-value = 600.0
-rounded = true
-
-[node name="lblPlayerType" type="Label" parent="popNew2/MC/VC/WhitePlayer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-text = "Player Type
-"
-horizontal_alignment = 2
-
-[node name="HC" type="HBoxContainer" parent="popNew2/MC/VC/WhitePlayer"]
-layout_mode = 2
-theme_override_constants/separation = 30
-alignment = 1
-
-[node name="optHuman" type="CheckBox" parent="popNew2/MC/VC/WhitePlayer/HC"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-button_pressed = true
-button_group = ExtResource("10_8y1dj")
-text = "Human"
-alignment = 2
-
-[node name="optComputer" type="CheckBox" parent="popNew2/MC/VC/WhitePlayer/HC"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-button_group = ExtResource("10_8y1dj")
-text = "Computer
-"
-
-[node name="Separator" type="Label" parent="popNew2/MC/VC"]
-custom_minimum_size = Vector2(0, 40)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-text = "------------------------------------"
-vertical_alignment = 1
-
-[node name="BlackPlayer" type="GridContainer" parent="popNew2/MC/VC"]
-layout_mode = 2
-theme_override_constants/h_separation = 20
-theme_override_constants/v_separation = 20
-columns = 2
-
-[node name="lblBlack" type="Label" parent="popNew2/MC/VC/BlackPlayer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 20
-text = "Black
-"
-vertical_alignment = 2
-
-[node name="txtName" type="TextEdit" parent="popNew2/MC/VC/BlackPlayer"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
-
-[node name="lblSkill" type="Label" parent="popNew2/MC/VC/BlackPlayer"]
-custom_minimum_size = Vector2(250, 0)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-text = "Skill (0-2500)
-"
-horizontal_alignment = 2
-
-[node name="lvlSkill" type="HSlider" parent="popNew2/MC/VC/BlackPlayer"]
-custom_minimum_size = Vector2(300, 0)
-layout_mode = 2
-max_value = 2500.0
-step = 50.0
-value = 600.0
-rounded = true
-
-[node name="lblPlayerType" type="Label" parent="popNew2/MC/VC/BlackPlayer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-text = "Player Type
-"
-horizontal_alignment = 2
-
-[node name="HC" type="HBoxContainer" parent="popNew2/MC/VC/BlackPlayer"]
-layout_mode = 2
-theme_override_constants/separation = 30
-alignment = 1
-
-[node name="optHuman" type="CheckBox" parent="popNew2/MC/VC/BlackPlayer/HC"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-button_group = ExtResource("11_ikrfp")
-text = "Human"
-alignment = 2
-
-[node name="optComputer" type="CheckBox" parent="popNew2/MC/VC/BlackPlayer/HC"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-button_pressed = true
-button_group = ExtResource("11_ikrfp")
-text = "Computer
-"
-
-[node name="btnOK" type="Button" parent="popNew2"]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -120.0
-offset_top = -40.0
-offset_right = -30.0004
-offset_bottom = -9.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_fonts/font = ExtResource("3_7nhen")
-text = "OK"
-
-[node name="btnCancel" type="Button" parent="popNew2"]
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0

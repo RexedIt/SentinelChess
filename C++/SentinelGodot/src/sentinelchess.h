@@ -26,7 +26,7 @@ public:
 
 private:
     String errorstr(int num);
-    int new_game(const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black);
+    int new_game(const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black, const Ref<ChessClock> &clock);
     int save_game(String filename);
     int load_game(String filename);
     int load_xfen(String content);

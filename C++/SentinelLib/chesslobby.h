@@ -19,8 +19,8 @@ namespace chess
         chesslobby(std::shared_ptr<chessgamelistener> p_listener = NULL);
         ~chesslobby();
 
-        error_e new_game();
-        error_e new_game(color_e user_color, std::string name, int skill, chessplayertype_e ptype);
+        error_e new_game(const chessclock_s &clock);
+        error_e new_game(color_e user_color, std::string name, int skill, chessplayertype_e ptype, const chessclock_s &clock);
         error_e load_game(std::string filename);
         error_e save_game(std::string filename);
 

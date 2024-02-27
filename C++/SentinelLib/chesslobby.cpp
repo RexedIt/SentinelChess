@@ -32,10 +32,10 @@ namespace chess
         mp_players_backup.clear();
     }
 
-    error_e chesslobby::new_game()
+    error_e chesslobby::new_game(const chessclock_s &clock)
     {
         attach_to_game();
-        return mp_game->new_game();
+        return mp_game->new_game(clock);
     }
 
     void chesslobby::attach_to_game()
@@ -52,7 +52,7 @@ namespace chess
             kv.second->set_game(NULL);
     }
 
-    error_e chesslobby::new_game(color_e user_color, std::string name, int skill, chessplayertype_e ptype)
+    error_e chesslobby::new_game(color_e user_color, std::string name, int skill, chessplayertype_e ptype, const chessclock_s &clock)
     {
         backup();
 
@@ -69,7 +69,7 @@ namespace chess
         if (err != e_none)
             return restore(err);
 
-        err = mp_game->new_game();
+        err = mp_game->new_game(clock);
         if (err != e_none)
             return restore(err);
 

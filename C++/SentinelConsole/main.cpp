@@ -133,6 +133,69 @@ bool add_player(chesslobby &lobby, color_e color)
     }
 }
 
+int32_t get_ms_value(std::string label, std::string units, double multvalue, double defvalue)
+{
+    while (true)
+    {
+        std::cout << label << " [" << defvalue << " " << units << "]: ";
+        std::string cmd;
+        std::getline(std::cin, cmd);
+        double temp = defvalue;
+        if (cmd != "")
+            temp = ::atof(cmd.c_str());
+        if (temp >= 0.0)
+            return (int32_t)(temp * multvalue);
+    }
+}
+
+chessclock_s get_clock_options()
+{
+    chessclock_s ret;
+    while (true)
+    {
+        std::cout << "\r\nFor clock, Enter/N=None, D=Sudden Death," << std::endl;
+        std::cout << "I=Increment, B=Bronstein, S=Simple Delay: ";
+        std::string cmd;
+        std::getline(std::cin, cmd);
+        if (cmd == "")
+            return ret;
+        std::string cmdu = uppercase(cmd);
+        std::string cmdl = cmdu.substr(0, 1);
+        if (cmdl == "N")
+            return ret;
+        if (cmdl == "D")
+        {
+            ret.ctype = cc_suddendeath;
+            break;
+        }
+        if (cmdl == "I")
+        {
+            ret.ctype = cc_increment;
+            break;
+        }
+        if (cmdl == "B")
+        {
+            ret.ctype = cc_bronstein_delay;
+            break;
+        }
+        if (cmdl == "S")
+        {
+            ret.ctype = cc_simple_delay;
+            break;
+        }
+        print_error("Choose one of the options for clock");
+    }
+    // get delay range
+    ret.allowedms[0] = get_ms_value("White time", "Minutes", 60000.0, 10.0);
+    ret.allowedms[1] = get_ms_value("Black time", "Minutes", 60000.0, 10.0);
+    if (ret.ctype > cc_suddendeath)
+    {
+        ret.addms[0] = get_ms_value("White bonus/delay", "Seconds", 1000.0, 10.0);
+        ret.addms[1] = get_ms_value("Black bonus/delay", "Seconds", 1000.0, 10.0);
+    }
+    return ret;
+}
+
 bool new_game(chesslobby &lobby)
 {
     std::cout << "\r\nEnter Player Options: name [,type] [,skill]" << std::endl;
@@ -144,7 +207,9 @@ bool new_game(chesslobby &lobby)
         return false;
     if (!add_player(lobby, c_black))
         return false;
-    error_e err = lobby.new_game();
+    // Now, for clock options
+    chessclock_s clock = get_clock_options();
+    error_e err = lobby.new_game(clock);
     if (err != e_none)
         return print_error(err);
     refresh_data(lobby);

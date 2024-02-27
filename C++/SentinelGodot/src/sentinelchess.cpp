@@ -137,7 +137,7 @@ void SentinelChess::refresh_data()
     mp_game = m_lobby.game();
 }
 
-int SentinelChess::new_game(const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black)
+int SentinelChess::new_game(const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black, const Ref<ChessClock> &clock)
 {
     m_lobby.clear_players();
     std::string n;
@@ -158,7 +158,12 @@ int SentinelChess::new_game(const Ref<ChessPlayer> &white, const Ref<ChessPlayer
         if (err != e_none)
             return err;
     }
-    err = m_lobby.new_game();
+
+    chessclock_s sclock;
+    if (clock.is_valid())
+        sclock = clock->get();
+
+    err = m_lobby.new_game(sclock);
     refresh_data();
     return err;
 }

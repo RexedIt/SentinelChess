@@ -276,3 +276,123 @@ void ChessPlayer::get(std::string &n, int &s, chessplayertype_e &t)
     s = m_skill;
     t = m_playertype;
 }
+
+ChessClock::ChessClock()
+{
+}
+
+ChessClock::ChessClock(chessclock_s &cc)
+{
+    m_clock = cc;
+}
+
+ChessClock::~ChessClock()
+{
+}
+
+void ChessClock::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("set_ctype", "c"), &ChessClock::set_ctype);
+    ClassDB::bind_method(D_METHOD("get_ctype"), &ChessClock::get_ctype);
+    ClassDB::add_property("ChessClock", PropertyInfo(Variant::INT, "ClockType"), "set_ctype", "get_ctype");
+    ClassDB::bind_method(D_METHOD("set_allowed_white", "c"), &ChessClock::set_allowed_white);
+    ClassDB::bind_method(D_METHOD("get_allowed_white"), &ChessClock::get_allowed_white);
+    ClassDB::add_property("ChessClock", PropertyInfo(Variant::INT, "AllowedWhite"), "set_allowed_white", "get_allowed_white");
+    ClassDB::bind_method(D_METHOD("set_allowed_black", "c"), &ChessClock::set_allowed_black);
+    ClassDB::bind_method(D_METHOD("get_allowed_black"), &ChessClock::get_allowed_black);
+    ClassDB::add_property("ChessClock", PropertyInfo(Variant::INT, "AllowedBlack"), "set_allowed_black", "get_allowed_black");
+    ClassDB::bind_method(D_METHOD("set_add_white", "c"), &ChessClock::set_add_white);
+    ClassDB::bind_method(D_METHOD("get_add_white"), &ChessClock::get_add_white);
+    ClassDB::add_property("ChessClock", PropertyInfo(Variant::INT, "AddWhite"), "set_add_white", "get_add_white");
+    ClassDB::bind_method(D_METHOD("set_add_black", "c"), &ChessClock::set_add_black);
+    ClassDB::bind_method(D_METHOD("get_add_black"), &ChessClock::get_add_black);
+    ClassDB::add_property("ChessClock", PropertyInfo(Variant::INT, "AddBlack"), "set_add_black", "get_add_black");
+    ClassDB::bind_method(D_METHOD("set_remain_white", "c"), &ChessClock::set_remain_white);
+    ClassDB::bind_method(D_METHOD("get_remain_white"), &ChessClock::get_remain_white);
+    ClassDB::add_property("ChessClock", PropertyInfo(Variant::INT, "RemainWhite"), "set_remain_white", "get_remain_white");
+    ClassDB::bind_method(D_METHOD("set_remain_black", "c"), &ChessClock::set_remain_black);
+    ClassDB::bind_method(D_METHOD("get_remain_black"), &ChessClock::get_remain_black);
+    ClassDB::add_property("ChessClock", PropertyInfo(Variant::INT, "RemainBlack"), "set_remain_black", "get_remain_black");
+
+    // ChessPlayerType
+    BIND_ENUM_CONSTANT(ccNone);
+    BIND_ENUM_CONSTANT(ccSuddenDeath);
+    BIND_ENUM_CONSTANT(ccIncrement);
+    BIND_ENUM_CONSTANT(ccBronsteinDelay);
+    BIND_ENUM_CONSTANT(ccSimpleDelay);
+}
+
+void ChessClock::set_ctype(ChessClockType t)
+{
+    m_clock.ctype = (chessclock_e)t;
+}
+
+ChessClockType ChessClock::get_ctype()
+{
+    return (ChessClockType)m_clock.ctype;
+}
+
+void ChessClock::set_allowed_white(const int ms)
+{
+    m_clock.allowedms[0] = ms;
+}
+
+int ChessClock::get_allowed_white()
+{
+    return m_clock.allowedms[0];
+}
+
+void ChessClock::set_allowed_black(const int ms)
+{
+    m_clock.allowedms[1] = ms;
+}
+
+int ChessClock::get_allowed_black()
+{
+    return m_clock.allowedms[1];
+}
+
+void ChessClock::set_add_white(const int ms)
+{
+    m_clock.addms[0] = ms;
+}
+
+int ChessClock::get_add_white()
+{
+    return m_clock.addms[0];
+}
+
+void ChessClock::set_add_black(const int ms)
+{
+    m_clock.addms[1] = ms;
+}
+
+int ChessClock::get_add_black()
+{
+    return m_clock.addms[1];
+}
+
+void ChessClock::set_remain_white(const int ms)
+{
+    m_clock.remainms[0] = ms;
+}
+
+int ChessClock::get_remain_white()
+{
+    return m_clock.remainms[0];
+}
+
+void ChessClock::set_remain_black(const int ms)
+{
+    m_clock.remainms[1] = ms;
+}
+
+int ChessClock::get_remain_black()
+{
+    return m_clock.remainms[1];
+}
+
+chessclock_s ChessClock::get()
+{
+    return m_clock;
+}
