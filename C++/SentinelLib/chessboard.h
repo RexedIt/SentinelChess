@@ -56,7 +56,7 @@ namespace chess
         bool check_state(color_e col);
         std::string check_state();
         color_e turn_color();
-        uint32_t hash(int rec);
+        uint32_t hash();
 
         void cancel(bool c) { m_cancel = c; }
 

@@ -249,3 +249,18 @@ func clock_update(delta : float):
 		if countcol == SentinelChess.Black:
 			lblBlackClock.text = time_str(countms)
 	
+func set_idle(b : bool):
+	print('UI: idle: ' + str(b) + ' *** TODO ***')
+
+func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
+	append_history(game_manager.gamestatestr(s))
+	if w != SentinelChess.ChessColor.cNone:
+		var color : String = 'White'
+		var winstr = 'White Wins!'
+		if w == SentinelChess.ChessColor.Black:
+			color = 'Black'
+			winstr = 'Black Wins!'
+		append_history(winstr, color)
+
+	print('UI: Finish Game *** TODO ***')
+	

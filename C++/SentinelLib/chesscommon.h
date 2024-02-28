@@ -201,14 +201,16 @@ namespace chess
     typedef enum game_state_e
     {
         none_e = -1,
-        idle_e = 1,
-        play_e = 0, // all end game conditions follow
+        idle_e = 0,
+        play_e = 1, 
         checkmate_e = 2,
-        stalemate_e = 3,
-        draw_e = 4,
-        forfeit_e = 5,
-        time_up_e = 6,
-        terminate_e = 7
+        terminate_e = 3,
+        forfeit_e = 4,
+        time_up_e = 5,
+        draw_stalemate_e = 6,
+        draw_fivefold_e = 7,
+        draw_fiftymove_e = 8,
+        draw_insuff_material_e = 9,
     } game_state_e;
 
     typedef enum chessplayertype_e

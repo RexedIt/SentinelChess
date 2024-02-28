@@ -637,7 +637,7 @@ namespace chess
         return m1;
     }
 
-    uint32_t chessboard::hash(int rec)
+    uint32_t chessboard::hash()
     {
         if (m_hash != 0)
             return m_hash;
@@ -651,11 +651,6 @@ namespace chess
                            ((uint32_t)m_cells[y][x + 2] << 8) +
                            ((uint32_t)m_cells[y][x + 3]));
             }
-
-        // Take into account the recursion level
-        m_hash += (m_hash << 1) + (m_hash << 4) + (m_hash << 7) + (m_hash << 8) + (m_hash << 24);
-        m_hash ^= rec;
-
         return m_hash;
     }
 

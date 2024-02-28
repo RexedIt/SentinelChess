@@ -61,7 +61,13 @@ namespace chess
                     m_win_color = winner_col;
                 }
                 else
-                    g = stalemate_e;
+                    g = draw_stalemate_e;
+            }
+            // Fivefold Repetition
+            if (prev_position_count() >= 4)
+            {
+                g = draw_fivefold_e;
+                m_win_color = c_none;
             }
         }
         return g;
@@ -157,6 +163,7 @@ namespace chess
             m_turn.clear();
             m_board.new_board();
         }
+        refresh_board_positions();
         signal_refresh_board();
         return e_none;
     }
@@ -175,7 +182,8 @@ namespace chess
         // m_clock.new();
         m_board.new_board();
         m_turn.clear();
-        set_state(play_e);
+        refresh_board_positions();
+        set_state(play_e, true);
         signal_refresh_board();
         signal_on_turn();
         return e_none;
@@ -212,7 +220,8 @@ namespace chess
             if (m_board.load(is) != e_none)
                 return e_loading;
             is.close();
-            set_state(play_e);
+            refresh_board_positions();
+            set_state(m_state, true);
             signal_refresh_board();
             signal_on_turn();
             return e_none;
@@ -326,9 +335,9 @@ namespace chess
         return e_none;
     }
 
-    void chessgame::set_state(game_state_e g)
+    void chessgame::set_state(game_state_e g, bool force_notify)
     {
-        if (g != m_state)
+        if ((g != m_state) || (force_notify))
         {
             m_state = g;
             signal_on_state();
@@ -345,9 +354,37 @@ namespace chess
             int32_t wt = 0;
             int32_t bt = 0;
             clock_remaining(col, wt, bt);
+            add_board_position();
             m_turn.push_back(new_turn(n, m, ch, m_board, col, wt, bt));
             signal_on_turn();
         }
+    }
+
+    void chessgame::refresh_board_positions()
+    {
+        m_board_positions.clear();
+        for (size_t i = 0; i < m_turn.size(); i++)
+        {
+            uint32_t curpos = m_turn[i].b.hash();
+            int c = m_board_positions[curpos];
+            m_board_positions[curpos] = c + 1;
+        }
+    }
+
+    int chessgame::prev_position_count()
+    {
+        uint32_t curpos = m_board.hash();
+        std::map<uint32_t, int>::iterator it = m_board_positions.find(curpos);
+        if (it != m_board_positions.end())
+            return it->second;
+        return 0;
+    }
+
+    void chessgame::add_board_position()
+    {
+        uint32_t curpos = m_board.hash();
+        int c = m_board_positions[curpos];
+        m_board_positions[curpos] = c + 1;
     }
 
     void chessgame::signal_refresh_board()

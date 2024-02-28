@@ -23,6 +23,7 @@ SentinelChess::~SentinelChess()
 void SentinelChess::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("errorstr", "num"), &SentinelChess::errorstr);
+    ClassDB::bind_method(D_METHOD("gamestatestr", "state"), &SentinelChess::gamestatestr);
     ClassDB::bind_method(D_METHOD("new_game", "white", "black"), &SentinelChess::new_game);
     ClassDB::bind_method(D_METHOD("save_game", "filename"), &SentinelChess::save_game);
     ClassDB::bind_method(D_METHOD("load_game", "filename"), &SentinelChess::load_game);
@@ -69,12 +70,17 @@ void SentinelChess::_bind_methods()
     BIND_ENUM_CONSTANT(Black);
 
     // Game State
+    BIND_ENUM_CONSTANT(sNone);
+    BIND_ENUM_CONSTANT(Idle);
     BIND_ENUM_CONSTANT(Play);
-    BIND_ENUM_CONSTANT(CheckMate);
-    BIND_ENUM_CONSTANT(StaleMate);
+    BIND_ENUM_CONSTANT(Terminate);
     BIND_ENUM_CONSTANT(Forfeit);
     BIND_ENUM_CONSTANT(TimeUp);
-    BIND_ENUM_CONSTANT(Terminate);
+    BIND_ENUM_CONSTANT(CheckMate);
+    BIND_ENUM_CONSTANT(StaleMate);
+    BIND_ENUM_CONSTANT(FiveFold);
+    BIND_ENUM_CONSTANT(FiftyMove);
+    BIND_ENUM_CONSTANT(InsuffMaterial);
 
     // Pieces
     BIND_ENUM_CONSTANT(pNone);
@@ -89,6 +95,11 @@ void SentinelChess::_bind_methods()
 String SentinelChess::errorstr(int num)
 {
     return String(::errorstr((error_e)num).c_str());
+}
+
+String SentinelChess::gamestatestr(ChessGameState state)
+{
+    return String(::game_state_str((game_state_e)state).c_str());
 }
 
 bool SentinelChess::hasevent()

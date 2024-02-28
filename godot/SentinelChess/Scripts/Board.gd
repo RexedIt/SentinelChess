@@ -168,3 +168,9 @@ func _on_animated(p0 : ChessCoord, p1 : ChessCoord):
 	# print('_on_animated ' + coordstr(p0) + ' to ' + coordstr(p1))
 	game._on_animated()			
 		
+func set_idle(b : bool):
+	print('Board: idle: ' + str(b) + ' *** TODO ***')
+
+func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
+	print('Board: Finish Game *** TODO ***')
+

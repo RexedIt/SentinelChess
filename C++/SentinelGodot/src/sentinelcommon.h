@@ -19,12 +19,17 @@ typedef enum ChessColor
 
 typedef enum ChessGameState
 {
+    sNone = none_e,
+    Idle = idle_e,
     Play = play_e,
     CheckMate = checkmate_e,
-    StaleMate = stalemate_e,
+    Terminate = terminate_e,
     Forfeit = forfeit_e,
     TimeUp = time_up_e,
-    Terminate = terminate_e
+    StaleMate = draw_stalemate_e,
+    FiveFold = draw_fivefold_e,
+    FiftyMove = draw_fiftymove_e,
+    InsuffMaterial = draw_insuff_material_e
 } ChessGameState;
 
 typedef enum ChessPiece

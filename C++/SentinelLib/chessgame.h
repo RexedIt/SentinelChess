@@ -68,8 +68,11 @@ namespace chess
         error_e consider(move_s, color_e, int8_t pct = -1);
 
     private:
-        void set_state(game_state_e g);
+        void set_state(game_state_e g, bool force_notify = false);
         void push_new_turn(move_s m);
+        void refresh_board_positions();
+        int prev_position_count();
+        void add_board_position();
 
         // Signallers
         void signal_refresh_board();
@@ -87,6 +90,9 @@ namespace chess
 
         std::mutex m_mutex;
         std::map<int, std::shared_ptr<chessgamelistener>> mp_listeners;
+
+        // Draw Indicators - Fivefold Repetition
+        std::map<uint32_t, int> m_board_positions;
     };
 
 }

@@ -26,6 +26,8 @@ public:
 
 private:
     String errorstr(int num);
+    String gamestatestr(ChessGameState state);
+
     int new_game(const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black, const Ref<ChessClock> &clock);
     int save_game(String filename);
     int load_game(String filename);

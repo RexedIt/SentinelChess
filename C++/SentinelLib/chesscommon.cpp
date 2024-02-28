@@ -213,16 +213,20 @@ namespace chess
             return "Play";
         case checkmate_e:
             return "CheckMate";
-        case stalemate_e:
-            return "Stalemate";
-        case draw_e:
-            return "Draw";
         case forfeit_e:
             return "Forfeit";
         case time_up_e:
             return "Time Up";
         case terminate_e:
             return "Terminated";
+        case draw_stalemate_e:
+            return "Stalemate";
+        case draw_fivefold_e:
+            return "Draw - Fivefold Repetition";
+        case draw_fiftymove_e:
+            return "Draw - Fifty Move Rule";
+        case draw_insuff_material_e:
+            return "Draw - Dead Position";
         }
         return "None";
     }

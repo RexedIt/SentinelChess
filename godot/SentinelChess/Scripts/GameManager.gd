@@ -39,11 +39,7 @@ func _ready():
 func _process(delta):
 	pass
 	
-var lasttime : float = 0.0
-var thistime : float = 0.0
-
 func _physics_process(delta):
-	thistime += delta
 	# polling, unfortunately.
 	if hasevent():
 		var ce : ChessEvent = popevent()
@@ -73,7 +69,8 @@ func _physics_process(delta):
 					_on_turn(n,b,c)
 				gameUI.clock_turn(c, wt, bt)
 			ChessEvent.ChessEventType.ceState:
-				print('ceState *** REM *** TODO')
+				print('ceState')
+				_on_state(ce.game_state(), ce.win_color())
 			ChessEvent.ChessEventType.ceChat:
 				print('ceChat *** REM *** TODO')
 
@@ -241,7 +238,28 @@ func _on_turn(n, b, c):
 	if is_local_active(c):
 		refresh_board(b)
 	gameUI.refreshPrompt(c)
+
+func set_idle(b : bool):
+	if b:
+		_gamestatereact(GameState.IDLE)
+	else:
+		_gamestatereact(GameState.PLAY)
+	gameUI.set_idle(b)
+	board.set_idle(b)
+
+func finish_game(s : ChessGameState, w : ChessColor):
+	_gamestatereact(GameState.END)
+	gameUI.finish_game(s, w)
+	board.finish_game(s, w)
 	
+func _on_state(s : ChessGameState, w : ChessColor):
+	if s == Idle:
+		set_idle(true)
+	if s == Play:
+		set_idle(false)
+	if s > Play:
+		finish_game(s, w)
+					
 func refresh_board(b : ChessBoard):
 	board.setup(turn_color())
 	board.refreshpieces(b)
