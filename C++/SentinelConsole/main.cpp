@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <windows.h>
+#include <conio.h>
 #include <chrono>
 #include <thread>
 #include <set>
@@ -227,29 +228,43 @@ void on_consider(move_s m, color_e c, int8_t p)
     std::cout << ".";
 }
 
-void on_turn(int16_t t, move_s m, bool ch, chessboard &b, color_e tc, int32_t wt, int32_t bt)
+int32_t time_rem = 0;
+bool is_idle = false;
+
+void on_turn(int16_t t, move_s m, bool ch, chessboard &b, color_e tc, game_state_e g, color_e wc, int32_t wt, int32_t bt)
 {
+    time_to_console(wt, bt);
+    time_rem = (tc == c_black) ? bt : wt;
+    refresh_board(t, b);
     if (m.is_valid())
     {
         color_e c = other(tc);
         if (!locals.count(c))
-        {
-            std::cout << std::endl;
             move_to_console(m, color_str(c));
-        }
         if (b.check_state(c_black))
             std::cout << "Black in Check." << std::endl;
         else if (b.check_state(c_white))
             std::cout << "White in Check." << std::endl;
-        refresh_board(t, b);
+    }
+    if (g > play_e)
+    {
+        std::cout << game_state_str(g) << std::endl;
+        if (wc != c_none)
+            std::cout << color_str(wc) + " Wins! ";
+        is_idle = true;
     }
 }
 
 std::string prompt()
 {
+    if (is_idle)
+        return "Command (Idle) > ";
     color_e c = p_game->turn_color();
     bool ch = p_game->check_state(c);
-    std::string s = color_str(c) + " move ";
+    std::string s;
+    if (time_rem > 0)
+        s += "[" + time_str(time_rem) + "] ";
+    s += color_str(c) + " move ";
     if (ch)
         s += "(Check) ";
     s += "> ";
@@ -265,6 +280,7 @@ void on_state(game_state_e g, color_e c)
         if (c != c_none)
             std::cout << color_str(c) + " Wins! ";
         std::cout << "****" << std::endl;
+        is_idle = true;
     }
 }
 
@@ -286,7 +302,7 @@ void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
             on_consider(e.move, e.color, e.percent);
             break;
         case ce_turn:
-            on_turn(e.turn_no, e.move, e.check, e.board, e.color, e.wt, e.bt);
+            on_turn(e.turn_no, e.move, e.check, e.board, e.color, e.game_state, e.win_color, e.wt, e.bt);
             break;
         case ce_state:
             on_state(e.game_state, e.color);
@@ -344,7 +360,7 @@ int main(void)
     while (true)
     {
         process_queue_listener(p_listener);
-        if (lobby.is_local_turn())
+        if (lobby.is_local_turn() || is_idle)
         {
             std::cout << prompt();
             std::string cmd;
@@ -353,8 +369,10 @@ int main(void)
             std::string cmdl = cmdu.substr(0, 1);
             if ((cmdu == "?") || (cmdu == "HELP") || (cmdu == "H"))
             {
-                std::cout << "Commands: NEW LOAD or L [FileName] SAVE or S [FileName] QUIT or Q MOVE or M [XX-XX]" << std::endl;
-                std::cout << "Also < [Turn], REMOVE or R [XX]" << std::endl;
+                std::cout << "\r\nCommands: NEW/N, LOAD/L Filename, SAVE/S FileName, PLAY/P, IDLE/I, QUIT/Q, " << std::endl;
+                if (!is_idle)
+                    std::cout << "MOVE/M [XX-XX], ";
+                std::cout << "< [Turn], >, T Turn PIECE [Coord Piece], REMOVE [Coord], XFEN [String] " << std::endl;
                 continue;
             }
             if (cmdl == "N")
@@ -378,20 +396,47 @@ int main(void)
             }
             else if (cmdl == "<")
             {
-                cmdu = get_arg(cmdu);
-                if (cmdu == "")
-                {
-                    print_error(e_rewind_missing);
-                    continue;
-                }
-                int moveno = atoi(cmdu.c_str());
-                if (p_game->rewind_game(moveno) != e_none)
+                if (p_game->rewind_game() != e_none)
                 {
                     print_error(e_rewind_failed);
                     continue;
                 }
             }
-            else if (cmdl == "R")
+            else if (cmdl == ">")
+            {
+                if (p_game->advance_game() != e_none)
+                {
+                    print_error(e_advance_failed);
+                    continue;
+                }
+            }
+            else if (cmdl == "T")
+            {
+                cmdu = get_arg(cmdu);
+                if (cmdu == "")
+                {
+                    print_error(e_missing_move);
+                    continue;
+                }
+                int turnno = atoi(cmdu.c_str());
+                if (p_game->goto_turn(turnno) != e_none)
+                {
+                    print_error(e_advance_failed);
+                    continue;
+                }
+            }
+            else if (cmdl == "P")
+            {
+                p_game->play_game();
+                is_idle = false;
+                continue;
+            }
+            else if (cmdl == "I")
+            {
+                p_game->pause_game();
+                continue;
+            }
+            else if (cmdl == "REMOVE")
             {
                 cmdu = get_arg(cmdu);
                 if (cmdu == "")
@@ -407,7 +452,7 @@ int main(void)
                 }
                 p_game->remove_piece(p0);
             }
-            else if (cmdl == "P")
+            else if (cmdl == "PIECE")
             {
                 std::vector<std::string> args = get_args(cmd);
                 if (args.size() != 2)
@@ -434,7 +479,7 @@ int main(void)
                 }
                 p_game->add_piece(p0, p1);
             }
-            if (cmdl == "X")
+            if (cmdl == "XFEN")
             {
                 // XFEN string
                 cmdu = get_arg(cmd);
@@ -448,36 +493,46 @@ int main(void)
             }
             else
             {
-                if (cmdl == "M")
+                if (!is_idle)
                 {
-                    cmdu = get_arg(cmdu);
-                    if (cmdu == "")
+                    if (cmdl == "M")
                     {
-                        print_error(e_missing_move);
+                        cmdu = get_arg(cmdu);
+                        if (cmdu == "")
+                        {
+                            print_error(e_missing_move);
+                            continue;
+                        }
+                    }
+                    coord_s p0, p1;
+                    if (!get_move(cmdu, p0, p1))
+                        continue;
+                    color_e whose_turn = p_game->turn_color();
+                    if (p_game->move(whose_turn, p0, p1) != e_none)
+                    {
+                        print_error(e_invalid_move);
                         continue;
                     }
-                }
-                coord_s p0, p1;
-                if (!get_move(cmdu, p0, p1))
-                    continue;
-                color_e whose_turn = p_game->turn_color();
-                if (p_game->move(whose_turn, p0, p1) != e_none)
-                {
-                    print_error(e_invalid_move);
-                    continue;
-                }
-                if ((p_game->check_state(whose_turn)) && (p_game->state() == play_e))
-                {
-                    print_error(e_check);
-                    continue;
+                    if ((p_game->check_state(whose_turn)) && (p_game->state() == play_e))
+                    {
+                        print_error(e_check);
+                        continue;
+                    }
                 }
             }
         }
         else
         {
+            if (_kbhit())
+            {
+                int c = _getch();
+                if ((c == 'i') || (c == 'I'))
+                {
+                    p_game->pause_game();
+                    is_idle = true;
+                }
+            }
             std::this_thread::sleep_for(std::chrono::milliseconds(25));
         }
-        if (p_game->state() != play_e)
-            break;
     }
 }

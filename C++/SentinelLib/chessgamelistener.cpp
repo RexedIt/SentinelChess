@@ -73,11 +73,11 @@ namespace chess
             (*mp_on_consider_cb)(m, c, p);
     }
 
-    void chessgamelistener_direct::signal_on_turn(int16_t n, move_s m, bool ch, chessboard &b, color_e c, int32_t wt, int32_t bt)
+    void chessgamelistener_direct::signal_on_turn(int16_t n, move_s m, bool ch, chessboard &b, color_e c, game_state_e g, color_e wc, int32_t wt, int32_t bt)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         if (mp_on_turn_cb)
-            (*mp_on_turn_cb)(n, m, ch, b, c, wt, bt);
+            (*mp_on_turn_cb)(n, m, ch, b, c, g, wc, wt, bt);
     }
 
     void chessgamelistener_direct::signal_on_state(game_state_e g, color_e w)
@@ -139,7 +139,7 @@ namespace chess
         }
     }
 
-    void chessgamelistener_queue::signal_on_turn(int16_t n, move_s m, bool ch, chessboard &b, color_e c, int32_t wt, int32_t bt)
+    void chessgamelistener_queue::signal_on_turn(int16_t n, move_s m, bool ch, chessboard &b, color_e c, game_state_e g, color_e wc, int32_t wt, int32_t bt)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         chessevent e(ce_turn);
@@ -148,6 +148,8 @@ namespace chess
         e.check = ch;
         e.board = b;
         e.color = c;
+        e.win_color = wc;
+        e.game_state = g;
         e.wt = wt;
         e.bt = bt;
         m_events.push(e);

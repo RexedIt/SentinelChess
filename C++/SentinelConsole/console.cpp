@@ -37,7 +37,7 @@ std::string colorchar(int bkgnd, int fgnd, std::string s)
 
 void board_to_console(int n, chess::chessboard &b, bool r)
 {
-    std::cout << "\r\n--- #" << n << " --------------------\r\n"
+    std::cout << "\r\n\r\n--- #" << n << " --------------------\r\n"
               << std::endl;
 
     if ((b.turn_color() == c_white) || (r == false))
@@ -85,6 +85,13 @@ void board_to_console(int n, chess::chessboard &b, bool r)
 void move_to_console(chess::move_s &m, std::string s)
 {
     std::cout << s << " move " << m.to_string() << std::endl;
+}
+
+void time_to_console(int32_t wt, int32_t bt)
+{
+    if ((wt <= 0) && (bt <= 0))
+        return;
+    std::cout << "White:" << time_str(wt) << " Black: " << time_str(wt) << std::endl;
 }
 
 stopwatch::stopwatch()

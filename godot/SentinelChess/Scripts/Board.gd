@@ -90,6 +90,7 @@ func board_c(s: Vector2) -> ChessCoord:
 	
 # called by piece
 func drag_start(y : int, x : int) -> bool:
+	var g = game.gamestate;
 	if game.gamestate != game.GameState.USERMOVE:
 		return false
 	if game.cell_interactive(y,x):
@@ -117,8 +118,6 @@ func drop_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
 		return false
 	var c : SentinelChess.ChessColor = game.turn_color();
 	var err : int = game.move_c(c, p0, p1, SentinelChess.ChessPiece.pNone)
-	var n : int = game.lastturnno();
-	var m: ChessMove = game.lastmove();
 	if err != 0:
 		handle_error(err)
 		return false
@@ -127,7 +126,7 @@ func drop_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
 			handle_error_msg("You are in Check.")
 			return false
 		# *** REM *** TODO Extra Checks?
-	game._on_user_moved(n,m,c)
+	game._on_user_moved()
 	return true
 
 func move_piece(p0 : ChessCoord, p1 : ChessCoord):
@@ -148,7 +147,7 @@ func handle_error(err : int):
 func handle_error_msg(err : String):
 	game._on_error_msg(err)
 	
-func animate_move(m : ChessMove):
+func animate_move(m : ChessMove) -> bool:
 	if m != null:
 		var p0 : ChessCoord = m.p0
 		var p1 : ChessCoord = m.p1
@@ -156,6 +155,9 @@ func animate_move(m : ChessMove):
 			var po = piece_arr[p0.y*8+p0.x]
 			if po != null:
 				po.animate_move(p1)
+				return true
+	return false
+		
 
 func coordstr(p0 : ChessCoord) -> String:
 	var s = "%d.%d"

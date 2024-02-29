@@ -46,11 +46,11 @@ namespace chess
         }
     }
 
-    void chesscomputer::signal_on_turn(int16_t turn_no, move_s m, bool check, chessboard &board, color_e color, int32_t wt, int32_t bt)
+    void chesscomputer::signal_on_turn(int16_t turn_no, move_s m, bool check, chessboard &board, color_e color, game_state_e game_state, color_e win_color, int32_t wt, int32_t bt)
     {
         // This is where we will determine game state, move, or forfeit.
         // move:
-        if ((!m_thread_running) && (color == m_color))
+        if ((!m_thread_running) && (game_state == play_e) && (color == m_color))
         {
             m_board = board;
             m_thread_running = true;
@@ -115,8 +115,8 @@ namespace chess
             consider(candidate, (int8_t)(i * 100 / possible.size()));
         }
         // We call move on the best outcome as it will not actually move if not valid but evaluate end of game.
+        m_thread_running = false; // This is called FIRST so that the callback we get for state change does not loop
         error_e err = move(best);
-        m_thread_running = false;
         return err;
     }
 

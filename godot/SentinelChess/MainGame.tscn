@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=24 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
@@ -20,6 +20,7 @@
 [ext_resource type="Texture2D" uid="uid://cphjjv5ttc3a3" path="res://Sprites/RetroWood/Save.jpg" id="15_pwrnu"]
 [ext_resource type="Texture2D" uid="uid://baiu161gnvfj0" path="res://Sprites/RetroWood/Pause.jpg" id="16_arl5w"]
 [ext_resource type="Texture2D" uid="uid://bxdtqof8robqc" path="res://Sprites/RetroWood/Rewind.jpg" id="17_fpd0j"]
+[ext_resource type="Texture2D" uid="uid://c7y0jxfkladhf" path="res://Sprites/RetroWood/Advance.jpg" id="21_12fke"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_55xmw"]
 size = Vector2(137, 96)
@@ -60,8 +61,9 @@ shape = SubResource("RectangleShape2D_55xmw")
 
 [node name="popNew" type="Window" parent="."]
 title = "New Game Options"
-position = Vector2i(395, 269)
+position = Vector2i(355, 271)
 size = Vector2i(750, 600)
+visible = false
 popup_window = true
 theme_override_fonts/title_font = ExtResource("3_7nhen")
 theme_override_font_sizes/title_font_size = 24
@@ -467,19 +469,26 @@ offset_right = 1630.0
 offset_bottom = 81.0
 icon = ExtResource("15_pwrnu")
 
-[node name="btnPause" type="Button" parent="GameUI"]
+[node name="btnRewind" type="Button" parent="GameUI"]
 offset_left = 1620.0
 offset_top = 10.0
 offset_right = 1695.0
 offset_bottom = 81.0
-icon = ExtResource("16_arl5w")
+icon = ExtResource("17_fpd0j")
 
-[node name="btnRewind" type="Button" parent="GameUI"]
+[node name="btnPause" type="Button" parent="GameUI"]
 offset_left = 1685.0
 offset_top = 10.0
 offset_right = 1760.0
 offset_bottom = 81.0
-icon = ExtResource("17_fpd0j")
+icon = ExtResource("16_arl5w")
+
+[node name="btnAdvance" type="Button" parent="GameUI"]
+offset_left = 1750.0
+offset_top = 10.0
+offset_right = 1825.0
+offset_bottom = 81.0
+icon = ExtResource("21_12fke")
 
 [node name="lblHistory" type="RichTextLabel" parent="GameUI"]
 offset_left = 1441.0
@@ -551,6 +560,7 @@ vertical_alignment = 1
 [connection signal="pressed" from="GameUI/btnNew" to="GameUI" method="_on_btn_new_pressed"]
 [connection signal="pressed" from="GameUI/btnLoad" to="GameUI" method="_on_btn_load_pressed"]
 [connection signal="pressed" from="GameUI/btnSave" to="GameUI" method="_on_btn_save_pressed"]
-[connection signal="pressed" from="GameUI/btnPause" to="GameUI" method="_on_btn_pause_pressed"]
 [connection signal="pressed" from="GameUI/btnRewind" to="GameUI" method="_on_btn_rewind_pressed"]
+[connection signal="pressed" from="GameUI/btnPause" to="GameUI" method="_on_btn_pause_pressed"]
+[connection signal="pressed" from="GameUI/btnAdvance" to="GameUI" method="_on_btn_advance_pressed"]
 [connection signal="text_submitted" from="GameUI/txtCmd" to="GameUI" method="_on_txt_cmd_text_submitted"]

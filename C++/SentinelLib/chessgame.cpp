@@ -8,6 +8,7 @@ namespace chess
     {
         m_state = none_e;
         m_win_color = c_none;
+        m_play_pos = -1;
     }
 
     chessboard chessgame::board()
@@ -32,19 +33,25 @@ namespace chess
         return m_win_color;
     }
 
-    chessturn_s chessgame::last_turn()
+    chessturn_s chessgame::play_turn()
     {
-        if (m_turn.size() == 0)
+        if ((m_turn.size() == 0) || (m_play_pos < 0))
         {
             chessturn_s m;
+            m.b.new_board();
             return m;
         }
-        return m_turn[m_turn.size() - 1];
+        return m_turn[m_play_pos];
     }
 
-    int16_t chessgame::turnno()
+    int16_t chessgame::playmax()
     {
         return (int16_t)m_turn.size();
+    }
+
+    int16_t chessgame::playno()
+    {
+        return (int16_t)m_play_pos + 1;
     }
 
     game_state_e chessgame::is_game_over(color_e col, move_s m)
@@ -146,25 +153,72 @@ namespace chess
         return e_adding;
     }
 
-    error_e chessgame::rewind_game(int move_no)
+    void chessgame::set_turn_to(int idx)
     {
-        int idx = move_no - 1;
-        if (idx == turnno())
-            return e_none;
-        if ((idx < -1) || (idx >= turnno()))
-            return e_rewind_failed;
         if (idx >= 0)
         {
             m_board.copy(m_turn[idx].b);
-            m_turn.resize(idx + 1);
+            if (m_state == play_e)
+                m_turn.resize(idx + 1);
+            m_play_pos = idx;
         }
         else
         {
-            m_turn.clear();
             m_board.new_board();
+            if (m_state == play_e)
+                m_turn.clear();
+            m_play_pos = -1;
         }
-        refresh_board_positions();
-        signal_refresh_board();
+        if (m_state == play_e)
+            refresh_board_positions();
+        signal_on_turn();
+    }
+
+    error_e chessgame::rewind_game()
+    {
+        int idx = m_play_pos - 1;
+        if (idx < -1)
+            return e_rewind_failed;
+        set_turn_to(idx);
+        return e_none;
+    }
+
+    error_e chessgame::advance_game()
+    {
+        int idx = m_play_pos + 1;
+        if (idx >= playmax())
+            return e_advance_failed;
+        set_turn_to(idx);
+        return e_none;
+    }
+
+    error_e chessgame::goto_turn(int turn_no)
+    {
+        int idx = turn_no - 1;
+        if ((idx < -1) || (idx >= playmax()))
+            return e_advance_failed;
+        set_turn_to(idx);
+        return e_none;
+    }
+
+    error_e chessgame::play_game()
+    {
+        if (m_state != play_e)
+        {
+            // accomplishes a trim
+            m_win_color = c_none;
+            set_state(play_e);
+            set_turn_to(m_play_pos);
+        }
+        return e_none;
+    }
+
+    error_e chessgame::pause_game()
+    {
+        if (m_state != idle_e)
+        {
+            set_state(idle_e);
+        }
         return e_none;
     }
 
@@ -182,9 +236,9 @@ namespace chess
         // m_clock.new();
         m_board.new_board();
         m_turn.clear();
+        m_play_pos = 0;
         refresh_board_positions();
         set_state(play_e, true);
-        signal_refresh_board();
         signal_on_turn();
         return e_none;
     }
@@ -217,12 +271,14 @@ namespace chess
                 }
                 m_turn.push_back(t);
             }
+            m_play_pos = (int)m_turn.size() - 1;
             if (m_board.load(is) != e_none)
                 return e_loading;
             is.close();
             refresh_board_positions();
-            set_state(m_state, true);
-            signal_refresh_board();
+            // when we load any game, if it's state
+            // is play we turn to idle (review mode)
+            set_state(idle_e, true);
             signal_on_turn();
             return e_none;
         }
@@ -249,7 +305,7 @@ namespace chess
             // }
             os.write((char *)&m_state, sizeof(m_state));
             os.write((char *)&m_win_color, sizeof(m_win_color));
-            int16_t num_turns = turnno();
+            int16_t num_turns = playmax();
             os.write((char *)&num_turns, sizeof(num_turns));
             for (int i = 0; i < num_turns; i++)
             {
@@ -344,18 +400,26 @@ namespace chess
         }
     }
 
+    chessturn_s chessgame::new_turn(move_s m)
+    {
+        int16_t n = playmax() + 1;
+        game_state_e g = state();
+        color_e c = turn_color();
+        bool ch = check_state(c);
+        color_e wc = win_color();
+        int32_t wt = 0;
+        int32_t bt = 0;
+        clock_remaining(c, wt, bt);
+        return chess::new_turn(n, m, ch, m_board, c, g, wc, wt, bt);
+    }
+
     void chessgame::push_new_turn(move_s m)
     {
         if (m.is_valid())
         {
-            int16_t n = turnno() + 1;
-            color_e col = turn_color();
-            bool ch = check_state(col);
-            int32_t wt = 0;
-            int32_t bt = 0;
-            clock_remaining(col, wt, bt);
             add_board_position();
-            m_turn.push_back(new_turn(n, m, ch, m_board, col, wt, bt));
+            m_turn.push_back(new_turn(m));
+            m_play_pos = (int)m_turn.size() - 1;
             signal_on_turn();
         }
     }
@@ -389,7 +453,7 @@ namespace chess
 
     void chessgame::signal_refresh_board()
     {
-        int16_t n = turnno();
+        int16_t n = playno();
         for (const auto &kv : mp_listeners)
             kv.second->signal_refresh_board(n, m_board);
     }
@@ -402,14 +466,10 @@ namespace chess
 
     void chessgame::signal_on_turn()
     {
-        chessturn_s l = last_turn();
-        int16_t n = turnno();
-        color_e c = turn_color();
-        bool ch = check_state(c);
-        if (l.t == 0)
-            clock_remaining(c, l.wt, l.bt);
+        move_s m;
+        chessturn_s l = m_turn.size() > 0 ? play_turn() : new_turn(m);
         for (const auto &kv : mp_listeners)
-            kv.second->signal_on_turn(n, l.m, ch, m_board, c, l.wt, l.bt);
+            kv.second->signal_on_turn(l.t, l.m, l.ch, l.b, l.c, l.g, l.wc, l.wt, l.bt);
     }
 
     void chessgame::signal_on_state()

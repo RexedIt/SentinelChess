@@ -50,7 +50,11 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("move_m", "col", "m"), &SentinelChess::move_m);
     ClassDB::bind_method(D_METHOD("move_c", "col", "p0", "p1", "promote"), &SentinelChess::move_c);
     ClassDB::bind_method(D_METHOD("possible_moves", "col"), &SentinelChess::possible_moves);
-    ClassDB::bind_method(D_METHOD("rewind_game", "move_no"), &SentinelChess::rewind_game);
+    ClassDB::bind_method(D_METHOD("play_game"), &SentinelChess::play_game);
+    ClassDB::bind_method(D_METHOD("pause_game"), &SentinelChess::pause_game);
+    ClassDB::bind_method(D_METHOD("rewind_game"), &SentinelChess::rewind_game);
+    ClassDB::bind_method(D_METHOD("advance_game"), &SentinelChess::advance_game);
+    ClassDB::bind_method(D_METHOD("goto_turn", "turn_no"), &SentinelChess::goto_turn);
     ClassDB::bind_method(D_METHOD("remove_piece", "p0"), &SentinelChess::remove_piece);
     ClassDB::bind_method(D_METHOD("add_piece", "p0", "col", "piece"), &SentinelChess::add_piece);
 
@@ -59,10 +63,10 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("hasevent"), &SentinelChess::hasevent);
     ClassDB::bind_method(D_METHOD("popevent"), &SentinelChess::popevent);
 
-    ClassDB::bind_method(D_METHOD("lastmove"), &SentinelChess::lastmove);
-    ClassDB::bind_method(D_METHOD("lastcolor"), &SentinelChess::lastcolor);
-    ClassDB::bind_method(D_METHOD("lastturnno"), &SentinelChess::lastturnno);
-    ClassDB::bind_method(D_METHOD("turnno"), &SentinelChess::turnno);
+    // ClassDB::bind_method(D_METHOD("lastmove"), &SentinelChess::lastmove);
+    // ClassDB::bind_method(D_METHOD("lastcolor"), &SentinelChess::lastcolor);
+    ClassDB::bind_method(D_METHOD("playno"), &SentinelChess::playno);
+    ClassDB::bind_method(D_METHOD("playmax"), &SentinelChess::playmax);
 
     // Colors
     BIND_ENUM_CONSTANT(cNone);
@@ -118,6 +122,7 @@ Ref<ChessEvent> SentinelChess::popevent()
     return ce;
 }
 
+/*
 Ref<ChessMove> SentinelChess::lastmove()
 {
     chessturn_s t = mp_game->last_turn();
@@ -130,17 +135,16 @@ ChessColor SentinelChess::lastcolor()
     chessturn_s t = mp_game->last_turn();
     return (ChessColor)t.c;
 }
+*/
 
-int SentinelChess::lastturnno()
+int SentinelChess::playno()
 {
-    if (turnno() == 0)
-        return 0;
-    return turnno() - 1;
+    return mp_game->playno();
 }
 
-int SentinelChess::turnno()
+int SentinelChess::playmax()
 {
-    return mp_game->turnno();
+    return mp_game->playmax();
 }
 
 void SentinelChess::refresh_data()
@@ -337,9 +341,29 @@ Array SentinelChess::possible_moves(ChessColor col)
     return a;
 }
 
-int SentinelChess::rewind_game(int move_no)
+int SentinelChess::play_game()
 {
-    return mp_game->rewind_game(move_no);
+    return mp_game->play_game();
+}
+
+int SentinelChess::pause_game()
+{
+    return mp_game->pause_game();
+}
+
+int SentinelChess::rewind_game()
+{
+    return mp_game->rewind_game();
+}
+
+int SentinelChess::advance_game()
+{
+    return mp_game->advance_game();
+}
+
+int SentinelChess::goto_turn(int turn_no)
+{
+    return mp_game->goto_turn(turn_no);
 }
 
 int SentinelChess::remove_piece(const Ref<ChessCoord> &p0)

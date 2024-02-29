@@ -55,6 +55,8 @@ func _physics_process(delta):
 				var ch : bool = ce.check()
 				var b : ChessBoard = ce.board()
 				var c : ChessColor = ce.color()
+				var g : ChessGameState = ce.game_state()
+				var wc : ChessColor = ce.win_color();
 				var wt : int = ce.white_time()
 				var bt : int = ce.black_time()
 				if m.is_valid():
@@ -68,6 +70,8 @@ func _physics_process(delta):
 				if gamestate != GameState.ANIMATEMOVE:
 					_on_turn(n,b,c)
 				gameUI.clock_turn(c, wt, bt)
+				if g > ChessGameState.Play:
+					gameUI.finish_game(g, wc)
 			ChessEvent.ChessEventType.ceState:
 				print('ceState')
 				_on_state(ce.game_state(), ce.win_color())
@@ -143,7 +147,7 @@ func _computermove():
 	statewait = true
 	
 # Callbacks
-func _on_user_moved(n, m, c):
+func _on_user_moved():
 	#gameUI.append_move(n, m, get_board(), c)
 	_gamestatereact(GameState.PLAY)
 
@@ -249,7 +253,6 @@ func set_idle(b : bool):
 
 func finish_game(s : ChessGameState, w : ChessColor):
 	_gamestatereact(GameState.END)
-	gameUI.finish_game(s, w)
 	board.finish_game(s, w)
 	
 func _on_state(s : ChessGameState, w : ChessColor):
@@ -270,16 +273,17 @@ func refresh_turn(b : ChessBoard):
 	
 func _user_moved(m):
 	board.animate_move(m)
+	print('uman')
 	gamestate = GameState.ANIMATEMOVE
 		
 func _computer_moved(n, m, b, c):
 	# for now we ONLY will paint the board
 	# eventually we will animate the move
 	# which will force the board to be redrawn.
-	statewait = false
 	# if the opponent is ALSO computer, do not
 	# animate as we will miss the action.
-	gameUI.append_move(n,m,b,c)
-	board.animate_move(m)
-	gamestate = GameState.ANIMATEMOVE
+	if board.animate_move(m):
+		statewait = false
+		gameUI.append_move(n,m,b,c)
+		gamestate = GameState.ANIMATEMOVE
 			

@@ -43,17 +43,22 @@ private:
     int move_m(ChessColor col, const Ref<ChessMove> &m);
     Array possible_moves(ChessColor col);
 
-    int rewind_game(int move_no);
+    int play_game();
+    int pause_game();
+    int rewind_game();
+    int advance_game();
+    int goto_turn(int turn_no);
+
     int remove_piece(const Ref<ChessCoord> &p0);
     int add_piece(const Ref<ChessCoord> &p0, ChessColor col, ChessPiece piece);
 
     bool hasevent();
     Ref<ChessEvent> popevent();
 
-    Ref<ChessMove> lastmove();
-    ChessColor lastcolor();
-    int lastturnno();
-    int turnno();
+    // Ref<ChessMove> lastmove();
+    // ChessColor lastcolor();
+    int playno();
+    int playmax();
 
     bool computer_moving();
     bool has_local();

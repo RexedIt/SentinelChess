@@ -31,12 +31,14 @@ namespace chess
 
         chessboard board();
 
-        chessturn_s last_turn();
+        chessturn_s play_turn();
+
         game_state_e state();
 
         color_e turn_color();
         color_e win_color();
-        int16_t turnno();
+        int16_t playmax();
+        int16_t playno();
 
         // Any Player
         error_e forfeit(color_e col);
@@ -54,7 +56,11 @@ namespace chess
         error_e remove_piece(coord_s p0);
         error_e add_piece(coord_s p0, chesspiece &p1);
         error_e load_xfen(std::string contents);
-        error_e rewind_game(int move_no);
+        error_e rewind_game();
+        error_e advance_game();
+        error_e goto_turn(int turn_no);
+        error_e play_game();
+        error_e pause_game();
 
     protected:
         error_e new_game(const chessclock_s &clock);
@@ -69,10 +75,12 @@ namespace chess
 
     private:
         void set_state(game_state_e g, bool force_notify = false);
+        void set_turn_to(int idx);
         void push_new_turn(move_s m);
         void refresh_board_positions();
         int prev_position_count();
         void add_board_position();
+        chessturn_s new_turn(move_s);
 
         // Signallers
         void signal_refresh_board();
@@ -83,6 +91,7 @@ namespace chess
 
         game_state_e m_state;
         std::vector<chessturn_s> m_turn;
+        int m_play_pos;
 
         color_e m_win_color;
 

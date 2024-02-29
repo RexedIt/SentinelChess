@@ -38,10 +38,10 @@ namespace chess
             return "Removing";
         case e_adding:
             return "Adding";
-        case e_rewind_missing:
-            return "Rewind needs move number";
         case e_rewind_failed:
-            return "Engine failed to rewind to position";
+            return "Engine failed to rewind";
+        case e_advance_failed:
+            return "Engine failed to advance";
         case e_missing_coord:
             return "Must include coordinate";
         case e_invalid_coord:
@@ -238,6 +238,18 @@ namespace chess
         pos[1] = '1' + s.y;
         pos[2] = 0;
         return std::string(pos);
+    }
+
+    std::string time_str(int32_t t)
+    {
+        char tbuf[32];
+        int32_t tenths = (t % 100) / 10;
+        int32_t seconds = (t / 1000) % 60;
+        int32_t minutes = (t / 60000) % 60;
+        int32_t hours = (t / 360000);
+        sprintf_s(tbuf, 32, "%d:%2.2d:%2.2d.%d", hours, minutes, seconds, tenths);
+        std::string ret(tbuf);
+        return ret;
     }
 
     bool coord_int(std::string s, coord_s &c)

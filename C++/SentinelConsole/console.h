@@ -48,3 +48,4 @@ private:
 
 void board_to_console(int n, chess::chessboard &b, bool r);
 void move_to_console(chess::move_s &m, std::string s);
+void time_to_console(int32_t wt, int32_t bt);

@@ -24,8 +24,8 @@ namespace chess
         e_saving,
         e_removing,
         e_adding,
-        e_rewind_missing,
         e_rewind_failed,
+        e_advance_failed,
         e_missing_piece,
         e_invalid_piece,
         e_missing_coord_piece,
@@ -202,7 +202,7 @@ namespace chess
     {
         none_e = -1,
         idle_e = 0,
-        play_e = 1, 
+        play_e = 1,
         checkmate_e = 2,
         terminate_e = 3,
         forfeit_e = 4,
@@ -234,6 +234,7 @@ namespace chess
     std::string color_str(color_e col);
     std::string game_state_str(game_state_e g);
     std::string coord_str(coord_s c);
+    std::string time_str(int32_t t);
     bool coord_int(std::string s, coord_s &c);
     bool in_range(int8_t y, int8_t x);
     bool in_range(coord_s c);

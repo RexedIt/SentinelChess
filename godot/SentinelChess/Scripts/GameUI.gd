@@ -10,6 +10,8 @@ extends CanvasLayer
 
 @export var step : int
 
+var is_idle : bool = false
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	txtCmd.grab_focus()
@@ -112,24 +114,58 @@ func _on_btn_load_pressed():
 func _on_btn_save_pressed():
 	game_manager._on_save_game()
 
-func _on_btn_pause_pressed():
-	pass # Replace with function body.
-
 func _on_btn_rewind_pressed():
-	var move_no : int = game_manager.turnno()-2
-	if move_no<0:
-		show_error('At Beginning.')
-		return
-	handle_rewind(move_no)
+	handle_rewind()
 
-func handle_rewind(move_no: int) -> bool:
-	var err : int = game_manager.rewind_game(move_no)
+func _on_btn_pause_pressed():
+	if is_idle:
+		handle_play()
+	else:
+		handle_pause()
+
+func _on_btn_advance_pressed():
+	handle_advance()
+
+func handle_goto(turn_no: int) -> bool:
+	var err : int = game_manager.goto_turn(turn_no)
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
 		return false
-	append_history('Rewind - ' + str(move_no))
-	game_manager.refresh_turn(game_manager.get_board())
+	append_history('Goto Turn - ' + str(turn_no))
+	#game_manager.refresh_turn(game_manager.get_board())
 	return true
+	
+func handle_rewind() -> bool:
+	var err : int = game_manager.rewind_game()
+	if err != 0:
+		show_error('!' + game_manager.errorstr(err))
+		return false
+	append_history('Rewind')
+	#game_manager.refresh_turn(game_manager.get_board())
+	return true
+
+func handle_advance() -> bool:
+	var err : int = game_manager.advance_game()
+	if err != 0:
+		show_error('!' + game_manager.errorstr(err))
+		return false
+	append_history('Advance')
+	#game_manager.refresh_turn(game_manager.get_board())
+	return true
+	
+func handle_pause():
+	var err : int = game_manager.pause_game()
+	if err != 0:
+		show_error('!' + game_manager.errorstr(err))
+		return false
+	append_history('Pause')
+
+func handle_play():
+	var err : int = game_manager.play_game()
+	if err != 0:
+		show_error('!' + game_manager.errorstr(err))
+		return false
+	append_history('Play')
 	
 func _on_txt_cmd_text_submitted(new_text):
 	if new_text == '':
@@ -148,12 +184,20 @@ func _on_txt_cmd_text_submitted(new_text):
 			handled = handle_load(new_text.get_slice(' ',1))
 		'S':
 			handled = handle_save(new_text.get_slice(' ',1))
-		'<':
+		'T':
 			var s : String = new_text.get_slice(' ',1)
-			var move_no : int = int(s)
+			var turn_no : int = int(s)
 			if s == '':
-				move_no = game_manager.turnno()-2
-			handled=handle_rewind(move_no)
+				show_error('Need Turn Number')
+			handled=handle_goto(turn_no)
+		'<':
+			handled = handle_rewind()
+		'>':
+			handled = handle_advance()
+		'P':
+			handled = handle_play()
+		'I':
+			handled = handle_pause()
 		# a move?
 		_:
 			handled = handle_move(ucmd)
@@ -250,6 +294,7 @@ func clock_update(delta : float):
 			lblBlackClock.text = time_str(countms)
 	
 func set_idle(b : bool):
+	is_idle = b
 	print('UI: idle: ' + str(b) + ' *** TODO ***')
 
 func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
@@ -261,6 +306,7 @@ func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor)
 			color = 'Black'
 			winstr = 'Black Wins!'
 		append_history(winstr, color)
-
-	print('UI: Finish Game *** TODO ***')
+	print('UI: Finish Game')
 	
+
+
