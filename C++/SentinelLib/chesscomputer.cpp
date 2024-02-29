@@ -50,7 +50,8 @@ namespace chess
     {
         // This is where we will determine game state, move, or forfeit.
         // move:
-        if ((!m_thread_running) && (game_state == play_e) && (color == m_color))
+        game_state_e cur_state = mp_game->state();
+        if ((!m_thread_running) && (cur_state == play_e) && (color == m_color))
         {
             m_board = board;
             m_thread_running = true;

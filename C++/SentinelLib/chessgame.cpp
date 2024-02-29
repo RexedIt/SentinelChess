@@ -155,7 +155,7 @@ namespace chess
 
     void chessgame::set_turn_to(int idx)
     {
-        if (idx >= 0)
+        if ((idx >= 0) && (m_turn.size() > 0))
         {
             m_board.copy(m_turn[idx].b);
             if (m_state == play_e)
@@ -236,7 +236,7 @@ namespace chess
         // m_clock.new();
         m_board.new_board();
         m_turn.clear();
-        m_play_pos = 0;
+        m_play_pos = -1;
         refresh_board_positions();
         set_state(play_e, true);
         signal_on_turn();
@@ -403,6 +403,8 @@ namespace chess
     chessturn_s chessgame::new_turn(move_s m)
     {
         int16_t n = playmax() + 1;
+        if ((m_turn.size() == 0) && (!m.is_valid()))
+            n = 0;
         game_state_e g = state();
         color_e c = turn_color();
         bool ch = check_state(c);

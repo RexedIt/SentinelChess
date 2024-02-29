@@ -5,16 +5,22 @@ extends CanvasLayer
 @onready var txtCmd : LineEdit = get_node('txtCmd')
 @onready var lblError : Label = get_node('lblError')
 @onready var lblCmd : Label = get_node('lblCmd')
+@onready var btnPause : Button = get_node('btnPause')
 @onready var lblWhiteClock : Label = get_node('lblWhiteClock')
 @onready var lblBlackClock : Label = get_node('lblBlackClock')
 
 @export var step : int
 
 var is_idle : bool = false
+var PlayTexture : Texture2D
+var PauseTexture : Texture2D
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	txtCmd.grab_focus()
+	PauseTexture = btnPause.icon
+	PlayTexture = load('res://Sprites/RetroWood/Play.jpg')
+		
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -295,7 +301,10 @@ func clock_update(delta : float):
 	
 func set_idle(b : bool):
 	is_idle = b
-	print('UI: idle: ' + str(b) + ' *** TODO ***')
+	if is_idle:
+		btnPause.icon = PlayTexture
+	else:
+		btnPause.icon = PauseTexture
 
 func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
 	append_history(game_manager.gamestatestr(s))

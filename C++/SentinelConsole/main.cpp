@@ -434,6 +434,7 @@ int main(void)
             else if (cmdl == "I")
             {
                 p_game->pause_game();
+                is_idle = true;
                 continue;
             }
             else if (cmdl == "REMOVE")
