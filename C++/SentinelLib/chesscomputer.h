@@ -1,5 +1,7 @@
 #pragma once
 
+#include <thread>
+
 #include "chessplayer.h"
 #include "chessgamelistener.h"
 

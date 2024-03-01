@@ -93,7 +93,7 @@ class ChessBoard : public RefCounted
 
 public:
     ChessBoard();
-    ChessBoard(chessboard &b);
+    ChessBoard(const chessboard &b);
     ~ChessBoard();
 
     ChessColor color_(int y, int x);

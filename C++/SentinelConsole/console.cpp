@@ -12,6 +12,8 @@
 
 using namespace chess;
 
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
+
 bool _initconsole = false;
 
 void initconsole()
@@ -96,19 +98,19 @@ void time_to_console(int32_t wt, int32_t bt)
 
 stopwatch::stopwatch()
 {
-    start = std::chrono::high_resolution_clock::now();
+    start = std::chrono::steady_clock::now();
 }
 
 long stopwatch::elapsed_ms()
 {
-    std::chrono::steady_clock::time_point finish = std::chrono::high_resolution_clock::now();
+    std::chrono::steady_clock::time_point finish = std::chrono::steady_clock::now();
     std::chrono::microseconds ms = std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
     return (long)ms.count();
 }
 
 long stopwatch::elapsed_sec()
 {
-    std::chrono::steady_clock::time_point finish = std::chrono::high_resolution_clock::now();
+    std::chrono::steady_clock::time_point finish = std::chrono::steady_clock::now();
     std::chrono::seconds secs = std::chrono::duration_cast<std::chrono::seconds>(finish - start);
     return (long)secs.count();
 }

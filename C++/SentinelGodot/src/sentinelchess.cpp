@@ -217,7 +217,7 @@ ChessColor SentinelChess::win_color()
 
 bool SentinelChess::computer_moving()
 {
-    if (state() == play_e)
+    if (mp_game->state() == play_e)
         return !m_lobby.is_local_turn();
     return false;
 }
@@ -401,7 +401,7 @@ ChessBoard::ChessBoard()
 {
 }
 
-ChessBoard::ChessBoard(chessboard &b)
+ChessBoard::ChessBoard(const chessboard &b)
 {
     m_board = b;
 }
