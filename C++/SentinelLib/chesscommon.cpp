@@ -203,6 +203,115 @@ namespace chess
         return "None";
     }
 
+    color_e str_color(std::string col)
+    {
+        std::string colu = uppercase(col);
+        if (colu == "BLACK")
+            return c_black;
+        else if (colu == "WHITE")
+            return c_white;
+        return c_none;
+    }
+
+    std::string piece_str(piece_e p)
+    {
+        switch (p)
+        {
+        case p_pawn:
+            return "Pawn";
+        case p_knight:
+            return "Knight";
+        case p_bishop:
+            return "Bishop";
+        case p_rook:
+            return "Rook";
+        case p_queen:
+            return "Queen";
+        case p_king:
+            return "King";
+        default:
+            return "None";
+        }
+    }
+
+    piece_e str_piece(std::string p)
+    {
+        std::string pu = uppercase(p);
+        if (pu == "NONE")
+            return p_none;
+        if (pu == "PAWN")
+            return p_pawn;
+        if (pu == "KNIGHT")
+            return p_knight;
+        if (pu == "BISHOP")
+            return p_bishop;
+        if (pu == "ROOK")
+            return p_rook;
+        if (pu == "QUEEN")
+            return p_queen;
+        if (pu == "KING")
+            return p_king;
+        return p_none;
+    }
+
+    char abbr_char(piece_e p, color_e c)
+    {
+        char abbr = ' ';
+        switch (p)
+        {
+        case p_pawn:
+            abbr = 'p';
+            break;
+        case p_bishop:
+            abbr = 'b';
+            break;
+        case p_knight:
+            abbr = 'n';
+            break;
+        case p_rook:
+            abbr = 'r';
+            break;
+        case p_queen:
+            abbr = 'q';
+            break;
+        case p_king:
+            abbr = 'k';
+            break;
+        }
+        if (c != c_none)
+        {
+            if (c == c_white)
+                abbr -= 32;
+        }
+        return abbr;
+    }
+
+    piece_e char_abbr(char c)
+    {
+        switch (c)
+        {
+        case 'p':
+        case 'P':
+            return p_pawn;
+        case 'b':
+        case 'B':
+            return p_bishop;
+        case 'n':
+        case 'N':
+            return p_knight;
+        case 'r':
+        case 'R':
+            return p_rook;
+        case 'k':
+        case 'K':
+            return p_king;
+        case 'q':
+        case 'Q':
+            return p_queen;
+        }
+        return p_none;
+    }
+
     std::string game_state_str(game_state_e g)
     {
         switch (g)
@@ -231,6 +340,32 @@ namespace chess
         return "None";
     }
 
+    game_state_e str_game_state(std::string g)
+    {
+        std::string gu = uppercase(g);
+        if (gu == "IDLE")
+            return idle_e;
+        if (gu == "PLAY")
+            return play_e;
+        if (gu == "CHECKMATE")
+            return checkmate_e;
+        if (gu == "FORFEIT")
+            return forfeit_e;
+        if (gu == "TIME UP")
+            return time_up_e;
+        if (gu == "TERMINATED")
+            return terminate_e;
+        if (gu == "STALEMATE")
+            return draw_stalemate_e;
+        if (gu == "DRAW - FIVEFOLD REPETITION")
+            return draw_fivefold_e;
+        if (gu == "DRAW - FIFTY MOVE RULE")
+            return draw_fiftymove_e;
+        if (gu == "DRAW - DEAD POSITION")
+            return draw_insuff_material_e;
+        return none_e;
+    }
+
     std::string coord_str(coord_s s)
     {
         char pos[3];
@@ -238,6 +373,31 @@ namespace chess
         pos[1] = '1' + s.y;
         pos[2] = 0;
         return std::string(pos);
+    }
+
+    std::string move_str(move_s m)
+    {
+        return coord_str(m.p0) + "-" + coord_str(m.p1);
+    }
+
+    error_e str_move(std::string s, move_s &m)
+    {
+        // Simple parse only!
+        std::vector<std::string> c = split_string(s, '-');
+        if (c.size() != 2)
+            return e_invalid_move;
+        if ((!coord_int(c[0], m.p0)) ||
+            (!coord_int(c[1], m.p1)))
+            return e_invalid_move;
+        return e_none;
+    }
+
+    error_e str_move(std::string s, chessboard &b, move_s &m)
+    {
+        // *** NATHANAEL ***
+        // This is intended for more advanced
+        // advanced move parsing (PGN)
+        return e_invalid_move;
     }
 
     std::string time_str(int32_t t)
@@ -344,26 +504,6 @@ namespace chess
         std::string cmdu = u;
         std::transform(cmdu.begin(), cmdu.end(), cmdu.begin(), ::tolower);
         return cmdu;
-    }
-
-    char _lsbuf[1024];
-    std::string load_string(std::ifstream &is)
-    {
-        int n = 0;
-        is.read((char *)&n, sizeof(n));
-        if ((n < 0) || (n > 1023))
-            return "";
-        is.read(_lsbuf, n);
-        return std::string(_lsbuf, n);
-    }
-
-    void save_string(std::string s, std::ofstream &os)
-    {
-        int n = s.length();
-        if (n > 1023)
-            n = 1023;
-        os.write((char *)&n, sizeof(n));
-        os.write(s.c_str(), n);
     }
 
     const char *ws = " \t\n\r\f\v";

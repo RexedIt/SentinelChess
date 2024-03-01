@@ -67,7 +67,18 @@
         "queue": "cpp",
         "stop_token": "cpp",
         "thread": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "any": "cpp",
+        "codecvt": "cpp",
+        "filesystem": "cpp",
+        "functional": "cpp",
+        "list": "cpp",
+        "numeric": "cpp",
+        "ranges": "cpp",
+        "span": "cpp",
+        "unordered_map": "cpp",
+        "valarray": "cpp",
+        "xhash": "cpp"
     },
     "cmake.debugConfig": {
         "externalConsole": true,

@@ -74,17 +74,12 @@ namespace chess
         m_hash = 0;
     }
 
-    error_e chessboard::save(std::ofstream &os)
+    error_e chessboard::save(json &o)
     {
-        os.write((char *)&m_cells, sizeof(m_cells));
-        os.write((char *)&m_castled_left, sizeof(m_castled_left));
-        os.write((char *)&m_castled_right, sizeof(m_castled_right));
-        bool white_check = m_check[0];
-        bool black_check = m_check[1];
-        os.write((char *)&white_check, sizeof(white_check));
-        os.write((char *)&black_check, sizeof(black_check));
-        os.write((char *)&m_turn, sizeof(m_turn));
-        os.write((char *)&m_ep, sizeof(m_ep));
+        o["xfen"] = save_xfen();
+        o["white_check"] = m_check[0];
+        o["black_check"] = m_check[1];
+        o["turn"] = color_str(m_turn);
         return e_none;
     }
 
@@ -141,19 +136,15 @@ namespace chess
         return ss.str();
     }
 
-    error_e chessboard::load(std::ifstream &is)
+    error_e chessboard::load(json &o)
     {
-        is.read((char *)&m_cells, sizeof(m_cells));
-        is.read((char *)&m_castled_left, sizeof(m_castled_left));
-        is.read((char *)&m_castled_right, sizeof(m_castled_right));
-        bool white_check;
-        bool black_check;
-        is.read((char *)&white_check, sizeof(white_check));
-        is.read((char *)&black_check, sizeof(black_check));
-        m_check[0] = white_check;
-        m_check[1] = black_check;
-        is.read((char *)&m_turn, sizeof(m_turn));
-        is.read((char *)&m_ep, sizeof(m_ep));
+        if (o.is_null())
+            return e_loading;
+        load_xfen(o["xfen"]);
+        update_kill_bits();
+        m_check[0] = o["white_check"];
+        m_check[1] = o["black_check"];
+        m_turn = str_color(o["turn"]);
         return e_none;
     }
 

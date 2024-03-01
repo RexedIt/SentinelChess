@@ -8,6 +8,9 @@
 
 #include "chesscommon.h"
 
+#include "nlohmann/json.hpp"
+using namespace nlohmann;
+
 namespace chess
 {
 
@@ -26,8 +29,8 @@ namespace chess
         void copy(const chessboard &other);
         void operator=(const chessboard &other);
 
-        error_e load(std::ifstream &is);
-        error_e save(std::ofstream &os);
+        error_e load(json &o);
+        error_e save(json &o);
 
         void new_board();
         std::string save_xfen();

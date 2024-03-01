@@ -10,6 +10,9 @@
 #include <mutex>
 #include <map>
 
+#include "nlohmann/json.hpp"
+using namespace nlohmann;
+
 namespace chess
 {
 
@@ -64,8 +67,8 @@ namespace chess
 
     protected:
         error_e new_game(const chessclock_s &clock);
-        error_e load_game(std::ifstream &is);
-        error_e save_game(std::ofstream &os);
+        error_e load_game(json &j);
+        error_e save_game(json &j);
 
         error_e listen(std::shared_ptr<chessgamelistener>);
         error_e unlisten(int);

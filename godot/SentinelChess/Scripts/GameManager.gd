@@ -132,11 +132,13 @@ func _savegameprompt():
 	statewait = true
 	
 func _gameplay():
-	if (state() == SentinelChess.ChessGameState.Play):
+	if state() == SentinelChess.ChessGameState.Play:
 		if is_local(turn_color()):
 			_gamestatereact(GameState.USERMOVE)
 		else:
 			_gamestatereact(GameState.COMPUTERMOVE)
+	elif state() == SentinelChess.ChessGameState.Idle:
+		_gamestatereact(GameState.IDLE)
 	else:
 		_gamestatereact(GameState.END)
 	
@@ -208,19 +210,19 @@ func _on_closed_save(_cancelled, _filename):
 	_gamestatereact(GameState.PLAY)
 
 func _on_new_game():
-	var list = [GameState.INIT,GameState.PLAY,GameState.USERMOVE]
+	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE]
 	if list.has(gamestate):
 		prepopgamestate = gamestate
 		_gamestatereact(GameState.NEW)
 		
 func _on_load_game():
-	var list = [GameState.INIT,GameState.PLAY,GameState.USERMOVE]
+	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE]
 	if list.has(gamestate):
 		prepopgamestate = gamestate
 		_gamestatereact(GameState.LOAD)
 
 func _on_save_game():
-	var list = [GameState.INIT,GameState.PLAY,GameState.USERMOVE]
+	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE]
 	if list.has(gamestate):
 		prepopgamestate = gamestate
 		_gamestatereact(GameState.SAVE)

@@ -243,38 +243,40 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::load_game(std::ifstream &is)
+    error_e chessgame::load_game(json &jsonf)
     {
         try
         {
+            if (jsonf.is_null())
+                return e_loading;
             // *** NATHANAEL ***
             // Read in to your class would be done here, for load game.
             // I recommend using something like my chessclock_s structure (common.h)
             // at any rate, your function signature might look like
-            // if (m_clock.load(is) != e_none)
+            // if (m_clock.load(jsonf) != e_none)
             //     return e_loading;
             // note you would immediately begin functioning your clock
             // as per the settings loaded.
-            is.read((char *)&m_state, sizeof(m_state));
-            is.read((char *)&m_win_color, sizeof(m_win_color));
-            int16_t num_turns = 0;
-            is.read((char *)&num_turns, sizeof(num_turns));
+            m_state = str_game_state(jsonf["state"]);
+            m_win_color = str_color(jsonf["win_color"]);
+
+            auto turns = jsonf["turns"];
             m_turn.clear();
-            // If there are no turns ... we will just load the board
+
             chessturn_s t;
-            for (int i = 0; i < num_turns; i++)
+            for (auto turn : turns)
             {
-                if (t.load(is) != e_none)
-                {
-                    is.close();
+                if (t.load(turn) != e_none)
                     return e_loading;
-                }
                 m_turn.push_back(t);
             }
+
             m_play_pos = (int)m_turn.size() - 1;
-            if (m_board.load(is) != e_none)
+
+            auto board = jsonf["board"];
+            if (m_board.load(board) != e_none)
                 return e_loading;
-            is.close();
+
             refresh_board_positions();
             // when we load any game, if it's state
             // is play we turn to idle (review mode)
@@ -288,7 +290,7 @@ namespace chess
         }
     }
 
-    error_e chessgame::save_game(std::ofstream &os)
+    error_e chessgame::save_game(json &jsonf)
     {
         try
         {
@@ -298,29 +300,30 @@ namespace chess
             // the load function in terms of content strategy.  I recommend
             // utilizing chessclock_s structure but within your class
             // this code might look like
+            // auto clock = json::object();
             // if (m_clock.save(os) != e_none)
-            // {
-            //     os.close();
             //     return e_saving;
-            // }
-            os.write((char *)&m_state, sizeof(m_state));
-            os.write((char *)&m_win_color, sizeof(m_win_color));
+            // jsonf["clock"] = clock;
+            //
+            jsonf["state"] = game_state_str(m_state);
+            jsonf["win_color"] = color_str(win_color());
+
+            auto turns = json::array();
             int16_t num_turns = playmax();
-            os.write((char *)&num_turns, sizeof(num_turns));
             for (int i = 0; i < num_turns; i++)
             {
-                if (m_turn[i].save(os) != e_none)
-                {
-                    os.close();
+                auto turn = json::object();
+                if (m_turn[i].save(turn) != e_none)
                     return e_saving;
-                }
+                turns.push_back(turn);
             }
-            if (m_board.save(os) != e_none)
-            {
-                os.close();
+            jsonf["turns"] = turns;
+
+            auto board = json::object();
+            if (m_board.save(board) != e_none)
                 return e_saving;
-            }
-            os.close();
+
+            jsonf["board"] = board;
             return e_none;
         }
         catch (const std::exception &)

@@ -19,41 +19,8 @@ namespace chess
         color = c;
         value = (unsigned char)(p + c);
         kill_mask = color * color_kill_mask_mult;
-        switch (ptype)
-        {
-        case p_pawn:
-            abbr = 'p';
-            name = "Pawn";
-            break;
-        case p_bishop:
-            abbr = 'b';
-            name = "Bishop";
-            break;
-        case p_knight:
-            abbr = 'n';
-            name = "Knight";
-            break;
-        case p_rook:
-            abbr = 'r';
-            name = "Rook";
-            break;
-        case p_queen:
-            abbr = 'q';
-            name = "Queen";
-            break;
-        case p_king:
-            abbr = 'k';
-            name = "King";
-            break;
-        default:
-            abbr = ' ';
-            break;
-        }
-        if (color != c_none)
-        {
-            if (color == c_white)
-                abbr -= 32;
-        }
+        name = piece_str(ptype);
+        abbr = abbr_char(ptype, color);
     }
 
     chesspiece::chesspiece(unsigned char c)
@@ -62,41 +29,8 @@ namespace chess
         color = (color_e)(c & color_mask);
         value = c;
         kill_mask = color * color_kill_mask_mult;
-        switch (ptype)
-        {
-        case p_pawn:
-            abbr = 'p';
-            name = "Pawn";
-            break;
-        case p_bishop:
-            abbr = 'b';
-            name = "Bishop";
-            break;
-        case p_knight:
-            abbr = 'n';
-            name = "Knight";
-            break;
-        case p_rook:
-            abbr = 'r';
-            name = "Rook";
-            break;
-        case p_queen:
-            abbr = 'q';
-            name = "Queen";
-            break;
-        case p_king:
-            abbr = 'k';
-            name = "King";
-            break;
-        default:
-            abbr = ' ';
-            break;
-        }
-        if (color != c_none)
-        {
-            if (color == c_white)
-                abbr -= 32;
-        }
+        name = piece_str(ptype);
+        abbr = abbr_char(ptype, color);
     }
 
     chesspiece::chesspiece(char code)
@@ -108,33 +42,7 @@ namespace chess
             color = (code >= 97) ? c_black : c_white;
             kill_mask = color * color_kill_mask_mult;
             abbr = code;
-            switch (abbr)
-            {
-            case 'p':
-            case 'P':
-                ptype = p_pawn;
-                break;
-            case 'b':
-            case 'B':
-                ptype = p_bishop;
-                break;
-            case 'n':
-            case 'N':
-                ptype = p_knight;
-                break;
-            case 'r':
-            case 'R':
-                ptype = p_rook;
-                break;
-            case 'k':
-            case 'K':
-                ptype = p_king;
-                break;
-            case 'q':
-            case 'Q':
-                ptype = p_queen;
-                break;
-            }
+            ptype = char_abbr(abbr);
         }
         value = (unsigned char)ptype + (unsigned char)color;
     }

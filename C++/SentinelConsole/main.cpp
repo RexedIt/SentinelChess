@@ -44,14 +44,11 @@ std::vector<std::string> get_args(std::string cmdu, char sep)
     return split_string(cmdu, sep);
 }
 
-bool get_move(std::string cmdu, coord_s &p0, coord_s &p1)
+bool get_move(std::string cmdu, move_s &m)
 {
-    size_t pos = cmdu.find('-');
-    if (pos == std::string::npos)
-        return print_error(e_missing_move);
-    if ((!coord_int(cmdu.substr(0, pos), p0)) ||
-        (!coord_int(cmdu.substr(pos + 1), p1)))
-        return print_error(e_invalid_move);
+    error_e err = str_move(cmdu, m);
+    if (err != e_none)
+        return print_error(err);
     return true;
 }
 
@@ -84,6 +81,7 @@ bool save_game(std::string cmd, chesslobby &lobby)
         return print_error(e_missing_filename);
     if (lobby.save_game(filename) != e_none)
         return print_error(e_saving);
+    std::cout << "Saved." << std::endl;
     return true;
 }
 
@@ -280,8 +278,9 @@ void on_state(game_state_e g, color_e c)
         if (c != c_none)
             std::cout << color_str(c) + " Wins! ";
         std::cout << "****" << std::endl;
-        is_idle = true;
     }
+    if ((g == idle_e) || (g > play_e))
+        is_idle = true;
 }
 
 void on_chat(std::string msg, color_e c)
@@ -505,11 +504,11 @@ int main(void)
                             continue;
                         }
                     }
-                    coord_s p0, p1;
-                    if (!get_move(cmdu, p0, p1))
+                    move_s m;
+                    if (!get_move(cmdu, m))
                         continue;
                     color_e whose_turn = p_game->turn_color();
-                    if (p_game->move(whose_turn, p0, p1) != e_none)
+                    if (p_game->move(whose_turn, m) != e_none)
                     {
                         print_error(e_invalid_move);
                         continue;

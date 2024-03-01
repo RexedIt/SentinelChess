@@ -55,8 +55,8 @@ private:
     bool hasevent();
     Ref<ChessEvent> popevent();
 
-    // Ref<ChessMove> lastmove();
-    // ChessColor lastcolor();
+    Ref<ChessMove> lastmove();
+    ChessColor lastcolor();
     int playno();
     int playmax();
 

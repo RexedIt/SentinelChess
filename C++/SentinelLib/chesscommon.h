@@ -233,7 +233,16 @@ namespace chess
     bool contains_move(std::vector<move_s> possible_moves, move_s &m, bool inherit = false);
     int color_idx(color_e c);
     std::string color_str(color_e col);
+    color_e str_color(std::string col);
+    std::string piece_str(piece_e p);
+    piece_e str_piece(std::string p);
+    char abbr_char(piece_e p, color_e c = c_white);
+    piece_e char_abbr(char c);
     std::string game_state_str(game_state_e g);
+    game_state_e str_game_state(std::string g);
+    std::string move_str(move_s m);
+    error_e str_move(std::string s, move_s &m);
+    error_e str_move(std::string s, chessboard &b, move_s &m);
     std::string coord_str(coord_s c);
     std::string time_str(int32_t t);
     bool coord_int(std::string s, coord_s &c);
@@ -245,9 +254,6 @@ namespace chess
     move_s new_move(coord_s p0, coord_s p1, piece_e promote);
 
     float get_rand();
-
-    std::string load_string(std::ifstream &is);
-    void save_string(std::string s, std::ofstream &os);
 
     std::vector<std::string> split_string(std::string cmd, char div);
     void write_hex_uchar(std::ofstream &file1, unsigned char c);

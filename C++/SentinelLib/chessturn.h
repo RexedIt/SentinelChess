@@ -2,6 +2,9 @@
 
 #include "chessboard.h"
 
+#include "nlohmann/json.hpp"
+using namespace nlohmann;
+
 namespace chess
 {
     typedef struct chessturn_s
@@ -26,8 +29,8 @@ namespace chess
         }
         chessturn_s(const chessturn_s &oth);
         chessturn_s(int16_t _t, move_s &_m, bool _ch, chessboard &_b, color_e _c, game_state_e _g, color_e _wc, int32_t _wt, int32_t _bt);
-        error_e load(std::ifstream &);
-        error_e save(std::ofstream &);
+        error_e load(json &turn);
+        error_e save(json &turn);
     } chessturn_s;
 
     chessturn_s new_turn(int16_t _t, move_s &_m, bool _ch, chessboard &_b, color_e _c, game_state_e _g, color_e _wc, int32_t _wt, int32_t _bt);

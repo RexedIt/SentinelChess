@@ -87,31 +87,35 @@ namespace chess
             if (!is.is_open())
                 return restore(e_loading);
 
-            std::string header = load_string(is);
-            if (header != "SENTINEL_CHESS")
-            {
-                is.close();
+            json jsonf;
+            is >> jsonf;
+            is.close();
+
+            if (jsonf["Header"] != "SENTINEL_CHESS")
                 return restore(e_loading);
-            }
 
             mp_game = std::shared_ptr<chessgame>(new chessgame());
             attach_to_game();
 
-            error_e err = load_players(is);
-            if (err != e_none)
+            auto players = jsonf["Players"];
+            clear_players();
+
+            for (auto it : players)
             {
-                is.close();
-                return restore(err);
+                color_e color = str_color(it["color"]);
+                std::string name = it["name"];
+                int32_t skill = it["skill"];
+                chessplayertype_e ptype = it["type"];
+                if (add_player(color, name, skill, ptype) != e_none)
+                    return e_loading;
             }
 
-            err = mp_game->load_game(is);
-            is.close();
-
+            error_e err = mp_game->load_game(jsonf);
             if (err != e_none)
                 return restore(err);
 
             attach_to_game();
-            return err;
+            return e_none;
         }
         catch (const std::exception &)
         {
@@ -123,26 +127,39 @@ namespace chess
     {
         try
         {
-            std::ofstream os;
-            os.open(filename, std::ios::binary | std::ios::out);
+            json jsonf;
 
-            save_string("SENTINEL_CHESS", os);
+            jsonf["Header"] = "SENTINEL_CHESS";
 
-            error_e err = save_players(os);
-            if (err != e_none)
+            auto players = json::array();
+
+            for (const auto &kv : mp_players)
             {
-                os.close();
-                return err;
+                auto player = json::object();
+                player["color"] = color_str(kv.second->playercolor());
+                player["name"] = kv.second->playername();
+                player["skill"] = kv.second->playerskill();
+                player["type"] = kv.second->playertype();
+                players.push_back(player);
             }
 
-            err = mp_game->save_game(os);
-            os.close();
+            jsonf["Players"] = players;
+
+            error_e err = mp_game->save_game(jsonf);
+            if (err == e_none)
+            {
+                std::ofstream os;
+                os.open(filename, std::ios::binary | std::ios::out);
+                os << jsonf;
+                os.close();
+            }
             return err;
         }
         catch (const std::exception &)
         {
             return e_saving;
         }
+        return e_none;
     }
 
     error_e chesslobby::add_player(color_e color, std::string name, int skill, chessplayertype_e ptype)
@@ -155,6 +172,7 @@ namespace chess
             std::shared_ptr<chessplayer> p_chessplayer(new chessplayer(color, name, skill, t_human));
             m_locals.insert(color);
             mp_players[color] = p_chessplayer;
+            p_chessplayer->set_game(mp_game);
             return e_none;
         }
         case t_computer:
@@ -163,6 +181,7 @@ namespace chess
             // if the type is a listener, do this
             mp_game->listen(p_chesscomputer);
             mp_players[color] = p_chesscomputer;
+            p_chesscomputer->set_game(mp_game);
             return e_none;
         }
         }
@@ -183,6 +202,14 @@ namespace chess
     error_e chesslobby::clear_players()
     {
         std::lock_guard<std::mutex> guard(m_mutex);
+        if (mp_game)
+            for (const auto &kv : mp_players)
+            {
+                std::shared_ptr<chesscomputer> pc = std::dynamic_pointer_cast<chesscomputer>(kv.second);
+                if (pc)
+                    mp_game->unlisten(pc->id());
+            }
+
         mp_players.clear();
         m_locals.clear();
         return e_none;
@@ -257,57 +284,6 @@ namespace chess
         for (const auto &kv : mp_players)
             ret[kv.second->playercolor()] = kv.second->playername();
         return ret;
-    }
-
-    error_e chesslobby::load_players(std::ifstream &is)
-    {
-        try
-        {
-            int8_t n = 0;
-            is.read((char *)&n, sizeof(n));
-            clear_players();
-            for (int8_t i = 0; i < n; i++)
-            {
-                color_e color;
-                is.read((char *)&color, sizeof(color));
-                std::string name = load_string(is);
-                int32_t skill;
-                is.read((char *)&skill, sizeof(skill));
-                chessplayertype_e ptype = t_none;
-                is.read((char *)&ptype, sizeof(ptype));
-                if (add_player(color, name, skill, ptype) != e_none)
-                    return e_loading;
-            }
-            return e_none;
-        }
-        catch (const std::exception &)
-        {
-            return e_loading;
-        }
-    }
-
-    error_e chesslobby::save_players(std::ofstream &os)
-    {
-        try
-        {
-            int8_t n = (int8_t)mp_players.size();
-            os.write((char *)&n, sizeof(n));
-            for (const auto &kv : mp_players)
-            {
-                color_e color = kv.second->playercolor();
-                os.write((char *)&color, sizeof(color));
-                save_string(kv.second->playername(), os);
-                int32_t skill = kv.second->playerskill();
-                os.write((char *)&skill, sizeof(skill));
-                chessplayertype_e t = kv.second->playertype();
-                os.write((char *)&t, sizeof(t));
-            }
-            return e_none;
-        }
-        catch (const std::exception &)
-        {
-            return e_saving;
-        }
     }
 
     // functions to restore values

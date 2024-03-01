@@ -44,37 +44,63 @@ namespace chess
         bt = oth.bt;
     }
 
-    error_e chessturn_s::load(std::ifstream &is)
+    error_e chessturn_s::save(json &turn)
     {
-        error_e err = b.load(is);
-        if (err == e_none)
-        {
-            is.read((char *)&t, sizeof(t));
-            is.read((char *)&m, sizeof(m));
-            is.read((char *)&ch, sizeof(ch));
-            is.read((char *)&c, sizeof(c));
-            is.read((char *)&g, sizeof(g));
-            is.read((char *)&wc, sizeof(wc));
-            is.read((char *)&wt, sizeof(wt));
-            is.read((char *)&bt, sizeof(bt));
-        }
+        auto board = json::object();
+        error_e err = b.save(board);
+        if (err != e_none)
+            return err;
+        turn["board"] = board;
+
+        auto move = json::object();
+        move["coords"] = move_str(m);
+        move["promote"] = piece_str((piece_e)m.promote);
+        move["check"] = m.check;
+        move["cx"] = m.cx;
+        move["en_passant"] = m.en_passant;
+        move["mate"] = m.mate;
+
+        turn["move"] = move;
+
+        turn["turn_no"] = t;
+        turn["check"] = ch;
+        turn["color"] = color_str(c);
+        turn["game_state"] = game_state_str(g);
+        turn["win_color"] = color_str(wc);
+        turn["white_time_ms"] = wt;
+        turn["black_time_ms"] = bt;
+
         return err;
     }
 
-    error_e chessturn_s::save(std::ofstream &os)
+    error_e chessturn_s::load(json &turn)
     {
-        error_e err = b.save(os);
-        if (err == e_none)
-        {
-            os.write((char *)&t, sizeof(t));
-            os.write((char *)&m, sizeof(m));
-            os.write((char *)&ch, sizeof(ch));
-            os.write((char *)&c, sizeof(c));
-            os.write((char *)&g, sizeof(g));
-            os.write((char *)&wc, sizeof(wc));
-            os.write((char *)&wt, sizeof(wt));
-            os.write((char *)&bt, sizeof(bt));
-        }
+        if (turn.is_null())
+            return e_loading;
+
+        error_e err = b.load(turn["board"]);
+        if (err != e_none)
+            return err;
+
+        auto move = turn["move"];
+        if (move.is_null())
+            return e_loading;
+
+        str_move(move["coords"], m);
+        m.promote = str_piece(move["promote"]);
+        m.check = move["check"];
+        m.cx = move["cx"];
+        m.en_passant = move["en_passant"];
+        m.mate = move["mate"];
+
+        t = turn["turn_no"];
+        ch = turn["check"];
+        c = str_color(turn["color"]);
+        g = str_game_state(turn["game_state"]);
+        wc = str_color(turn["win_color"]);
+        wt = turn["white_time_ms"];
+        bt = turn["black_time_ms"];
+
         return err;
     }
 

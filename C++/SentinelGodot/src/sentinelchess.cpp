@@ -63,8 +63,8 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("hasevent"), &SentinelChess::hasevent);
     ClassDB::bind_method(D_METHOD("popevent"), &SentinelChess::popevent);
 
-    // ClassDB::bind_method(D_METHOD("lastmove"), &SentinelChess::lastmove);
-    // ClassDB::bind_method(D_METHOD("lastcolor"), &SentinelChess::lastcolor);
+    ClassDB::bind_method(D_METHOD("lastmove"), &SentinelChess::lastmove);
+    ClassDB::bind_method(D_METHOD("lastcolor"), &SentinelChess::lastcolor);
     ClassDB::bind_method(D_METHOD("playno"), &SentinelChess::playno);
     ClassDB::bind_method(D_METHOD("playmax"), &SentinelChess::playmax);
 
@@ -122,20 +122,18 @@ Ref<ChessEvent> SentinelChess::popevent()
     return ce;
 }
 
-/*
 Ref<ChessMove> SentinelChess::lastmove()
 {
-    chessturn_s t = mp_game->last_turn();
+    chessturn_s t = mp_game->play_turn();
     Ref<ChessMove> cm(memnew(ChessMove(t.m)));
     return cm;
 }
 
 ChessColor SentinelChess::lastcolor()
 {
-    chessturn_s t = mp_game->last_turn();
+    chessturn_s t = mp_game->play_turn();
     return (ChessColor)t.c;
 }
-*/
 
 int SentinelChess::playno()
 {

@@ -3,10 +3,12 @@
 #include "chessgame.h"
 #include "chessgamelistener.h"
 #include "chessplayer.h"
-
 #include <mutex>
 #include <map>
 #include <set>
+
+#include "nlohmann/json.hpp"
+using namespace nlohmann;
 
 namespace chess
 {
@@ -47,8 +49,6 @@ namespace chess
         std::map<color_e, std::shared_ptr<chessplayer>> mp_players;
         std::shared_ptr<chessgame> mp_game;
         std::set<color_e> m_locals;
-        error_e load_players(std::ifstream &is);
-        error_e save_players(std::ofstream &os);
 
         void attach_to_game();
         void detach_from_game();
