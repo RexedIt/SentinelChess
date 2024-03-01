@@ -150,7 +150,7 @@ namespace chess
             {
                 std::ofstream os;
                 os.open(filename, std::ios::binary | std::ios::out);
-                os << jsonf;
+                os << std::setw(4) << jsonf;
                 os.close();
             }
             return err;
