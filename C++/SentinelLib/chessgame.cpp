@@ -65,6 +65,9 @@ namespace chess
                 // or an erroneous move was set.  Let's check
                 m.mate = true;
                 m.check = check_state(col);
+                if (!m.check)
+                    m.mate = false;
+                /* // Check all moves
                 std::vector<move_s> pm = possible_moves(col);
                 for (size_t i = 0; i < pm.size(); i++)
                 {
@@ -76,6 +79,7 @@ namespace chess
                         break;
                     }
                 }
+                */
             }
             color_e winner_col = col == c_white ? c_black : c_white;
             if (m.mate)
