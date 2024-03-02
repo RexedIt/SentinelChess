@@ -88,8 +88,7 @@ namespace chess
         move_s best;
         std::vector<move_s> possible = board.possible_moves(m_color);
         // Figure move?
-        float alpha = -9999;
-        float beta = 9999;
+        float maxval = -9999;
         for (size_t i = 0; i < possible.size(); i++)
         {
             if (m_cancel)
@@ -101,16 +100,11 @@ namespace chess
             move_s candidate = b.execute_move(possible[i]);
             if (candidate.is_valid())
             {
-                float score = computer_move_min(b, other(m_color), alpha, beta, rec - 1);
-                if (score >= beta)
+                float score = computer_move_min(b, other(m_color), -9999, 9999, rec - 1);
+                if (score >= maxval)
                 {
                     best = candidate;
-                    break;
-                }
-                else if (score > alpha)
-                {
-                    best = candidate;
-                    alpha = score;
+                    maxval = score;
                 }
             }
             consider(candidate, (int8_t)(i * 100 / possible.size()));
@@ -121,12 +115,12 @@ namespace chess
         return err;
     }
 
-    float chesscomputer::computer_move_max(chessboard &board, color_e turn_col, float _alpha, float _beta, int32_t rec)
+    float chesscomputer::computer_move_max(chessboard &board, color_e turn_col, float _alpha, float beta, int32_t rec)
     {
         if ((rec == 0) || (m_cancel))
             return weight(board, turn_col);
         float alpha = _alpha;
-        float beta = _beta;
+        float maxeval = -9999;
         std::vector<move_s> possible = board.possible_moves(turn_col);
         for (size_t i = 0; i < possible.size(); i++)
         {
@@ -136,21 +130,23 @@ namespace chess
             if (candidate.is_valid())
             {
                 float score = computer_move_min(b, other(turn_col), alpha, beta, rec - 1);
-                if (score >= beta)
-                    return beta;
-                if (score > alpha)
+                if (score > maxeval)
+                    maxeval = score;
+                if (alpha >= score)
                     alpha = score;
+                if (beta < alpha)
+                    break;
             }
         }
-        return alpha;
+        return maxeval;
     }
 
-    float chesscomputer::computer_move_min(chessboard &board, color_e turn_col, float _alpha, float _beta, int32_t rec)
+    float chesscomputer::computer_move_min(chessboard &board, color_e turn_col, float alpha, float _beta, int32_t rec)
     {
         if ((rec == 0) || (m_cancel))
             return -1.0f * weight(board, turn_col);
-        float alpha = _alpha;
         float beta = _beta;
+        float mineval = 9999;
         std::vector<move_s> possible = board.possible_moves(turn_col);
         for (size_t i = 0; i < possible.size(); i++)
         {
@@ -160,13 +156,15 @@ namespace chess
             if (candidate.is_valid())
             {
                 float score = computer_move_max(b, other(turn_col), alpha, beta, rec - 1);
-                if (score <= alpha)
-                    return alpha;
-                if (score < beta)
+                if (score < mineval)
+                    mineval = score;
+                if (beta < score)
                     beta = score;
+                if (beta <= alpha)
+                    break;
             }
         }
-        return beta;
+        return mineval;
     }
 
 }
