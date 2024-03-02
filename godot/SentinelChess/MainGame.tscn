@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=25 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://Scripts/Board.gd" id="5_8nr35"]
 [ext_resource type="Script" path="res://Scripts/popNew.gd" id="5_bu5ts"]
 [ext_resource type="Script" path="res://Scripts/Piece.gd" id="6_d12bf"]
+[ext_resource type="Texture2D" uid="uid://b7222hiqlxfpp" path="res://Sprites/RetroWood/Hilight.png" id="7_kjeiy"]
 [ext_resource type="Script" path="res://Scripts/GameUI.gd" id="10_0mwoa"]
 [ext_resource type="ButtonGroup" uid="uid://egpcffpdie8w" path="res://WhitePlayerType.tres" id="10_8y1dj"]
 [ext_resource type="Script" path="res://Scripts/popLoad.gd" id="10_we7ge"]
@@ -58,6 +59,12 @@ position = Vector2(-3.5, 1)
 shape = SubResource("RectangleShape2D_55xmw")
 
 [node name="Sprite" type="Sprite2D" parent="Board/Piece"]
+
+[node name="HiLight" type="Sprite2D" parent="Board"]
+visible = false
+modulate = Color(1, 1, 1, 0.376471)
+position = Vector2(-398, 384)
+texture = ExtResource("7_kjeiy")
 
 [node name="popNew" type="Window" parent="."]
 title = "New Game Options"
@@ -467,6 +474,7 @@ offset_left = 1555.0
 offset_top = 10.0
 offset_right = 1630.0
 offset_bottom = 81.0
+disabled = true
 icon = ExtResource("15_pwrnu")
 
 [node name="btnRewind" type="Button" parent="GameUI"]
@@ -474,6 +482,7 @@ offset_left = 1620.0
 offset_top = 10.0
 offset_right = 1695.0
 offset_bottom = 81.0
+disabled = true
 icon = ExtResource("17_fpd0j")
 
 [node name="btnPause" type="Button" parent="GameUI"]
@@ -481,6 +490,7 @@ offset_left = 1685.0
 offset_top = 10.0
 offset_right = 1760.0
 offset_bottom = 81.0
+disabled = true
 icon = ExtResource("16_arl5w")
 
 [node name="btnAdvance" type="Button" parent="GameUI"]
@@ -488,6 +498,7 @@ offset_left = 1750.0
 offset_top = 10.0
 offset_right = 1825.0
 offset_bottom = 81.0
+disabled = true
 icon = ExtResource("21_12fke")
 
 [node name="lblHistory" type="RichTextLabel" parent="GameUI"]

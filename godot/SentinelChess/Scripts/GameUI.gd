@@ -5,11 +5,16 @@ extends CanvasLayer
 @onready var txtCmd : LineEdit = get_node('txtCmd')
 @onready var lblError : Label = get_node('lblError')
 @onready var lblCmd : Label = get_node('lblCmd')
+@onready var btnSave : Button = get_node('btnSave')
+@onready var btnRewind : Button = get_node('btnRewind')
+@onready var btnAdvance : Button = get_node('btnAdvance')
 @onready var btnPause : Button = get_node('btnPause')
 @onready var lblWhiteClock : Label = get_node('lblWhiteClock')
 @onready var lblBlackClock : Label = get_node('lblBlackClock')
 
 @export var step : int
+
+const GameState = preload("res://Scripts/GameState.gd").GameState_
 
 var is_idle : bool = false
 var PlayTexture : Texture2D
@@ -307,6 +312,14 @@ func set_idle(b : bool):
 	else:
 		btnPause.icon = PauseTexture
 
+func gamestate(gs):
+	if btnRewind:
+		var no_game = gs < GameState.PLAY
+		btnRewind.disabled = no_game
+		btnPause.disabled = no_game
+		btnAdvance.disabled = no_game
+		btnSave.disabled = no_game
+	
 func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
 	append_history(game_manager.gamestatestr(s))
 	if w != SentinelChess.ChessColor.cNone:

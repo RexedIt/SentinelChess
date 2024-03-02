@@ -7,20 +7,7 @@ extends SentinelChess
 @onready var board : Node2D = get_parent().get_node("Board")
 @onready var gameUI : CanvasLayer = get_parent().get_node("GameUI")
 
-enum GameState {
-		INIT,
-		NEWORLOAD,
-		NEW,
-		LOAD,
-		SAVE,
-		PLAY,
-		IDLE,
-		USERMOVE,
-		COMPUTERMOVE,
-		ANIMATEMOVE,
-		PIECESELECT,
-		END		
-	 }
+const GameState = preload("res://Scripts/GameState.gd").GameState_
 
 @export var gamestate : GameState = GameState.INIT
 var prepopgamestate : GameState = GameState.INIT
@@ -48,7 +35,7 @@ func _physics_process(delta):
 				print('ceRefreshBoard')
 				refresh_board(ce.board())
 			ChessEvent.ChessEventType.ceConsider:
-				pass
+				board.thinking(ce.move().p1)
 			ChessEvent.ChessEventType.ceTurn:
 				var n : int = ce.turn_no()
 				var m : ChessMove = ce.move()
@@ -78,7 +65,6 @@ func _physics_process(delta):
 			ChessEvent.ChessEventType.ceChat:
 				print('ceChat *** REM *** TODO')
 
-
 func _gamestatereact(gs):
 	gamestate = gs
 	match gamestate:
@@ -88,13 +74,7 @@ func _gamestatereact(gs):
 			print("GS: Initialization")
 			# for now, we want to move to the new game prompt
 			# later we will select new or load
-			_newgameprompt()
-		GameState.NEWORLOAD:
-			# Select new or Load Option
-			print("GS: New or Load Prompt")
-			# for now, we want to move to the new game prompt
-			# later we will select new or load
-			_newgameprompt()
+			# _newgameprompt()
 		GameState.NEW:
 			# Select New Game Option
 			print("GS: New Prompt")
@@ -118,6 +98,7 @@ func _gamestatereact(gs):
 		GameState.COMPUTERMOVE:
 			print("GS: Computer Move")
 			_computermove()
+	gameUI.gamestate(gs)
 
 func _newgameprompt():
 	popNew.visible = true

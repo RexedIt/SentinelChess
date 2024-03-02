@@ -2,6 +2,7 @@ extends Sprite2D
 
 @onready var game : SentinelChess = get_parent().get_node('SentinelChess')
 @onready var PieceProto : Area2D = get_node('Piece')
+@onready var HiLight : Sprite2D = get_node('HiLight')
 
 var piece_arr = []
 var cell_arr = []
@@ -17,6 +18,7 @@ var possible_moves : Array
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	piece_arr.resize(64)
+	HiLight.visible = false
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -29,6 +31,7 @@ func setup(_color):
 		rotation_degrees = 180
 	
 func refreshpieces(b : ChessBoard):
+	thinking(null)
 	for y in 8:
 		for x in 8:
 			var pc : SentinelChess.ChessColor = b.color_(y,x)
@@ -169,9 +172,16 @@ func _on_animated(p0 : ChessCoord, p1 : ChessCoord):
 	refreshpieces(game.get_board())
 	# print('_on_animated ' + coordstr(p0) + ' to ' + coordstr(p1))
 	game._on_animated()			
+
+func thinking(p1 : ChessCoord):
+	if p1 == null:
+		HiLight.visible = false
+	else:
+		HiLight.visible = true
+		HiLight.position = screen_v(p1)
 		
 func set_idle(b : bool):
-	print('Board: idle: ' + str(b) + ' *** TODO ***')
+	thinking(null)
 
 func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
 	print('Board: Finish Game *** TODO ***')
