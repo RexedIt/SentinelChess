@@ -160,6 +160,7 @@ namespace chess
         std::lock_guard<std::mutex> guard(m_mutex);
         chessevent e(ce_state);
         e.game_state = g;
+        e.color = w;
         e.win_color = w;
         m_events.push(e);
     }

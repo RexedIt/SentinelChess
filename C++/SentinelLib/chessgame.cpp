@@ -59,6 +59,24 @@ namespace chess
         game_state_e g = m_state;
         if (g == play_e)
         {
+            if (!m.is_valid())
+            {
+                // Computer was unable to obtain a move
+                // or an erroneous move was set.  Let's check
+                m.mate = true;
+                m.check = check_state(col);
+                std::vector<move_s> pm = possible_moves(col);
+                for (size_t i = 0; i < pm.size(); i++)
+                {
+                    chessboard b(m_board);
+                    move_s m0 = b.attempt_move(col, pm[i]);
+                    if (m0.is_valid())
+                    {
+                        m.mate = false;
+                        break;
+                    }
+                }
+            }
             color_e winner_col = col == c_white ? c_black : c_white;
             if (m.mate)
             {

@@ -304,7 +304,7 @@ void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
             on_turn(e.turn_no, e.move, e.check, e.board, e.color, e.game_state, e.win_color, e.wt, e.bt);
             break;
         case ce_state:
-            on_state(e.game_state, e.color);
+            on_state(e.game_state, e.win_color);
             break;
         case ce_chat:
             on_chat(e.msg, e.color);
