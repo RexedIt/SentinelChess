@@ -10,12 +10,14 @@ M or MOVE xx-xx		Take a move, note both coordinates need to be specified, for ex
 Diagnostic Commands:
 
 SAVE CACHE 		Save the Cache, specify filename to save to (currently cache is inactive)
-< n			Rewind or Go back to move # n, which is the turn number displayed atop the board not the full move
-R [Coordinate]		Remove piece at coordinate specified
-P [Coordinate, Piece] 	Add piece to Coordinate.  Pieces are p for Black Pawn, P for White Pawn, n or N for Knight, b or B for Bishop, 
+<			Rewind or Go back to previous move
+> 			Advance one move if possible
+P			Go to Play mode (if game over or idle)
+I			Go to Idle mode (if playing)
+T [Move]		Go to turn n where move is an integer
+- [Coordinate]		Remove piece at coordinate specified
++ [Coordinate, Piece] 	Add piece to Coordinate.  Pieces are p for Black Pawn, P for White Pawn, n or N for Knight, b or B for Bishop, 
 			r or R for Rook, q or Q for Queen, Kings cannot be poked (a board must contain both kings)
-T xx-xx			Suggest a move for the CPU.  The CPU will take it if legal on it's next turn.  
-			Note can use with rewind and debugger for testing
 X [XFEN string]		If you use X without any other information, the XFEN board string will be written.  If you specify an XFEN
 			string, the board will be loaded with that information. This information is from black edge to white edge.
 			Here is what a full board looks like: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1

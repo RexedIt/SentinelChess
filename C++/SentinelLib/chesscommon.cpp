@@ -384,11 +384,13 @@ namespace chess
     {
         // Simple parse only!
         std::vector<std::string> c = split_string(s, '-');
-        if (c.size() != 2)
+        if ((c.size() < 2) || (c.size() > 3))
             return e_invalid_move;
         if ((!coord_int(c[0], m.p0)) ||
             (!coord_int(c[1], m.p1)))
             return e_invalid_move;
+        if (c.size() == 3)
+            m.promote = char_abbr(c[2][0]);
         return e_none;
     }
 
@@ -462,7 +464,8 @@ namespace chess
                     // square so the user move need only be a coordinate not additional
                     // instructions.
                     if (inherit)
-                        m = possible_moves[i];
+                        if (possible_moves[i].promote == 0) // don't do this for promotion
+                            m = possible_moves[i];
                     return true;
                 }
         }

@@ -59,29 +59,41 @@ namespace chess
         game_state_e g = m_state;
         if (g == play_e)
         {
+            // Defensive Checkmate
+            color_e winner_col = other(col);
             if (!m.is_valid())
             {
-                // Computer was unable to obtain a move
+                // Player was unable to obtain a move
                 // or an erroneous move was set.  Let's check
                 m.mate = true;
                 m.check = check_state(col);
                 if (!m.check)
                     m.mate = false;
-                /* // Check all moves
-                std::vector<move_s> pm = possible_moves(col);
+            }
+            // Offensive Checkmate
+            if (!m.mate)
+            {
+                color_e opponent = other(col);
+                m.mate = true;
+                m.check = check_state(opponent);
+                if (!m.check)
+                    m.mate = false;
+                // Check all moves
+                std::vector<move_s> pm = possible_moves(opponent);
                 for (size_t i = 0; i < pm.size(); i++)
                 {
                     chessboard b(m_board);
-                    move_s m0 = b.attempt_move(col, pm[i]);
+                    move_s m0 = b.attempt_move(opponent, pm[i]);
                     if (m0.is_valid())
                     {
                         m.mate = false;
                         break;
                     }
                 }
-                */
+                if (m.mate)
+                    winner_col = col;
             }
-            color_e winner_col = col == c_white ? c_black : c_white;
+            // Conclusion
             if (m.mate)
             {
                 if (m.check)
@@ -126,6 +138,8 @@ namespace chess
         if (col == m_board.turn_color())
         {
             move_s m = m_board.attempt_move(col, m0);
+            if (m.error)
+                return m.error;
             guard.unlock();
             set_state(is_game_over(col, m));
             push_new_turn(m);
@@ -177,22 +191,25 @@ namespace chess
 
     void chessgame::set_turn_to(int idx)
     {
-        if ((idx >= 0) && (m_turn.size() > 0))
+        if (idx != m_play_pos)
         {
-            m_board.copy(m_turn[idx].b);
+            if ((idx >= 0) && (m_turn.size() > 0))
+            {
+                m_board.copy(m_turn[idx].b);
+                if (m_state == play_e)
+                    m_turn.resize(idx + 1);
+                m_play_pos = idx;
+            }
+            else
+            {
+                m_board.new_board();
+                if (m_state == play_e)
+                    m_turn.clear();
+                m_play_pos = -1;
+            }
             if (m_state == play_e)
-                m_turn.resize(idx + 1);
-            m_play_pos = idx;
+                refresh_board_positions();
         }
-        else
-        {
-            m_board.new_board();
-            if (m_state == play_e)
-                m_turn.clear();
-            m_play_pos = -1;
-        }
-        if (m_state == play_e)
-            refresh_board_positions();
         signal_on_turn();
     }
 

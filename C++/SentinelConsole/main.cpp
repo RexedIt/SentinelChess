@@ -52,6 +52,18 @@ bool get_move(std::string cmdu, move_s &m)
     return true;
 }
 
+bool get_promotion(move_s &m)
+{
+    std::string cmd;
+    std::cout << "Promote pawn to [Q,R,N,B] : ";
+    std::getline(std::cin, cmd);
+    if (cmd.length() > 0)
+        m.promote = char_abbr(cmd[0]);
+    if (m.promote == p_none)
+        return false;
+    return true;
+}
+
 // *** Callbacks from Player Object(s)
 std::shared_ptr<chessgame> p_game = NULL;
 std::set<color_e> locals;
@@ -371,7 +383,7 @@ int main(void)
                 std::cout << "\r\nCommands: NEW/N, LOAD/L Filename, SAVE/S FileName, PLAY/P, IDLE/I, QUIT/Q, " << std::endl;
                 if (!is_idle)
                     std::cout << "MOVE/M [XX-XX], ";
-                std::cout << "< [Turn], >, T Turn PIECE [Coord Piece], REMOVE [Coord], XFEN [String] " << std::endl;
+                std::cout << "< [Turn], >, T Turn PIECE [Coord Piece], - [Coord], XFEN [String] " << std::endl;
                 continue;
             }
             if (cmdl == "N")
@@ -436,7 +448,7 @@ int main(void)
                 is_idle = true;
                 continue;
             }
-            else if (cmdl == "REMOVE")
+            else if (cmdl == "-")
             {
                 cmdu = get_arg(cmdu);
                 if (cmdu == "")
@@ -445,14 +457,14 @@ int main(void)
                     continue;
                 }
                 coord_s p0;
-                if (coord_int(cmdu, p0) != e_none)
+                if (!coord_int(cmdu, p0))
                 {
                     print_error(e_invalid_coord);
                     continue;
                 }
                 p_game->remove_piece(p0);
             }
-            else if (cmdl == "PIECE")
+            else if (cmdl == "+")
             {
                 std::vector<std::string> args = get_args(cmd);
                 if (args.size() != 2)
@@ -461,7 +473,7 @@ int main(void)
                     continue;
                 }
                 coord_s p0;
-                if (coord_int(args[0], p0) != e_none)
+                if (!coord_int(args[0], p0))
                 {
                     print_error(e_invalid_coord);
                     continue;
@@ -508,14 +520,20 @@ int main(void)
                     if (!get_move(cmdu, m))
                         continue;
                     color_e whose_turn = p_game->turn_color();
-                    if (p_game->move(whose_turn, m) != e_none)
+                    error_e err = p_game->move(whose_turn, m);
+                    if (err == e_invalid_move_needs_promote)
+                        if (!get_promotion(m))
+                        {
+                            print_error("You need to select a promotion piece for this move, try again.");
+                            continue;
+                        }
+                        else
+                        {
+                            p_game->move(whose_turn, m);
+                        }
+                    if (err != e_none)
                     {
-                        print_error(e_invalid_move);
-                        continue;
-                    }
-                    if ((p_game->check_state(whose_turn)) && (p_game->state() == play_e))
-                    {
-                        print_error(e_check);
+                        print_error(err);
                         continue;
                     }
                 }
