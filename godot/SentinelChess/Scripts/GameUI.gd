@@ -12,23 +12,24 @@ extends CanvasLayer
 @onready var lblWhiteClock : Label = get_node('lblWhiteClock')
 @onready var lblBlackClock : Label = get_node('lblBlackClock')
 @onready var voice : AudioStreamPlayer = get_node('voice')
-
+@onready var MoveSound = preload('res://Sound/SFX/Open_01.mp3')
+@onready var PromoteSound = preload('res://Sound/SFX/Collect_Point_01.mp3')
+@onready var PlayTexture : Texture2D = preload('res://Sprites/RetroWood/Play.jpg')
 @export var step : int
 
 const GameState = preload("res://Scripts/GameState.gd").GameState_
 
 var is_idle : bool = false
-var PlayTexture : Texture2D
 var PauseTexture : Texture2D
+
 var voice_queue = []
 var do_voice : bool = false
+var do_sfx : bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	txtCmd.grab_focus()
 	PauseTexture = btnPause.icon
-	PlayTexture = load('res://Sprites/RetroWood/Play.jpg')
-		
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -112,6 +113,7 @@ func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.Che
 	if col == SentinelChess.ChessColor.Black:
 		color = 'black'
 	#print(color + ' ' + movestr(m))
+	play_move_sfx()
 	append_history(str(n) + ' ' + color + ' ' + movestr(m), color)
 	if (b.check_state(SentinelChess.Black)):
 		append_history('Black in Check.', 'black')	
@@ -331,7 +333,8 @@ func gamestate(gs):
 		btnAdvance.disabled = no_game
 		btnSave.disabled = no_game
 		do_voice = game_manager.has_local()
-	
+		do_sfx = do_voice
+		
 func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
 	append_history(game_manager.gamestatestr(s))
 	match s:
@@ -378,3 +381,13 @@ func play_voice():
 				var r = 'res://Sound/Voice/' + s + '.wav'
 				voice.stream = load(r)
 				voice.play()
+				
+func play_move_sfx():
+	if do_sfx:
+		voice.stream = MoveSound
+		voice.play()
+	
+func play_promote_sfx():
+	if do_sfx:
+		voice.stream = PromoteSound
+		voice.play()
