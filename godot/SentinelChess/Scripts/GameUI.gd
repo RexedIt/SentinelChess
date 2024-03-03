@@ -11,6 +11,7 @@ extends CanvasLayer
 @onready var btnPause : Button = get_node('btnPause')
 @onready var lblWhiteClock : Label = get_node('lblWhiteClock')
 @onready var lblBlackClock : Label = get_node('lblBlackClock')
+@onready var voice : AudioStreamPlayer = get_node('voice')
 
 @export var step : int
 
@@ -19,6 +20,8 @@ const GameState = preload("res://Scripts/GameState.gd").GameState_
 var is_idle : bool = false
 var PlayTexture : Texture2D
 var PauseTexture : Texture2D
+var voice_queue = []
+var do_voice : bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -45,6 +48,7 @@ func _physics_process(delta):
 				smooth = float(pct)/100.0
 			lblError.modulate.a = smooth
 	clock_update(delta)
+	play_voice()
 	
 func clear_history():
 	lblHistory.clear()
@@ -89,9 +93,13 @@ func append_history(msg : String, color : String = 'blue'):
 	
 func refreshPrompt(col : SentinelChess.ChessColor):
 	var crgb : Color = Color(1,1,1)
+	var vprompt = 'WhiteTurn'
 	if col == SentinelChess.ChessColor.Black:
 		crgb = Color(0,0,0)
+		vprompt = 'BlackTurn'
 	lblCmd.set('theme_override_colors/font_color', crgb)	
+	if game_manager.is_local(col):
+		add_voice(vprompt)
 	
 func append_load(msg: String):
 	append_history('Load Game - ' + msg)
@@ -107,9 +115,10 @@ func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.Che
 	append_history(str(n) + ' ' + color + ' ' + movestr(m), color)
 	if (b.check_state(SentinelChess.Black)):
 		append_history('Black in Check.', 'black')	
+		add_voice('Check')
 	if (b.check_state(SentinelChess.White)):
 		append_history('White in Check.', 'white')
-
+		add_voice('Check')
 # UI Handlers
 func show_error(msg : String):
 	errortime = 3
@@ -216,6 +225,7 @@ func _on_txt_cmd_text_submitted(new_text):
 		txtCmd.text = ''		
 	else:
 		show_error('Invalid Move or Command')
+		add_voice('InvalidMove')
 	return
 
 func possible_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
@@ -267,6 +277,7 @@ func handle_move(cmd: String) -> bool:
 					if game_manager.check_state(c):
 						if game_manager.state() == SentinelChess.ChessGameState.Play:
 							show_error("You are in Check.")
+							add_voice('Check')
 							return false
 					append_move(game_manager.playno(), m, game_manager.get_board(), c)
 					game_manager._user_moved(m)
@@ -319,17 +330,51 @@ func gamestate(gs):
 		btnPause.disabled = no_game
 		btnAdvance.disabled = no_game
 		btnSave.disabled = no_game
+		do_voice = game_manager.has_local()
 	
 func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
 	append_history(game_manager.gamestatestr(s))
+	match s:
+		SentinelChess.CheckMate:
+			add_voice('CheckMate')
+		SentinelChess.StaleMate:
+			add_voice('StaleMate')
+		SentinelChess.TimeUp:
+			add_voice('TimesUp')
+		SentinelChess.Forfeit:
+			add_voice('Forfeit')
+	if s > SentinelChess.StaleMate:
+		add_voice('Draw')
 	if w != SentinelChess.ChessColor.cNone:
 		var color : String = 'White'
 		var winstr = 'White Wins!'
+		var voicestr = 'WhiteWins'
 		if w == SentinelChess.ChessColor.Black:
 			color = 'Black'
 			winstr = 'Black Wins!'
+			voicestr = 'BlackWins'
 		append_history(winstr, color)
+		add_voice(voicestr)
 	print('UI: Finish Game')
 	
+func add_voice(s : String):
+	if do_voice:
+		if !s in voice_queue:
+			voice_queue.push_back(s)
 
+func has_voice() -> bool:
+	return !voice_queue.is_empty()
+	
+func pop_voice() -> String:
+	if voice_queue.is_empty():
+		return ''
+	return voice_queue.pop_front()
 
+func play_voice():
+	if do_voice:
+		if !voice.playing:
+			if has_voice():
+				var s = pop_voice()
+				var r = 'res://Sound/Voice/' + s + '.wav'
+				voice.stream = load(r)
+				voice.play()

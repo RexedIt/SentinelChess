@@ -6,6 +6,7 @@ extends SentinelChess
 @onready var popSave : FileDialog = get_parent().get_node("popSave")
 @onready var board : Node2D = get_parent().get_node("Board")
 @onready var gameUI : CanvasLayer = get_parent().get_node("GameUI")
+@onready var popEnd : Panel = get_parent().get_node("popEnd")
 
 const GameState = preload("res://Scripts/GameState.gd").GameState_
 
@@ -58,7 +59,7 @@ func _physics_process(delta):
 					_on_turn(n,b,c)
 				gameUI.clock_turn(c, wt, bt)
 				if g > ChessGameState.Play:
-					gameUI.finish_game(g, wc)
+					finish_game(g, wc)
 			ChessEvent.ChessEventType.ceState:
 				print('ceState')
 				_on_state(ce.game_state(), ce.win_color())
@@ -236,8 +237,10 @@ func set_idle(b : bool):
 
 func finish_game(s : ChessGameState, w : ChessColor):
 	_gamestatereact(GameState.END)
+	gameUI.finish_game(s, w)
 	board.finish_game(s, w)
-	
+	popEnd.finish_game(s, w)
+		
 func _on_state(s : ChessGameState, w : ChessColor):
 	if s == Idle:
 		set_idle(true)

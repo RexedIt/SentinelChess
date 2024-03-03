@@ -293,7 +293,11 @@ namespace chess
                 m_turn.push_back(t);
             }
 
-            m_play_pos = (int)m_turn.size() - 1;
+            m_play_pos = jsonf["play_pos"];
+            if (m_play_pos < 0)
+                m_play_pos = 0;
+            if (m_play_pos > playmax() - 1)
+                m_play_pos = playmax() - 1;
 
             auto board = jsonf["board"];
             if (m_board.load(board) != e_none)
@@ -340,6 +344,8 @@ namespace chess
                 turns.push_back(turn);
             }
             jsonf["turns"] = turns;
+
+            jsonf["play_pos"] = m_play_pos;
 
             auto board = json::object();
             if (m_board.save(board) != e_none)

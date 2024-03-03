@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=30 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
@@ -22,6 +22,10 @@
 [ext_resource type="Texture2D" uid="uid://baiu161gnvfj0" path="res://Sprites/RetroWood/Pause.jpg" id="16_arl5w"]
 [ext_resource type="Texture2D" uid="uid://bxdtqof8robqc" path="res://Sprites/RetroWood/Rewind.jpg" id="17_fpd0j"]
 [ext_resource type="Texture2D" uid="uid://c7y0jxfkladhf" path="res://Sprites/RetroWood/Advance.jpg" id="21_12fke"]
+[ext_resource type="Script" path="res://Scripts/popEnd.gd" id="23_6dbbk"]
+[ext_resource type="Texture2D" uid="uid://6golc5qbayib" path="res://Sprites/RetroWood/WhiteWin/SpriteSheet.jpg" id="23_urpj6"]
+[ext_resource type="Texture2D" uid="uid://dhsklfuox63dt" path="res://Sprites/RetroWood/BlackKnight.png" id="25_3rvpk"]
+[ext_resource type="Texture2D" uid="uid://c3cvktim2fl81" path="res://Sprites/RetroWood/WhiteKnight.png" id="26_8s3l2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_55xmw"]
 size = Vector2(137, 96)
@@ -29,6 +33,8 @@ size = Vector2(137, 96)
 [sub_resource type="FontVariation" id="FontVariation_h0o2n"]
 base_font = ExtResource("3_7nhen")
 spacing_bottom = 10
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_nno4e"]
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_i2www")
@@ -563,6 +569,63 @@ theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("3_7nhen")
 theme_override_font_sizes/font_size = 24
 vertical_alignment = 1
+
+[node name="voice" type="AudioStreamPlayer" parent="GameUI"]
+volume_db = 6.0
+
+[node name="popEnd" type="Panel" parent="."]
+visible = false
+material = SubResource("CanvasItemMaterial_nno4e")
+offset_left = 323.0
+offset_top = 294.0
+offset_right = 1128.0
+offset_bottom = 807.0
+script = ExtResource("23_6dbbk")
+
+[node name="sequence" type="Sprite2D" parent="popEnd"]
+position = Vector2(402, 256)
+scale = Vector2(4, 4)
+texture = ExtResource("23_urpj6")
+hframes = 4
+vframes = 4
+
+[node name="black" type="Sprite2D" parent="popEnd"]
+visible = false
+position = Vector2(103, 437)
+texture = ExtResource("25_3rvpk")
+
+[node name="white" type="Sprite2D" parent="popEnd"]
+position = Vector2(103, 437)
+texture = ExtResource("26_8s3l2")
+
+[node name="status" type="Label" parent="popEnd"]
+layout_mode = 0
+offset_left = 214.0
+offset_top = 37.0
+offset_right = 594.0
+offset_bottom = 75.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 25
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 38
+text = "Checkmate"
+horizontal_alignment = 1
+
+[node name="winner" type="Label" parent="popEnd"]
+layout_mode = 0
+offset_left = 238.0
+offset_top = 432.0
+offset_right = 618.0
+offset_bottom = 470.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 25
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 38
+text = "White Wins"
+horizontal_alignment = 1
+
+[node name="music" type="AudioStreamPlayer" parent="popEnd"]
+volume_db = 3.0
 
 [connection signal="canceled" from="popLoad" to="popLoad" method="_on_canceled"]
 [connection signal="confirmed" from="popLoad" to="popLoad" method="_on_confirmed"]
