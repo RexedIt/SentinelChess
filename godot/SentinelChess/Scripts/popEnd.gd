@@ -46,7 +46,7 @@ func finish_game(g : SentinelChess.ChessGameState, w : SentinelChess.ChessColor)
 			winner.text = 'White Wins!'
 			musictrack = preload('res://Sound/Music/USA_Short.mp3')
 		SentinelChess.ChessColor.cNone:
-			sequence.texture = load('res://Sprites/RetroWood/WhiteWin/SpriteSheet.jpg')
+			sequence.texture = load('res://Sprites/RetroWood/Draw/SpriteSheet.jpg')
 			white.visible = false
 			black.visible = false
 			winner.text = ''
