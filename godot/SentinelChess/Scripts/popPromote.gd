@@ -25,7 +25,8 @@ signal on_closed(_cancelled, _white, _black, _clock)
 func _VisibilityChanged():
 	if visible:
 		var base = 'res://Sprites/RetroWood/'
-		if game_manager.turn_color() == SentinelChess.White:
+		_color = game_manager.turn_color()
+		if _color == SentinelChess.White:
 			base += 'White'
 		else:
 			base = 'Black'
