@@ -120,17 +120,10 @@ func drop_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
 	if not can_drop(p0, p1):
 		return false
 	var c : SentinelChess.ChessColor = game.turn_color();
-	var err : int = game.move_c(c, p0, p1, SentinelChess.ChessPiece.pNone)
-	if err != 0:
-		handle_error(err)
-		return false
-	if game.check_state(c):
-		if game.state() == SentinelChess.ChessGameState.Play:
-			handle_error_msg("You are in Check.")
-			return false
-		# *** REM *** TODO Extra Checks?
-	game._on_user_moved()
-	return true
+	var m : ChessMove = ChessMove.new()
+	m.p0 = p0
+	m.p1 = p1
+	return game.user_move(c, m, false)
 
 func move_piece(p0 : ChessCoord, p1 : ChessCoord):
 	var pc : Area2D = piece_arr[p0.y*8+p0.x]

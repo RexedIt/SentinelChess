@@ -82,7 +82,7 @@ func movestr(m : ChessMove) -> String:
 		str += ' EP'
 	if m.c!=-1:
 		str += ' CAST'
-	if m.promote() != 0:
+	if m.get_promote() != 0:
 		str += ' PROM'
 	return str
 	
@@ -245,7 +245,7 @@ func handle_load(filename: String) -> bool:
 		return false
 	clear_history()
 	append_load(toload)
-	game_manager.refresh_board()
+	#game_manager.refresh_board()
 	game_manager.set_idle(true)
 	return true
 
@@ -268,22 +268,11 @@ func handle_move(cmd: String) -> bool:
 			if p0 != null and p1 != null:
 				# time to check
 				if possible_move(p0,p1):
-					var m : ChessMove = ChessMove.new()
 					var c : SentinelChess.ChessColor = game_manager.turn_color()
+					var m : ChessMove = ChessMove.new()
 					m.p0=p0
 					m.p1=p1
-					var err : int = game_manager.move_m(c, m)
-					if err != 0:
-						show_error('!' + game_manager.errorstr(err))
-						return false
-					if game_manager.check_state(c):
-						if game_manager.state() == SentinelChess.ChessGameState.Play:
-							show_error("You are in Check.")
-							add_voice('Check')
-							return false
-					append_move(game_manager.playno(), m, game_manager.get_board(), c)
-					game_manager._user_moved(m)
-					return true				
+					return game_manager.user_move(c, m, true)
 	return false
 
 var countdown : float = 0

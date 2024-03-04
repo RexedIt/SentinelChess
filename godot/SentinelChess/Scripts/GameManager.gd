@@ -7,6 +7,7 @@ extends SentinelChess
 @onready var board : Node2D = get_parent().get_node("Board")
 @onready var gameUI : CanvasLayer = get_parent().get_node("GameUI")
 @onready var popEnd : Panel = get_parent().get_node("popEnd")
+@onready var popPromote : Panel = get_parent().get_node("popPromote")
 
 const GameState = preload("res://Scripts/GameState.gd").GameState_
 
@@ -14,6 +15,7 @@ const GameState = preload("res://Scripts/GameState.gd").GameState_
 var prepopgamestate : GameState = GameState.INIT
 @export var statewait : bool = false
 var filename : String
+var promotemove : ChessMove
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -21,6 +23,7 @@ func _ready():
 	popNew.on_closed.connect(_on_closed_new)
 	popLoad.on_closed.connect(_on_closed_load)
 	popSave.on_closed.connect(_on_closed_save)
+	popPromote.on_closed.connect(_on_closed_promote)
 	_gamestatereact(GameState.INIT)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -99,6 +102,9 @@ func _gamestatereact(gs):
 		GameState.COMPUTERMOVE:
 			print("GS: Computer Move")
 			_computermove()
+		GameState.PIECESELECT:
+			print('GS: Piece Select')
+			_pieceselect()
 	gameUI.gamestate(gs)
 
 func _newgameprompt():
@@ -129,7 +135,26 @@ func _usermove():
 
 func _computermove():
 	statewait = true
-	
+
+func _pieceselect():
+	popPromote.visible = true
+		
+func user_move(c : ChessColor, m : ChessMove, a : bool):
+	var err : int = move_m(c, m)
+	if err != 0:
+		if errorstr(err).contains('Promote'):
+			promotemove = m
+			_gamestatereact(GameState.PIECESELECT)
+			return true
+		_on_error(err)
+		return false
+	if a:
+		board.animate_move(m)
+		gamestate = GameState.ANIMATEMOVE
+	else:
+		_on_user_moved()
+	return true
+
 # Callbacks
 func _on_user_moved():
 	#gameUI.append_move(n, m, get_board(), c)
@@ -191,20 +216,25 @@ func _on_closed_save(_cancelled, _filename):
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
+func _on_closed_promote(_cancelled, _color, _piece):
+	if !_cancelled:
+		promotemove.set_promote(_piece)
+		user_move(_color,promotemove,false)
+		
 func _on_new_game():
-	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE]
+	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE,GameState.END]
 	if list.has(gamestate):
 		prepopgamestate = gamestate
 		_gamestatereact(GameState.NEW)
 		
 func _on_load_game():
-	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE]
+	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE,GameState.END]
 	if list.has(gamestate):
 		prepopgamestate = gamestate
 		_gamestatereact(GameState.LOAD)
 
 func _on_save_game():
-	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE]
+	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE,GameState.END]
 	if list.has(gamestate):
 		prepopgamestate = gamestate
 		_gamestatereact(GameState.SAVE)
@@ -212,10 +242,11 @@ func _on_save_game():
 func _on_error(_err : int):
 	gameUI.show_error('! ' + errorstr(_err))
 	print('***** ERROR *****' + errorstr(_err))
-	
-func _on_error_msg(msg : String):
-	gameUI.show_error(msg)
-	
+
+func _on_error_msg(_err : String):
+	gameUI.show_error(_err)
+	print('***** ERROR *****' + _err)
+		
 # Signal Handlers
 func _draw_move(n, m, b, c):
 	gameUI.append_move(n,m,b,c)
@@ -259,7 +290,6 @@ func refresh_turn(b : ChessBoard):
 	
 func _user_moved(m):
 	board.animate_move(m)
-	print('uman')
 	gamestate = GameState.ANIMATEMOVE
 		
 func _computer_moved(n, m, b, c):

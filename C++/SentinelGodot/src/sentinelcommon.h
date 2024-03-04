@@ -114,7 +114,9 @@ public:
     bool matches(const Ref<ChessMove> &m);
     bool matches_p0p1(const Ref<ChessCoord> &p0, const Ref<ChessCoord> &p1);
     bool matches_y0x0p1(const int y0, const int x0, const Ref<ChessCoord> &p1);
-    int promote() const;
+    ChessPiece get_promote() const;
+    void set_promote(const ChessPiece p);
+
     bool en_passant() const;
     bool check() const;
     bool is_valid();

@@ -25,7 +25,7 @@ namespace chess
         case e_missing_move:
             return "Must include move";
         case e_invalid_move:
-            return "Invalid Move, should be in form XX-XX with first digit A-H, second 1-8 in each";
+            return "Invalid Move, should be in form XX-XX or PGN Move format.";
         case e_failed_move:
             return "Move generation failed";
         case e_missing_filename:

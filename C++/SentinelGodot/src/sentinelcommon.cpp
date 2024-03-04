@@ -102,7 +102,9 @@ void ChessMove::_bind_methods()
     ClassDB::bind_method(D_METHOD("matches_y0x0p1", "y0", "x0", "p0"), &ChessMove::matches_y0x0p1);
     ClassDB::add_property("ChessMove", PropertyInfo(Variant::OBJECT, "c", PROPERTY_HINT_RESOURCE_TYPE, "ChessCoord"), "set_cx", "get_cx");
     ClassDB::bind_method(D_METHOD("en_passant"), &ChessMove::en_passant);
-    ClassDB::bind_method(D_METHOD("promote"), &ChessMove::promote);
+    ClassDB::bind_method(D_METHOD("get_promote"), &ChessMove::get_promote);
+    ClassDB::bind_method(D_METHOD("set_promote"), &ChessMove::set_promote);
+    ClassDB::add_property("ChessMove", PropertyInfo(Variant::INT, "p"), "set_promote", "get_promote");
     ClassDB::bind_method(D_METHOD("check"), &ChessMove::check);
     ClassDB::bind_method(D_METHOD("is_valid"), &ChessMove::is_valid);
 }
@@ -181,9 +183,14 @@ int ChessMove::get_cx() const
     return m_move.cx;
 }
 
-int ChessMove::promote() const
+ChessPiece ChessMove::get_promote() const
 {
-    return m_move.promote;
+    return (ChessPiece)m_move.promote;
+}
+
+void ChessMove::set_promote(const ChessPiece p)
+{
+    m_move.promote = (int8_t)p;
 }
 
 bool ChessMove::en_passant() const

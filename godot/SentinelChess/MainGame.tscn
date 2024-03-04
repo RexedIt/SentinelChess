@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=31 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
@@ -26,6 +26,7 @@
 [ext_resource type="Texture2D" uid="uid://6golc5qbayib" path="res://Sprites/RetroWood/WhiteWin/SpriteSheet.jpg" id="23_urpj6"]
 [ext_resource type="Texture2D" uid="uid://dhsklfuox63dt" path="res://Sprites/RetroWood/BlackKnight.png" id="25_3rvpk"]
 [ext_resource type="Texture2D" uid="uid://c3cvktim2fl81" path="res://Sprites/RetroWood/WhiteKnight.png" id="26_8s3l2"]
+[ext_resource type="Script" path="res://Scripts/popPromote.gd" id="27_e8o3p"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_55xmw"]
 size = Vector2(137, 96)
@@ -628,6 +629,62 @@ horizontal_alignment = 1
 [node name="music" type="AudioStreamPlayer" parent="popEnd"]
 volume_db = 3.0
 
+[node name="popPromote" type="Panel" parent="."]
+visible = false
+offset_left = 400.0
+offset_top = 445.0
+offset_right = 1105.0
+offset_bottom = 668.0
+script = ExtResource("27_e8o3p")
+
+[node name="Label" type="Label" parent="popPromote"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 10.0
+offset_right = 628.0
+offset_bottom = 33.0
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 16
+text = "Choose a piece to promote your Pawn to:"
+
+[node name="Cancel" type="Button" parent="popPromote"]
+layout_mode = 0
+offset_left = 229.0
+offset_top = 181.0
+offset_right = 493.0
+offset_bottom = 212.0
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Cancel this Move
+"
+
+[node name="Queen" type="Button" parent="popPromote"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 50.0
+offset_right = 173.0
+offset_bottom = 168.0
+
+[node name="Rook" type="Button" parent="popPromote"]
+layout_mode = 0
+offset_left = 180.0
+offset_top = 50.0
+offset_right = 348.0
+offset_bottom = 168.0
+
+[node name="Bishop" type="Button" parent="popPromote"]
+layout_mode = 0
+offset_left = 355.0
+offset_top = 50.0
+offset_right = 523.0
+offset_bottom = 168.0
+
+[node name="Knight" type="Button" parent="popPromote"]
+layout_mode = 0
+offset_left = 530.0
+offset_top = 50.0
+offset_right = 698.0
+offset_bottom = 168.0
+
 [connection signal="canceled" from="popLoad" to="popLoad" method="_on_canceled"]
 [connection signal="confirmed" from="popLoad" to="popLoad" method="_on_confirmed"]
 [connection signal="canceled" from="popSave" to="popSave" method="_on_canceled"]
@@ -639,3 +696,8 @@ volume_db = 3.0
 [connection signal="pressed" from="GameUI/btnPause" to="GameUI" method="_on_btn_pause_pressed"]
 [connection signal="pressed" from="GameUI/btnAdvance" to="GameUI" method="_on_btn_advance_pressed"]
 [connection signal="text_submitted" from="GameUI/txtCmd" to="GameUI" method="_on_txt_cmd_text_submitted"]
+[connection signal="pressed" from="popPromote/Cancel" to="popPromote" method="_on_cancel_pressed"]
+[connection signal="pressed" from="popPromote/Queen" to="popPromote" method="_on_queen_pressed"]
+[connection signal="pressed" from="popPromote/Rook" to="popPromote" method="_on_rook_pressed"]
+[connection signal="pressed" from="popPromote/Bishop" to="popPromote" method="_on_bishop_pressed"]
+[connection signal="pressed" from="popPromote/Knight" to="popPromote" method="_on_knight_pressed"]
