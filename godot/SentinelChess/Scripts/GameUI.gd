@@ -91,16 +91,19 @@ func append_history(msg : String, color : String = 'blue'):
 	lblHistory.add_text(msg.to_upper())
 	lblHistory.newline()
 	lblHistory.pop()
-	
-func refreshPrompt(col : SentinelChess.ChessColor):
-	var crgb : Color = Color(1,1,1)
+
+func announceTurn(col : SentinelChess.ChessColor):
 	var vprompt = 'WhiteTurn'
 	if col == SentinelChess.ChessColor.Black:
-		crgb = Color(0,0,0)
 		vprompt = 'BlackTurn'
-	lblCmd.set('theme_override_colors/font_color', crgb)	
 	if game_manager.is_local(col):
 		add_voice(vprompt)
+		
+func refreshPrompt(col : SentinelChess.ChessColor):
+	var crgb : Color = Color(1,1,1)
+	if col == SentinelChess.ChessColor.Black:
+		crgb = Color(0,0,0)
+	lblCmd.set('theme_override_colors/font_color', crgb)	
 	
 func append_load(msg: String):
 	append_history('Load Game - ' + msg)
@@ -245,6 +248,7 @@ func handle_load(filename: String) -> bool:
 		return false
 	clear_history()
 	append_load(toload)
+	announceTurn(game_manager.turn_color())
 	#game_manager.refresh_board()
 	game_manager.set_idle(true)
 	return true

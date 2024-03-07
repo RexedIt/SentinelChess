@@ -102,6 +102,8 @@ public:
     bool kill(ChessColor col, int y, int x);
     bool check_state(ChessColor col);
     String save_xfen();
+    Array captured_pieces(ChessColor col);
+    String captured_pieces_abbr(ChessColor col);
 
 private:
     chessboard m_board;

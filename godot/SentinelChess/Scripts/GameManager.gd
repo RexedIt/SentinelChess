@@ -8,6 +8,7 @@ extends SentinelChess
 @onready var gameUI : CanvasLayer = get_parent().get_node("GameUI")
 @onready var popEnd : Panel = get_parent().get_node("popEnd")
 @onready var popPromote : Panel = get_parent().get_node("popPromote")
+@onready var pnlCaptured : Panel = get_parent().get_node("GameUI/pnlCaptured")
 
 const GameState = preload("res://Scripts/GameState.gd").GameState_
 
@@ -37,7 +38,7 @@ func _physics_process(delta):
 		match ce.event_type():
 			ChessEvent.ChessEventType.ceRefreshBoard:
 				print('ceRefreshBoard')
-				refresh_board(ce.board())
+				refresh_board(ce.color(), ce.board())
 			ChessEvent.ChessEventType.ceConsider:
 				board.thinking(ce.move().p1)
 			ChessEvent.ChessEventType.ceTurn:
@@ -164,7 +165,7 @@ func _on_animated():
 	var c : ChessColor = turn_color();
 	if is_local_active(c):
 		var b : ChessBoard = get_board()
-		refresh_board(b)
+		refresh_board(c, b)
 		gameUI.refreshPrompt(c)
 	_gamestatereact(GameState.PLAY)
 	
@@ -179,6 +180,7 @@ func _on_closed_new(_cancelled, _white, _black, _clock):
 	board.setup(preferred_board_color())
 	gameUI.clear_history()
 	gameUI.append_history('New Game')
+	gameUI.announceTurn(turn_color())
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
@@ -196,6 +198,7 @@ func _on_closed_load(_cancelled, _filename):
 		return
 	gameUI.clear_history()
 	gameUI.append_load(_filename)
+	gameUI.announceTurn(turn_color())
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
@@ -252,10 +255,11 @@ func _draw_move(n, m, b, c):
 	gameUI.append_move(n,m,b,c)
 	board.move_piece(m.p0, m.p1)
 	board.refreshpieces(b)	
+	pnlCaptured.refreshpieces(c, b)
 	
 func _on_turn(n, b, c):
 	if is_local_active(c):
-		refresh_board(b)
+		refresh_board(c, b)
 	gameUI.refreshPrompt(c)
 
 func set_idle(b : bool):
@@ -279,13 +283,15 @@ func _on_state(s : ChessGameState, w : ChessColor):
 		set_idle(false)
 	if s > Play:
 		finish_game(s, w)
-					
-func refresh_board(b : ChessBoard):
+	
+func refresh_board(c : ChessColor, b : ChessBoard):
 	board.setup(turn_color())
 	board.refreshpieces(b)
-
-func refresh_turn(b : ChessBoard):
+	pnlCaptured.refreshpieces(c,b)
+	
+func refresh_turn(c : ChessColor, b : ChessBoard):
 	board.refreshpieces(b)
+	pnlCaptured.refreshpieces(c,b)
 	_gamestatereact(GameState.PLAY)
 	
 func _user_moved(m):

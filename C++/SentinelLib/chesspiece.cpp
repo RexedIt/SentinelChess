@@ -51,6 +51,27 @@ namespace chess
         value = (unsigned char)ptype + (unsigned char)color;
     }
 
+    chesspiece::chesspiece(const chesspiece &oth)
+    {
+        copy(oth);
+    }
+
+    void chesspiece::copy(const chesspiece &oth)
+    {
+        ptype = oth.ptype;
+        color = oth.color;
+        abbr = oth.abbr;
+        name = oth.name;
+        value = oth.value;
+        kill_mask = oth.kill_mask;
+        enemy_kill_mask = oth.enemy_kill_mask;
+    }
+
+    void chesspiece::operator=(const chesspiece &oth)
+    {
+        copy(oth);
+    }
+
     void chesspiece::possible_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8], unsigned char castled_left, unsigned char castled_right, coord_s ep)
     {
         switch (ptype)

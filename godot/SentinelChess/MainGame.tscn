@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=35 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
@@ -23,8 +23,11 @@
 [ext_resource type="Texture2D" uid="uid://bxdtqof8robqc" path="res://Sprites/RetroWood/Rewind.jpg" id="17_fpd0j"]
 [ext_resource type="Texture2D" uid="uid://c7y0jxfkladhf" path="res://Sprites/RetroWood/Advance.jpg" id="21_12fke"]
 [ext_resource type="Script" path="res://Scripts/popEnd.gd" id="23_6dbbk"]
+[ext_resource type="Script" path="res://Scripts/pnlCaptured.gd" id="23_422qp"]
+[ext_resource type="Texture2D" uid="uid://dt77ag57cndut" path="res://Sprites/RetroWood/SmallPieces.png" id="23_e8kc2"]
 [ext_resource type="Texture2D" uid="uid://6golc5qbayib" path="res://Sprites/RetroWood/WhiteWin/SpriteSheet.jpg" id="23_urpj6"]
 [ext_resource type="Texture2D" uid="uid://dhsklfuox63dt" path="res://Sprites/RetroWood/BlackKnight.png" id="25_3rvpk"]
+[ext_resource type="Script" path="res://Scripts/CapturedPiece.gd" id="25_4lao4"]
 [ext_resource type="Texture2D" uid="uid://c3cvktim2fl81" path="res://Sprites/RetroWood/WhiteKnight.png" id="26_8s3l2"]
 [ext_resource type="Script" path="res://Scripts/popPromote.gd" id="27_e8o3p"]
 
@@ -34,6 +37,8 @@ size = Vector2(137, 96)
 [sub_resource type="FontVariation" id="FontVariation_h0o2n"]
 base_font = ExtResource("3_7nhen")
 spacing_bottom = 10
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_aqyli"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_nno4e"]
 
@@ -463,117 +468,132 @@ script = ExtResource("10_0mwoa")
 step = 16
 
 [node name="btnNew" type="Button" parent="GameUI"]
-offset_left = 1425.0
+offset_left = 1485.0
 offset_top = 10.0
-offset_right = 1500.0
+offset_right = 1560.0
 offset_bottom = 81.0
 icon = ExtResource("11_ehsup")
 
 [node name="btnLoad" type="Button" parent="GameUI"]
-offset_left = 1490.0
+offset_left = 1552.0
 offset_top = 10.0
-offset_right = 1565.0
+offset_right = 1627.0
 offset_bottom = 81.0
 icon = ExtResource("12_5o0s6")
 
 [node name="btnSave" type="Button" parent="GameUI"]
-offset_left = 1555.0
+offset_left = 1619.0
 offset_top = 10.0
-offset_right = 1630.0
+offset_right = 1694.0
 offset_bottom = 81.0
 disabled = true
 icon = ExtResource("15_pwrnu")
 
 [node name="btnRewind" type="Button" parent="GameUI"]
-offset_left = 1620.0
+offset_left = 1686.0
 offset_top = 10.0
-offset_right = 1695.0
+offset_right = 1761.0
 offset_bottom = 81.0
 disabled = true
 icon = ExtResource("17_fpd0j")
 
 [node name="btnPause" type="Button" parent="GameUI"]
-offset_left = 1685.0
+offset_left = 1753.0
 offset_top = 10.0
-offset_right = 1760.0
+offset_right = 1828.0
 offset_bottom = 81.0
 disabled = true
 icon = ExtResource("16_arl5w")
 
 [node name="btnAdvance" type="Button" parent="GameUI"]
-offset_left = 1750.0
+offset_left = 1820.0
 offset_top = 10.0
-offset_right = 1825.0
+offset_right = 1895.0
 offset_bottom = 81.0
 disabled = true
 icon = ExtResource("21_12fke")
 
 [node name="lblHistory" type="RichTextLabel" parent="GameUI"]
-offset_left = 1441.0
+offset_left = 1490.0
 offset_top = 102.0
 offset_right = 1894.0
 offset_bottom = 903.0
 theme_override_fonts/normal_font = SubResource("FontVariation_h0o2n")
-theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/normal_font_size = 16
 scroll_following = true
-metadata/_edit_lock_ = true
 
 [node name="lblCmd" type="Label" parent="GameUI"]
-offset_left = 1450.0
-offset_top = 980.0
-offset_right = 1554.0
-offset_bottom = 1011.0
+offset_left = 1503.0
+offset_top = 984.0
+offset_right = 1591.0
+offset_bottom = 1006.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 20
 text = "CMD>"
 
 [node name="txtCmd" type="LineEdit" parent="GameUI"]
-offset_left = 1556.0
+offset_left = 1591.0
 offset_top = 968.0
 offset_right = 1889.0
-offset_bottom = 1015.0
+offset_bottom = 1016.0
 focus_neighbor_top = NodePath("../btnNew")
 theme_override_colors/font_color = Color(0.754947, 0.837007, 1, 1)
 theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 20
 
 [node name="lblError" type="Label" parent="GameUI"]
-offset_left = 1442.0
+offset_left = 1493.0
 offset_top = 901.0
-offset_right = 1894.0
+offset_right = 1905.0
 offset_bottom = 960.0
 theme_override_colors/font_color = Color(1, 0, 0, 1)
 theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 horizontal_alignment = 1
 vertical_alignment = 2
 autowrap_mode = 3
 
 [node name="lblWhiteClock" type="Label" parent="GameUI"]
-offset_left = 1439.0
-offset_top = 1040.0
-offset_right = 1646.0
-offset_bottom = 1074.0
+offset_left = 1485.0
+offset_top = 1039.0
+offset_right = 1692.0
+offset_bottom = 1073.0
 theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 24
-text = "
+theme_override_font_sizes/font_size = 22
+text = "0:00:00.0
 "
 vertical_alignment = 1
 
 [node name="lblBlackClock" type="Label" parent="GameUI"]
-offset_left = 1685.0
+offset_left = 1701.0
 offset_top = 1039.0
 offset_right = 1901.0
 offset_bottom = 1073.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
+text = "0:00:00.0"
 vertical_alignment = 1
 
 [node name="voice" type="AudioStreamPlayer" parent="GameUI"]
 volume_db = 6.0
 max_polyphony = 2
+
+[node name="pnlCaptured" type="Panel" parent="GameUI"]
+offset_left = 1425.0
+offset_top = 80.0
+offset_right = 1465.0
+offset_bottom = 1040.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_aqyli")
+script = ExtResource("23_422qp")
+
+[node name="Piece" type="Sprite2D" parent="GameUI/pnlCaptured"]
+position = Vector2(20, 20)
+texture = ExtResource("23_e8kc2")
+region_enabled = true
+region_rect = Rect2(0, 0, 40, 40)
+script = ExtResource("25_4lao4")
 
 [node name="popEnd" type="Panel" parent="."]
 visible = false

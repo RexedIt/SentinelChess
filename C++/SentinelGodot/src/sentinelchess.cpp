@@ -416,6 +416,8 @@ void ChessBoard::_bind_methods()
     ClassDB::bind_method(D_METHOD("kill", "y", "x"), &ChessBoard::kill);
     ClassDB::bind_method(D_METHOD("check_state", "col"), &ChessBoard::check_state);
     ClassDB::bind_method(D_METHOD("save_xfen"), &ChessBoard::save_xfen);
+    ClassDB::bind_method(D_METHOD("captured_pieces"), &ChessBoard::captured_pieces);
+    ClassDB::bind_method(D_METHOD("captured_pieces_abbr"), &ChessBoard::captured_pieces_abbr);
 }
 
 ChessColor ChessBoard::color_(int y, int x)
@@ -448,6 +450,19 @@ bool ChessBoard::check_state(ChessColor col)
 String ChessBoard::save_xfen()
 {
     return String(m_board.save_xfen().c_str());
+}
+
+Array ChessBoard::captured_pieces(ChessColor col)
+{
+    Array a;
+    for (const auto &ki : m_board.captured_pieces((color_e)col))
+        a.push_back(ki);
+    return a;
+}
+
+String ChessBoard::captured_pieces_abbr(ChessColor col)
+{
+    return String(m_board.captured_pieces_abbr((color_e)col).c_str());
 }
 
 // Chess Event

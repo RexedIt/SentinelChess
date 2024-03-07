@@ -491,7 +491,7 @@ int main(void)
                 }
                 p_game->add_piece(p0, p1);
             }
-            if (cmdl == "XFEN")
+            if (cmdl == "X")
             {
                 // XFEN string
                 cmdu = get_arg(cmd);
