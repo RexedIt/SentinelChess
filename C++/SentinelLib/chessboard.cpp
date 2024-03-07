@@ -15,6 +15,7 @@ namespace chess
     chessboard::chessboard()
     {
         memset(&m_cells, 0, sizeof(m_cells));
+        memset(&m_captured, 0, sizeof(m_captured));
         m_castled_left = 0;
         m_castled_right = 0;
         m_turn = c_white;
@@ -38,6 +39,7 @@ namespace chess
     void chessboard::copy(const chessboard &other)
     {
         memcpy(&m_cells, other.m_cells, sizeof(m_cells));
+        memcpy(&m_captured, other.m_captured, sizeof(m_captured));
         m_castled_left = other.m_castled_left;
         m_castled_right = other.m_castled_right;
         m_ep = other.m_ep;
@@ -54,6 +56,7 @@ namespace chess
 
     void chessboard::new_board()
     {
+        memset(&m_captured, 0, sizeof(m_captured));
         set_kings_row(0, c_white);
         set_pawns_row(1, c_white);
         set_empty_rows();
@@ -80,6 +83,7 @@ namespace chess
         o["white_check"] = m_check[0];
         o["black_check"] = m_check[1];
         o["turn"] = color_str(m_turn);
+        o["captured"] = captured_pieces_abbr(c_none);
         return e_none;
     }
 
@@ -140,15 +144,15 @@ namespace chess
     {
         if (o.is_null())
             return e_loading;
-        load_xfen(o["xfen"]);
+        load_xfen(o["xfen"], false);
         update_kill_bits();
         m_check[0] = o["white_check"];
         m_check[1] = o["black_check"];
         m_turn = str_color(o["turn"]);
-        return e_none;
+        return set_captured_pieces(o["captured"]);
     }
 
-    error_e chessboard::load_xfen(std::string contents)
+    error_e chessboard::load_xfen(std::string contents, bool recalc_captured)
     {
         std::vector<std::string> args = split_string(contents, ' ');
         if (args.size() < 4)
@@ -234,6 +238,9 @@ namespace chess
             m_fullmove = atoi(args[5].c_str());
 
         m_hash = 0;
+
+        if (recalc_captured)
+            calc_captured_pieces();
 
         return e_none;
     }
@@ -523,6 +530,84 @@ namespace chess
         piece.possible_moves(possible, p0, m_cells, m_castled_left, m_castled_right, m_ep);
     }
 
+    std::vector<piece_e> chessboard::captured_pieces(color_e col)
+    {
+        std::vector<piece_e> pieces;
+        for (int i = 0; i < CHESSBOARD_CAPTURE_MAX; i++)
+        {
+            unsigned char upc = m_captured[i];
+            unsigned char uc = (unsigned char)col;
+            if (upc == 0)
+                break;
+            if ((col == c_none) || ((upc & uc) == uc))
+            {
+                piece_e pc = (piece_e)(upc & piece_mask);
+                pieces.push_back(pc);
+            }
+        }
+        return pieces;
+    }
+
+    std::string chessboard::captured_pieces_abbr(color_e col)
+    {
+        char ret[CHESSBOARD_CAPTURE_MAX + 1];
+        int r = 0;
+        for (int i = 0; i < CHESSBOARD_CAPTURE_MAX; i++)
+        {
+            unsigned char upc = m_captured[i];
+            unsigned char uc = (unsigned char)col;
+            if (upc == 0)
+                break;
+            if ((col == c_none) || ((upc & uc) == uc))
+            {
+                piece_e pc = (piece_e)(upc & piece_mask);
+                ret[r++] = abbr_char(pc, (color_e)(upc & color_mask));
+            }
+        }
+        ret[r++] = 0;
+        return ret;
+    }
+
+    error_e chessboard::set_captured_pieces(std::string pieces)
+    {
+        memset(&m_captured, 0, sizeof(m_captured));
+        int r = 0;
+        for (size_t i = 0; i < pieces.length(); i++)
+        {
+            if (i >= CHESSBOARD_CAPTURE_MAX)
+                return e_invalid_piece;
+            chesspiece p(pieces[i]);
+            m_captured[r++] = p.value;
+        }
+        return e_none;
+    }
+
+    void chessboard::calc_captured_pieces()
+    {
+        std::vector<char> poss = {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
+                                  'B', 'B', 'N', 'N', 'R', 'R', 'Q', 'K',
+                                  'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
+                                  'b', 'b', 'n', 'n', 'r', 'r', 'q', 'k'};
+        for (int8_t y = 0; y < 8; y++)
+            for (int8_t x = 0; x < 8; x++)
+            {
+                unsigned char cell = m_cells[y][x] & piece_and_color_mask;
+                if (cell != 0)
+                {
+                    chesspiece p(cell);
+                    auto f = std::find(poss.begin(), poss.end(), p.abbr);
+                    if (f != poss.end())
+                        poss.erase(f);
+                }
+            }
+        memset(&m_captured, 0, sizeof(m_captured));
+        for (size_t i = 0; i < poss.size(); i++)
+        {
+            chesspiece p(poss[i]);
+            m_captured[i] = p.value;
+        }
+    }
+
     void chessboard::update_check(color_e c)
     {
         coord_s k = m_king_pos[color_idx(c)];
@@ -568,7 +653,7 @@ namespace chess
     {
         move_s m1 = m0;
         chesspiece piece(m_cells[m0.p0.y][m0.p0.x]);
-        m_cells[m0.p1.y][m0.p1.x] = m_cells[m0.p0.y][m0.p0.x];
+        move_piece(m0);
         if (m_cells[m0.p0.y][m0.p0.x] & piece_mask)
         {
             m_halfmove = 0; // resets on any capture
@@ -611,9 +696,9 @@ namespace chess
                 m_ep.y = m0.p1.y;
             }
             if (m0.en_passant)
-                m_cells[m0.p0.y][m0.p1.x] = 0;
+                capture_piece(m0.p0.y, m0.p1.x);
             if (m0.promote != p_none)
-                m_cells[m0.p1.y][m0.p1.x] = m0.promote + piece.color;
+                capture_piece(m0.p1.y, m0.p1.x);
             m_halfmove = 0; // resets
         }
         // Adjust bitmask, returns balance of kill cells
@@ -626,6 +711,40 @@ namespace chess
 
         m_fullmove++;
         return m1;
+    }
+
+    void chessboard::move_piece(move_s m)
+    {
+        unsigned char dest = m_cells[m.p1.y][m.p1.x] & piece_and_color_mask;
+        m_cells[m.p1.y][m.p1.x] = m_cells[m.p0.y][m.p0.x];
+        if (dest != 0)
+            add_captured(dest);
+    }
+
+    void chessboard::capture_piece(coord_s &c)
+    {
+        unsigned char dest = m_cells[c.y][c.x] & piece_and_color_mask;
+        m_cells[c.y][c.x] = 0;
+        if (dest != 0)
+            add_captured(dest);
+    }
+
+    void chessboard::capture_piece(int8_t y, int8_t x)
+    {
+        unsigned char dest = m_cells[y][x] & piece_and_color_mask;
+        m_cells[y][x] = 0;
+        if (dest != 0)
+            add_captured(dest);
+    }
+
+    void chessboard::add_captured(unsigned char piece)
+    {
+        for (int i = 0; i < CHESSBOARD_CAPTURE_MAX; i++)
+            if (m_captured[i] == 0)
+            {
+                m_captured[i] = piece;
+                return;
+            }
     }
 
     uint32_t chessboard::hash()
