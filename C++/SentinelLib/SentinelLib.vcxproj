@@ -88,6 +88,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -102,6 +104,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -116,6 +120,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,6 +136,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,18 +148,24 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="chessboard.cpp" />
-    <ClCompile Include="chesscache.cpp" />
     <ClCompile Include="chesscommon.cpp" />
+    <ClCompile Include="chesscomputer.cpp" />
     <ClCompile Include="chessgame.cpp" />
+    <ClCompile Include="chessgamelistener.cpp" />
+    <ClCompile Include="chesslobby.cpp" />
     <ClCompile Include="chesspiece.cpp" />
+    <ClCompile Include="chessplayer.cpp" />
     <ClCompile Include="chessturn.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="chessboard.h" />
-    <ClInclude Include="chesscache.h" />
     <ClInclude Include="chesscommon.h" />
+    <ClInclude Include="chesscomputer.h" />
     <ClInclude Include="chessgame.h" />
+    <ClInclude Include="chessgamelistener.h" />
+    <ClInclude Include="chesslobby.h" />
     <ClInclude Include="chesspiece.h" />
+    <ClInclude Include="chessplayer.h" />
     <ClInclude Include="chessturn.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

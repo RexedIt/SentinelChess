@@ -1,16 +1,35 @@
-@uid("uid://sach311s5oje") # Generated automatically, do not modify.
 extends CanvasLayer
 
 @onready var game_manager : SentinelChess = get_parent().get_node('SentinelChess')
 @onready var lblHistory : RichTextLabel = get_node('lblHistory')
 @onready var txtCmd : LineEdit = get_node('txtCmd')
 @onready var lblError : Label = get_node('lblError')
-
+@onready var lblCmd : Label = get_node('lblCmd')
+@onready var btnSave : Button = get_node('btnSave')
+@onready var btnRewind : Button = get_node('btnRewind')
+@onready var btnAdvance : Button = get_node('btnAdvance')
+@onready var btnPause : Button = get_node('btnPause')
+@onready var lblWhiteClock : Label = get_node('lblWhiteClock')
+@onready var lblBlackClock : Label = get_node('lblBlackClock')
+@onready var voice : AudioStreamPlayer = get_node('voice')
+@onready var MoveSound = preload('res://Sound/SFX/Open_01.mp3')
+@onready var PromoteSound = preload('res://Sound/SFX/Collect_Point_01.mp3')
+@onready var PlayTexture : Texture2D = preload('res://Sprites/RetroWood/Play.jpg')
 @export var step : int
+
+const GameState = preload("res://Scripts/GameState.gd").GameState_
+
+var is_idle : bool = false
+var PauseTexture : Texture2D
+
+var voice_queue = []
+var do_voice : bool = false
+var do_sfx : bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	txtCmd.grab_focus()
+	PauseTexture = btnPause.icon
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -29,6 +48,8 @@ func _physics_process(delta):
 				var pct = int(smooth * 100) / step * step
 				smooth = float(pct)/100.0
 			lblError.modulate.a = smooth
+	clock_update(delta)
+	play_voice()
 	
 func clear_history():
 	lblHistory.clear()
@@ -61,7 +82,7 @@ func movestr(m : ChessMove) -> String:
 		str += ' EP'
 	if m.c!=-1:
 		str += ' CAST'
-	if m.promote() != 0:
+	if m.get_promote() != 0:
 		str += ' PROM'
 	return str
 	
@@ -71,24 +92,39 @@ func append_history(msg : String, color : String = 'blue'):
 	lblHistory.newline()
 	lblHistory.pop()
 
+func announceTurn(col : SentinelChess.ChessColor):
+	var vprompt = 'WhiteTurn'
+	if col == SentinelChess.ChessColor.Black:
+		vprompt = 'BlackTurn'
+	if game_manager.is_local(col):
+		add_voice(vprompt)
+		
+func refreshPrompt(col : SentinelChess.ChessColor):
+	var crgb : Color = Color(1,1,1)
+	if col == SentinelChess.ChessColor.Black:
+		crgb = Color(0,0,0)
+	lblCmd.set('theme_override_colors/font_color', crgb)	
+	
 func append_load(msg: String):
 	append_history('Load Game - ' + msg)
 	# for last move info
-	if game_manager.turnno()>1:
-		append_move(game_manager.lastturnno(),game_manager.lastmove(), game_manager.lastcolor())
+	#if game_manager.playno()>1:
+	#	append_move(game_manager.playno()-1, game_manager.lastmove(), game_manager.get_board(), game_manager.lastcolor())
 		
-func append_move(n : int, m : ChessMove, col : SentinelChess.ChessColor):
+func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.ChessColor):
 	var color : String = 'white'
 	if col == SentinelChess.ChessColor.Black:
 		color = 'black'
+	#print(color + ' ' + movestr(m))
+	play_move_sfx()
 	append_history(str(n) + ' ' + color + ' ' + movestr(m), color)
-	if (game_manager.check_state(SentinelChess.Black)):
+	if (b.check_state(SentinelChess.Black)):
 		append_history('Black in Check.', 'black')	
-	if (game_manager.check_state(SentinelChess.White)):
+		add_voice('Check')
+	if (b.check_state(SentinelChess.White)):
 		append_history('White in Check.', 'white')
-		
+		add_voice('Check')
 # UI Handlers
-
 func show_error(msg : String):
 	errortime = 3
 	lblError.text = msg
@@ -103,24 +139,58 @@ func _on_btn_load_pressed():
 func _on_btn_save_pressed():
 	game_manager._on_save_game()
 
-func _on_btn_pause_pressed():
-	pass # Replace with function body.
-
 func _on_btn_rewind_pressed():
-	var move_no : int = game_manager.turnno()-2
-	if move_no<0:
-		show_error('At Beginning.')
-		return
-	handle_rewind(move_no)
+	handle_rewind()
 
-func handle_rewind(move_no: int) -> bool:
-	var err : int = game_manager.rewind_game(move_no)
+func _on_btn_pause_pressed():
+	if is_idle:
+		handle_play()
+	else:
+		handle_pause()
+
+func _on_btn_advance_pressed():
+	handle_advance()
+
+func handle_goto(turn_no: int) -> bool:
+	var err : int = game_manager.goto_turn(turn_no)
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
 		return false
-	append_history('Rewind - ' + str(move_no))
-	game_manager.refresh_turn()
+	append_history('Goto Turn - ' + str(turn_no))
+	#game_manager.refresh_turn(game_manager.get_board())
 	return true
+	
+func handle_rewind() -> bool:
+	var err : int = game_manager.rewind_game()
+	if err != 0:
+		show_error('!' + game_manager.errorstr(err))
+		return false
+	append_history('Rewind')
+	#game_manager.refresh_turn(game_manager.get_board())
+	return true
+
+func handle_advance() -> bool:
+	var err : int = game_manager.advance_game()
+	if err != 0:
+		show_error('!' + game_manager.errorstr(err))
+		return false
+	append_history('Advance')
+	#game_manager.refresh_turn(game_manager.get_board())
+	return true
+	
+func handle_pause():
+	var err : int = game_manager.pause_game()
+	if err != 0:
+		show_error('!' + game_manager.errorstr(err))
+		return false
+	append_history('Pause')
+
+func handle_play():
+	var err : int = game_manager.play_game()
+	if err != 0:
+		show_error('!' + game_manager.errorstr(err))
+		return false
+	append_history('Play')
 	
 func _on_txt_cmd_text_submitted(new_text):
 	if new_text == '':
@@ -139,12 +209,20 @@ func _on_txt_cmd_text_submitted(new_text):
 			handled = handle_load(new_text.get_slice(' ',1))
 		'S':
 			handled = handle_save(new_text.get_slice(' ',1))
-		'<':
+		'T':
 			var s : String = new_text.get_slice(' ',1)
-			var move_no : int = int(s)
+			var turn_no : int = int(s)
 			if s == '':
-				move_no = game_manager.turnno()-2
-			handled=handle_rewind(move_no)
+				show_error('Need Turn Number')
+			handled=handle_goto(turn_no)
+		'<':
+			handled = handle_rewind()
+		'>':
+			handled = handle_advance()
+		'P':
+			handled = handle_play()
+		'I':
+			handled = handle_pause()
 		# a move?
 		_:
 			handled = handle_move(ucmd)
@@ -152,10 +230,11 @@ func _on_txt_cmd_text_submitted(new_text):
 		txtCmd.text = ''		
 	else:
 		show_error('Invalid Move or Command')
+		add_voice('InvalidMove')
 	return
 
 func possible_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
-	var possible_moves : Array = game_manager.possible_moves(game_manager.user_color())
+	var possible_moves : Array = game_manager.possible_moves(game_manager.turn_color())
 	for possible_move in possible_moves:
 		if possible_move.matches_p0p1(p0,p1):
 			return true
@@ -169,7 +248,9 @@ func handle_load(filename: String) -> bool:
 		return false
 	clear_history()
 	append_load(toload)
-	game_manager.refresh_board()
+	announceTurn(game_manager.turn_color())
+	#game_manager.refresh_board()
+	game_manager.set_idle(true)
 	return true
 
 func handle_save(filename: String) -> bool:
@@ -191,18 +272,115 @@ func handle_move(cmd: String) -> bool:
 			if p0 != null and p1 != null:
 				# time to check
 				if possible_move(p0,p1):
+					var c : SentinelChess.ChessColor = game_manager.turn_color()
 					var m : ChessMove = ChessMove.new()
 					m.p0=p0
 					m.p1=p1
-					var err : int = game_manager.user_move_m(game_manager.user_color(), m)
-					if err != 0:
-						show_error('!' + game_manager.errorstr(err))
-						return false
-					if game_manager.check_state(game_manager.user_color()):
-						if game_manager.state() == SentinelChess.ChessGameState.Play:
-							show_error("You are in Check.")
-							return false
-					append_move(game_manager.turnno(), m, game_manager.user_color())
-					game_manager._user_moved(m)
-					return true				
+					return game_manager.user_move(c, m, true)
 	return false
+
+var countdown : float = 0
+var countcol : SentinelChess.ChessColor
+
+func time_str(t : int) -> String:
+	if t > 0:
+		var tenths = int((t % 1000) / 100)
+		var seconds = int(t / 1000)
+		var minutes = int(seconds/60)
+		var hours = int(minutes/60)
+		#returns a string with the format "HH:MM:SS"
+		return "%01d:%02d:%02d.%1d" % [hours, minutes%60, seconds%60, tenths%10]
+	else:
+		return ""
+	
+func clock_turn(col : SentinelChess.ChessColor, wt : int, bt : int):
+	lblWhiteClock.text = time_str(wt)
+	lblBlackClock.text = time_str(wt)
+	countcol = col
+	if col == SentinelChess.White:
+		countdown = float(wt) / 1000.0
+	if col == SentinelChess.Black:
+		countdown = float(bt) / 1000.0
+		
+func clock_update(delta : float):
+	if countdown>=0.0:
+		countdown -= delta
+		var countms : int = int(countdown*1000)
+		if countcol == SentinelChess.White:
+			lblWhiteClock.text = time_str(countms)
+		if countcol == SentinelChess.Black:
+			lblBlackClock.text = time_str(countms)
+	
+func set_idle(b : bool):
+	is_idle = b
+	if is_idle:
+		btnPause.icon = PlayTexture
+	else:
+		btnPause.icon = PauseTexture
+
+func gamestate(gs):
+	if btnRewind:
+		var no_game = gs < GameState.PLAY
+		btnRewind.disabled = no_game
+		btnPause.disabled = no_game
+		btnAdvance.disabled = no_game
+		btnSave.disabled = no_game
+		do_voice = game_manager.has_local()
+		do_sfx = do_voice
+		
+func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
+	append_history(game_manager.gamestatestr(s))
+	match s:
+		SentinelChess.CheckMate:
+			add_voice('CheckMate')
+		SentinelChess.StaleMate:
+			add_voice('StaleMate')
+		SentinelChess.TimeUp:
+			add_voice('TimesUp')
+		SentinelChess.Forfeit:
+			add_voice('Forfeit')
+	if s > SentinelChess.StaleMate:
+		add_voice('Draw')
+	if w != SentinelChess.ChessColor.cNone:
+		var color : String = 'White'
+		var winstr = 'White Wins!'
+		var voicestr = 'WhiteWins'
+		if w == SentinelChess.ChessColor.Black:
+			color = 'Black'
+			winstr = 'Black Wins!'
+			voicestr = 'BlackWins'
+		append_history(winstr, color)
+		add_voice(voicestr)
+	print('UI: Finish Game')
+	
+func add_voice(s : String):
+	if do_voice:
+		if !s in voice_queue:
+			voice_queue.push_back(s)
+
+func has_voice() -> bool:
+	return !voice_queue.is_empty()
+	
+func pop_voice() -> String:
+	if voice_queue.is_empty():
+		return ''
+	return voice_queue.pop_front()
+
+func play_voice():
+	if do_voice:
+		if !voice.playing:
+			if has_voice():
+				var s = pop_voice()
+				var r = 'res://Sound/Voice/' + s + '.wav'
+				voice.stream = load(r)
+				voice.play()
+				
+func play_move_sfx():
+	if do_sfx:
+		voice.stream = MoveSound
+		voice.play()
+	
+func play_promote_sfx():
+	if do_sfx:
+		voice.stream = PromoteSound
+		voice.play()

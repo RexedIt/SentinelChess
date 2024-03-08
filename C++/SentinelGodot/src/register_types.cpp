@@ -16,6 +16,10 @@ void initialize_example_module(ModuleInitializationLevel p_level)
     ClassDB::register_class<ChessCoord>();
     ClassDB::register_class<ChessMove>();
     ClassDB::register_class<SentinelChess>();
+    ClassDB::register_class<ChessPlayer>();
+    ClassDB::register_class<ChessEvent>();
+    ClassDB::register_class<ChessBoard>();
+    ClassDB::register_class<ChessClock>();
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level)

@@ -1,4 +1,3 @@
-@uid("uid://jmkj3gw012fe") # Generated automatically, do not modify.
 extends Area2D
 
 @export var step : int

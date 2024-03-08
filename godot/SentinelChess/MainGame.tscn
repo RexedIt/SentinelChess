@@ -1,22 +1,35 @@
-[gd_scene load_steps=20 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=35 format=3 uid="uid://dvuxnanwnc5st"]
 
-[ext_resource type="Script" uid="uid://o21q8fipo8cb" path="res://Scripts/MainGame.gd" id="1_i2www"]
+[ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
-[ext_resource type="Script" uid="uid://c2fxtcukqail3" path="res://Scripts/GameManager.gd" id="2_th60g"]
+[ext_resource type="Script" path="res://Scripts/GameManager.gd" id="2_th60g"]
 [ext_resource type="Texture2D" uid="uid://b87etyr6ks3a8" path="res://Sprites/RetroWood/Board.png" id="3_2gi3p"]
 [ext_resource type="FontFile" uid="uid://dqmfxq4vf5b8g" path="res://Fonts/PressStart2P-vaV7.ttf" id="3_7nhen"]
-[ext_resource type="ButtonGroup" uid="uid://brly41b54bk0f" path="res://GroupColor.tres" id="4_ug52y"]
-[ext_resource type="Script" uid="uid://feu87e4pw2w" path="res://Scripts/Board.gd" id="5_8nr35"]
-[ext_resource type="Script" uid="uid://duly64wj4k304" path="res://Scripts/popNew.gd" id="5_bu5ts"]
-[ext_resource type="Script" uid="uid://jmkj3gw012fe" path="res://Scripts/Piece.gd" id="6_d12bf"]
-[ext_resource type="Script" uid="uid://sach311s5oje" path="res://Scripts/GameUI.gd" id="10_0mwoa"]
-[ext_resource type="Script" uid="uid://cu5mptv486reu" path="res://Scripts/popLoad.gd" id="10_we7ge"]
-[ext_resource type="Script" uid="uid://dlro2dej0frrj" path="res://Scripts/popSave.gd" id="11_dt7qr"]
+[ext_resource type="Script" path="res://Scripts/Board.gd" id="5_8nr35"]
+[ext_resource type="Script" path="res://Scripts/popNew.gd" id="5_bu5ts"]
+[ext_resource type="Script" path="res://Scripts/Piece.gd" id="6_d12bf"]
+[ext_resource type="Texture2D" uid="uid://b7222hiqlxfpp" path="res://Sprites/RetroWood/Hilight.png" id="7_kjeiy"]
+[ext_resource type="Script" path="res://Scripts/GameUI.gd" id="10_0mwoa"]
+[ext_resource type="ButtonGroup" uid="uid://egpcffpdie8w" path="res://WhitePlayerType.tres" id="10_8y1dj"]
+[ext_resource type="Script" path="res://Scripts/popLoad.gd" id="10_we7ge"]
+[ext_resource type="Script" path="res://Scripts/popSave.gd" id="11_dt7qr"]
 [ext_resource type="Texture2D" uid="uid://dgtgd7nmuptr6" path="res://Sprites/RetroWood/New.jpg" id="11_ehsup"]
+[ext_resource type="ButtonGroup" uid="uid://ddxnnfxmo2csx" path="res://BlackPlayerType.tres" id="11_ikrfp"]
+[ext_resource type="ButtonGroup" uid="uid://3jisntyevh10" path="res://ClockType.tres" id="11_vfgdq"]
 [ext_resource type="Texture2D" uid="uid://dt35fbefu60ls" path="res://Sprites/RetroWood/Open.jpg" id="12_5o0s6"]
+[ext_resource type="Script" path="res://Scripts/TimeSlider.gd" id="12_jf3ul"]
 [ext_resource type="Texture2D" uid="uid://cphjjv5ttc3a3" path="res://Sprites/RetroWood/Save.jpg" id="15_pwrnu"]
 [ext_resource type="Texture2D" uid="uid://baiu161gnvfj0" path="res://Sprites/RetroWood/Pause.jpg" id="16_arl5w"]
 [ext_resource type="Texture2D" uid="uid://bxdtqof8robqc" path="res://Sprites/RetroWood/Rewind.jpg" id="17_fpd0j"]
+[ext_resource type="Texture2D" uid="uid://c7y0jxfkladhf" path="res://Sprites/RetroWood/Advance.jpg" id="21_12fke"]
+[ext_resource type="Script" path="res://Scripts/popEnd.gd" id="23_6dbbk"]
+[ext_resource type="Script" path="res://Scripts/pnlCaptured.gd" id="23_422qp"]
+[ext_resource type="Texture2D" uid="uid://dt77ag57cndut" path="res://Sprites/RetroWood/SmallPieces.png" id="23_e8kc2"]
+[ext_resource type="Texture2D" uid="uid://6golc5qbayib" path="res://Sprites/RetroWood/WhiteWin/SpriteSheet.jpg" id="23_urpj6"]
+[ext_resource type="Texture2D" uid="uid://dhsklfuox63dt" path="res://Sprites/RetroWood/BlackKnight.png" id="25_3rvpk"]
+[ext_resource type="Script" path="res://Scripts/CapturedPiece.gd" id="25_4lao4"]
+[ext_resource type="Texture2D" uid="uid://c3cvktim2fl81" path="res://Sprites/RetroWood/WhiteKnight.png" id="26_8s3l2"]
+[ext_resource type="Script" path="res://Scripts/popPromote.gd" id="27_e8o3p"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_55xmw"]
 size = Vector2(137, 96)
@@ -24,6 +37,10 @@ size = Vector2(137, 96)
 [sub_resource type="FontVariation" id="FontVariation_h0o2n"]
 base_font = ExtResource("3_7nhen")
 spacing_bottom = 10
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_aqyli"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_nno4e"]
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_i2www")
@@ -47,7 +64,7 @@ metadata/_edit_lock_ = true
 [node name="Piece" type="Area2D" parent="Board"]
 position = Vector2(-557, 384)
 script = ExtResource("6_d12bf")
-step = 16
+step = 8
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Board/Piece"]
 position = Vector2(-3.5, 1)
@@ -55,10 +72,16 @@ shape = SubResource("RectangleShape2D_55xmw")
 
 [node name="Sprite" type="Sprite2D" parent="Board/Piece"]
 
+[node name="HiLight" type="Sprite2D" parent="Board"]
+visible = false
+modulate = Color(1, 1, 1, 0.376471)
+position = Vector2(-398, 384)
+texture = ExtResource("7_kjeiy")
+
 [node name="popNew" type="Window" parent="."]
 title = "New Game Options"
-position = Vector2i(405, 416)
-size = Vector2i(630, 200)
+position = Vector2i(355, 271)
+size = Vector2i(750, 600)
 visible = false
 popup_window = true
 theme_override_fonts/title_font = ExtResource("3_7nhen")
@@ -68,52 +91,329 @@ script = ExtResource("5_bu5ts")
 [node name="MC" type="MarginContainer" parent="popNew"]
 offset_left = 24.0
 offset_top = 24.0
-offset_right = 630.0
-offset_bottom = 224.0
+offset_right = 724.0
+offset_bottom = 574.0
 
-[node name="GC" type="GridContainer" parent="popNew/MC"]
+[node name="VC" type="VBoxContainer" parent="popNew/MC"]
 layout_mode = 2
-theme_override_constants/h_separation = 30
-theme_override_constants/v_separation = 30
+
+[node name="WhitePlayer" type="GridContainer" parent="popNew/MC/VC"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
 columns = 2
 
-[node name="Label" type="Label" parent="popNew/MC/GC"]
+[node name="lblWhite" type="Label" parent="popNew/MC/VC/WhitePlayer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 20
+text = "White
+"
+
+[node name="txtName" type="TextEdit" parent="popNew/MC/VC/WhitePlayer"]
+custom_minimum_size = Vector2(425, 24)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+
+[node name="lblSkill" type="Label" parent="popNew/MC/VC/WhitePlayer"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
-text = "Difficulty (1-5)"
+text = "Skill (0-2500)
+"
+horizontal_alignment = 2
 
-[node name="Level" type="HSlider" parent="popNew/MC/GC"]
+[node name="lvlSkill" type="HSlider" parent="popNew/MC/VC/WhitePlayer"]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
-min_value = 1.0
-max_value = 5.0
-value = 3.0
+max_value = 2500.0
+step = 50.0
+value = 600.0
 rounded = true
 
-[node name="Label2" type="Label" parent="popNew/MC/GC"]
+[node name="lblPlayerType" type="Label" parent="popNew/MC/VC/WhitePlayer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
-text = "Color"
+text = "Player Type
+"
+horizontal_alignment = 2
 
-[node name="HC" type="HBoxContainer" parent="popNew/MC/GC"]
+[node name="HC" type="HBoxContainer" parent="popNew/MC/VC/WhitePlayer"]
 layout_mode = 2
+theme_override_constants/separation = 30
 alignment = 1
 
-[node name="White" type="CheckBox" parent="popNew/MC/GC/HC"]
+[node name="optHuman" type="CheckBox" parent="popNew/MC/VC/WhitePlayer/HC"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
 button_pressed = true
-button_group = ExtResource("4_ug52y")
-text = "White"
+button_group = ExtResource("10_8y1dj")
+text = "Human"
 alignment = 2
 
-[node name="Black" type="CheckBox" parent="popNew/MC/GC/HC"]
+[node name="optComputer" type="CheckBox" parent="popNew/MC/VC/WhitePlayer/HC"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_7nhen")
-button_group = ExtResource("4_ug52y")
+button_group = ExtResource("10_8y1dj")
+text = "Computer
+"
+
+[node name="Separator" type="Label" parent="popNew/MC/VC"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "--------------------------------------------
+"
+vertical_alignment = 1
+
+[node name="BlackPlayer" type="GridContainer" parent="popNew/MC/VC"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 2
+
+[node name="lblBlack" type="Label" parent="popNew/MC/VC/BlackPlayer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 20
 text = "Black
 "
+vertical_alignment = 2
+
+[node name="txtName" type="TextEdit" parent="popNew/MC/VC/BlackPlayer"]
+custom_minimum_size = Vector2(425, 24)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+
+[node name="lblSkill" type="Label" parent="popNew/MC/VC/BlackPlayer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Skill (0-2500)
+"
+horizontal_alignment = 2
+
+[node name="lvlSkill" type="HSlider" parent="popNew/MC/VC/BlackPlayer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+max_value = 2500.0
+step = 50.0
+value = 600.0
+rounded = true
+
+[node name="lblPlayerType" type="Label" parent="popNew/MC/VC/BlackPlayer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Player Type
+"
+horizontal_alignment = 2
+
+[node name="HC" type="HBoxContainer" parent="popNew/MC/VC/BlackPlayer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="optHuman" type="CheckBox" parent="popNew/MC/VC/BlackPlayer/HC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("11_ikrfp")
+text = "Human"
+alignment = 2
+
+[node name="optComputer" type="CheckBox" parent="popNew/MC/VC/BlackPlayer/HC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_pressed = true
+button_group = ExtResource("11_ikrfp")
+text = "Computer
+"
+
+[node name="Separator2" type="Label" parent="popNew/MC/VC"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "--------------------------------------------"
+vertical_alignment = 1
+
+[node name="Clock" type="GridContainer" parent="popNew/MC/VC"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 2
+
+[node name="HC" type="HBoxContainer" parent="popNew/MC/VC/Clock"]
+layout_mode = 2
+
+[node name="VC" type="VBoxContainer" parent="popNew/MC/VC/Clock/HC"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="popNew/MC/VC/Clock/HC/VC"]
+custom_minimum_size = Vector2(260, 28)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Clock Type"
+
+[node name="optNone" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_pressed = true
+button_group = ExtResource("11_vfgdq")
+text = "None"
+
+[node name="optSuddenDeath" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("11_vfgdq")
+text = "Sudden Death
+"
+
+[node name="optIncrement" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("11_vfgdq")
+text = "Increment
+"
+
+[node name="optBronstein" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("11_vfgdq")
+text = "Bronstein
+"
+
+[node name="optSimple" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+button_group = ExtResource("11_vfgdq")
+text = "Simple
+
+"
+
+[node name="TVC" type="VBoxContainer" parent="popNew/MC/VC/Clock/HC"]
+visible = false
+layout_mode = 2
+
+[node name="chkSame" type="CheckBox" parent="popNew/MC/VC/Clock/HC/TVC"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Separate Black/White Time"
+
+[node name="AllowWhite" type="HBoxContainer" parent="popNew/MC/VC/Clock/HC/TVC"]
+layout_mode = 2
+script = ExtResource("12_jf3ul")
+def = 30
+mult = 60000.0
+
+[node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AllowWhite"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Allow (m)"
+
+[node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AllowWhite"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 480.0
+value = 60.0
+tick_count = 5
+ticks_on_borders = true
+
+[node name="lblTime" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AllowWhite"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "60"
+horizontal_alignment = 2
+
+[node name="AllowBlack" type="HBoxContainer" parent="popNew/MC/VC/Clock/HC/TVC"]
+visible = false
+layout_mode = 2
+script = ExtResource("12_jf3ul")
+def = 30
+mult = 60000.0
+
+[node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AllowBlack"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Allow (m)"
+
+[node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AllowBlack"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 480.0
+value = 60.0
+tick_count = 5
+ticks_on_borders = true
+
+[node name="lblTime" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AllowBlack"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "60
+"
+horizontal_alignment = 2
+
+[node name="AddWhite" type="HBoxContainer" parent="popNew/MC/VC/Clock/HC/TVC"]
+layout_mode = 2
+script = ExtResource("12_jf3ul")
+def = 10
+mult = 1000.0
+
+[node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AddWhite"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Add (s)  "
+
+[node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AddWhite"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 120.0
+value = 15.0
+tick_count = 5
+ticks_on_borders = true
+
+[node name="lblTime" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AddWhite"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "10"
+horizontal_alignment = 2
+
+[node name="AddBlack" type="HBoxContainer" parent="popNew/MC/VC/Clock/HC/TVC"]
+visible = false
+layout_mode = 2
+script = ExtResource("12_jf3ul")
+def = 10
+mult = 1000.0
+
+[node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AddBlack"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Add (s)  "
+
+[node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AddBlack"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 120.0
+value = 15.0
+tick_count = 5
+ticks_on_borders = true
+
+[node name="lblTime" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AddBlack"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "10"
+horizontal_alignment = 2
 
 [node name="btnOK" type="Button" parent="popNew"]
 anchors_preset = 7
@@ -168,89 +468,242 @@ script = ExtResource("10_0mwoa")
 step = 16
 
 [node name="btnNew" type="Button" parent="GameUI"]
-offset_left = 1425.0
+offset_left = 1485.0
 offset_top = 10.0
-offset_right = 1500.0
+offset_right = 1560.0
 offset_bottom = 81.0
 icon = ExtResource("11_ehsup")
 
 [node name="btnLoad" type="Button" parent="GameUI"]
-offset_left = 1490.0
+offset_left = 1552.0
 offset_top = 10.0
-offset_right = 1565.0
+offset_right = 1627.0
 offset_bottom = 81.0
 icon = ExtResource("12_5o0s6")
 
 [node name="btnSave" type="Button" parent="GameUI"]
-offset_left = 1555.0
+offset_left = 1619.0
 offset_top = 10.0
-offset_right = 1630.0
+offset_right = 1694.0
 offset_bottom = 81.0
+disabled = true
 icon = ExtResource("15_pwrnu")
 
-[node name="btnPause" type="Button" parent="GameUI"]
-offset_left = 1620.0
-offset_top = 10.0
-offset_right = 1695.0
-offset_bottom = 81.0
-icon = ExtResource("16_arl5w")
-
 [node name="btnRewind" type="Button" parent="GameUI"]
-offset_left = 1685.0
+offset_left = 1686.0
 offset_top = 10.0
-offset_right = 1760.0
+offset_right = 1761.0
 offset_bottom = 81.0
+disabled = true
 icon = ExtResource("17_fpd0j")
 
+[node name="btnPause" type="Button" parent="GameUI"]
+offset_left = 1753.0
+offset_top = 10.0
+offset_right = 1828.0
+offset_bottom = 81.0
+disabled = true
+icon = ExtResource("16_arl5w")
+
+[node name="btnAdvance" type="Button" parent="GameUI"]
+offset_left = 1820.0
+offset_top = 10.0
+offset_right = 1895.0
+offset_bottom = 81.0
+disabled = true
+icon = ExtResource("21_12fke")
+
 [node name="lblHistory" type="RichTextLabel" parent="GameUI"]
-offset_left = 1441.0
-offset_top = 100.0
+offset_left = 1490.0
+offset_top = 102.0
 offset_right = 1894.0
-offset_bottom = 901.0
+offset_bottom = 903.0
 theme_override_fonts/normal_font = SubResource("FontVariation_h0o2n")
-theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/normal_font_size = 16
+scroll_following = true
 
 [node name="lblCmd" type="Label" parent="GameUI"]
-offset_left = 1450.0
-offset_top = 980.0
-offset_right = 1554.0
-offset_bottom = 1011.0
+offset_left = 1503.0
+offset_top = 984.0
+offset_right = 1591.0
+offset_bottom = 1006.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 20
 text = "CMD>"
 
 [node name="txtCmd" type="LineEdit" parent="GameUI"]
-offset_left = 1556.0
+offset_left = 1591.0
 offset_top = 968.0
 offset_right = 1889.0
-offset_bottom = 1015.0
+offset_bottom = 1016.0
 focus_neighbor_top = NodePath("../btnNew")
 theme_override_colors/font_color = Color(0.754947, 0.837007, 1, 1)
 theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 20
 
 [node name="lblError" type="Label" parent="GameUI"]
-offset_left = 1442.0
+offset_left = 1493.0
 offset_top = 901.0
-offset_right = 1894.0
+offset_right = 1905.0
 offset_bottom = 960.0
 theme_override_colors/font_color = Color(1, 0, 0, 1)
 theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 horizontal_alignment = 1
 vertical_alignment = 2
 autowrap_mode = 3
 
-[node name="lblClock" type="Label" parent="GameUI"]
-offset_left = 1439.0
-offset_top = 1041.0
-offset_right = 1907.0
-offset_bottom = 1075.0
+[node name="lblWhiteClock" type="Label" parent="GameUI"]
+offset_left = 1485.0
+offset_top = 1039.0
+offset_right = 1692.0
+offset_bottom = 1073.0
 theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 29
-text = "GAME 00:00 00:00"
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 22
+text = "0:00:00.0
+"
 vertical_alignment = 1
+
+[node name="lblBlackClock" type="Label" parent="GameUI"]
+offset_left = 1701.0
+offset_top = 1039.0
+offset_right = 1901.0
+offset_bottom = 1073.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 22
+text = "0:00:00.0"
+vertical_alignment = 1
+
+[node name="voice" type="AudioStreamPlayer" parent="GameUI"]
+volume_db = 6.0
+max_polyphony = 2
+
+[node name="pnlCaptured" type="Panel" parent="GameUI"]
+offset_left = 1425.0
+offset_top = 80.0
+offset_right = 1465.0
+offset_bottom = 1040.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_aqyli")
+script = ExtResource("23_422qp")
+
+[node name="Piece" type="Sprite2D" parent="GameUI/pnlCaptured"]
+position = Vector2(20, 20)
+texture = ExtResource("23_e8kc2")
+region_enabled = true
+region_rect = Rect2(0, 0, 40, 40)
+script = ExtResource("25_4lao4")
+
+[node name="popEnd" type="Panel" parent="."]
+visible = false
+material = SubResource("CanvasItemMaterial_nno4e")
+offset_left = 323.0
+offset_top = 294.0
+offset_right = 1128.0
+offset_bottom = 807.0
+script = ExtResource("23_6dbbk")
+
+[node name="sequence" type="Sprite2D" parent="popEnd"]
+position = Vector2(402, 256)
+scale = Vector2(4, 4)
+texture = ExtResource("23_urpj6")
+hframes = 4
+vframes = 4
+
+[node name="black" type="Sprite2D" parent="popEnd"]
+visible = false
+position = Vector2(103, 437)
+texture = ExtResource("25_3rvpk")
+
+[node name="white" type="Sprite2D" parent="popEnd"]
+position = Vector2(103, 437)
+texture = ExtResource("26_8s3l2")
+
+[node name="status" type="Label" parent="popEnd"]
+layout_mode = 0
+offset_left = 214.0
+offset_top = 37.0
+offset_right = 594.0
+offset_bottom = 75.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 25
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 38
+text = "Checkmate"
+horizontal_alignment = 1
+
+[node name="winner" type="Label" parent="popEnd"]
+layout_mode = 0
+offset_left = 238.0
+offset_top = 432.0
+offset_right = 618.0
+offset_bottom = 470.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 25
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 38
+text = "White Wins"
+horizontal_alignment = 1
+
+[node name="music" type="AudioStreamPlayer" parent="popEnd"]
+volume_db = 3.0
+
+[node name="popPromote" type="Panel" parent="."]
+visible = false
+offset_left = 400.0
+offset_top = 445.0
+offset_right = 1105.0
+offset_bottom = 668.0
+script = ExtResource("27_e8o3p")
+
+[node name="Label" type="Label" parent="popPromote"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 10.0
+offset_right = 628.0
+offset_bottom = 33.0
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 16
+text = "Choose a piece to promote your Pawn to:"
+
+[node name="Cancel" type="Button" parent="popPromote"]
+layout_mode = 0
+offset_left = 229.0
+offset_top = 181.0
+offset_right = 493.0
+offset_bottom = 212.0
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Cancel this Move
+"
+
+[node name="Queen" type="Button" parent="popPromote"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 50.0
+offset_right = 173.0
+offset_bottom = 168.0
+
+[node name="Rook" type="Button" parent="popPromote"]
+layout_mode = 0
+offset_left = 180.0
+offset_top = 50.0
+offset_right = 348.0
+offset_bottom = 168.0
+
+[node name="Bishop" type="Button" parent="popPromote"]
+layout_mode = 0
+offset_left = 355.0
+offset_top = 50.0
+offset_right = 523.0
+offset_bottom = 168.0
+
+[node name="Knight" type="Button" parent="popPromote"]
+layout_mode = 0
+offset_left = 530.0
+offset_top = 50.0
+offset_right = 698.0
+offset_bottom = 168.0
 
 [connection signal="canceled" from="popLoad" to="popLoad" method="_on_canceled"]
 [connection signal="confirmed" from="popLoad" to="popLoad" method="_on_confirmed"]
@@ -259,6 +712,12 @@ vertical_alignment = 1
 [connection signal="pressed" from="GameUI/btnNew" to="GameUI" method="_on_btn_new_pressed"]
 [connection signal="pressed" from="GameUI/btnLoad" to="GameUI" method="_on_btn_load_pressed"]
 [connection signal="pressed" from="GameUI/btnSave" to="GameUI" method="_on_btn_save_pressed"]
-[connection signal="pressed" from="GameUI/btnPause" to="GameUI" method="_on_btn_pause_pressed"]
 [connection signal="pressed" from="GameUI/btnRewind" to="GameUI" method="_on_btn_rewind_pressed"]
+[connection signal="pressed" from="GameUI/btnPause" to="GameUI" method="_on_btn_pause_pressed"]
+[connection signal="pressed" from="GameUI/btnAdvance" to="GameUI" method="_on_btn_advance_pressed"]
 [connection signal="text_submitted" from="GameUI/txtCmd" to="GameUI" method="_on_txt_cmd_text_submitted"]
+[connection signal="pressed" from="popPromote/Cancel" to="popPromote" method="_on_cancel_pressed"]
+[connection signal="pressed" from="popPromote/Queen" to="popPromote" method="_on_queen_pressed"]
+[connection signal="pressed" from="popPromote/Rook" to="popPromote" method="_on_rook_pressed"]
+[connection signal="pressed" from="popPromote/Bishop" to="popPromote" method="_on_bishop_pressed"]
+[connection signal="pressed" from="popPromote/Knight" to="popPromote" method="_on_knight_pressed"]

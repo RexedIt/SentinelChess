@@ -1,4 +1,3 @@
-@uid("uid://dlro2dej0frrj") # Generated automatically, do not modify.
 extends FileDialog
 
 @export var cancelled : bool = false
@@ -20,7 +19,7 @@ func _VisibilityChanged():
 	if (visible):
 		cancelled = false
 	else:
-		savefile = current_file
+		savefile = current_path
 		on_closed.emit(cancelled, savefile)
 	
 func _OnCancel():

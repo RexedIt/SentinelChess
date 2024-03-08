@@ -1,122 +1,19 @@
 #include "chessgame.h"
-#include "chesscache.h"
+#include "chesscomputer.h"
 
 namespace chess
 {
+
     chessgame::chessgame()
     {
-        mp_cb_draw_board = NULL;
-        mp_cb_game_end = NULL;
-        mp_cb_draw_move = NULL;
-        mp_cb_request_promote = NULL;
-        m_state = play_e;
-        m_user_color = c_white;
+        m_state = none_e;
         m_win_color = c_none;
-        m_level = 4;
-        m_trace_level = -1;
-        m_thread_running = false;
-    }
-
-    void chessgame::new_game(color_e user_color, int level)
-    {
-        m_user_color = user_color;
-        m_level = level;
-        m_state = play_e;
-        m_board.new_board();
-        m_turn.clear();
-        m_board.trace("cg:new_game");
-        draw_board(0, m_board);
-    }
-
-    error_e chessgame::load_game(std::string filename)
-    {
-        try
-        {
-            std::ifstream is;
-            is.open(filename, std::ios::binary | std::ios::in);
-            if (!is.is_open())
-                return e_loading;
-            is.read((char *)&m_state, sizeof(m_state));
-            is.read((char *)&m_user_color, sizeof(m_user_color));
-            is.read((char *)&m_win_color, sizeof(m_win_color));
-            is.read((char *)&m_level, sizeof(m_level));
-            is.read((char *)&m_trace_level, sizeof(m_trace_level));
-            int num_turns = 0;
-            is.read((char *)&num_turns, sizeof(num_turns));
-            m_turn.clear();
-            // If there are no turns ... we will just load the board
-            chessturn_s t;
-            for (int i = 0; i < num_turns; i++)
-            {
-                if (t.load(is) != e_none)
-                {
-                    is.close();
-                    return e_loading;
-                }
-                m_turn.push_back(t);
-            }
-            if (m_board.load(is) != e_none)
-                return e_loading;
-            is.close();
-            draw_board(turnno(), m_board);
-            return e_none;
-        }
-        catch (const std::exception &)
-        {
-            return e_loading;
-        }
-    }
-
-    error_e chessgame::save_game(std::string filename)
-    {
-        try
-        {
-            std::ofstream os;
-            os.open(filename, std::ios::binary | std::ios::out);
-
-            os.write((char *)&m_state, sizeof(m_state));
-            os.write((char *)&m_user_color, sizeof(m_user_color));
-            os.write((char *)&m_win_color, sizeof(m_win_color));
-            os.write((char *)&m_level, sizeof(m_level));
-            os.write((char *)&m_trace_level, sizeof(m_trace_level));
-            int num_turns = turnno();
-            os.write((char *)&num_turns, sizeof(num_turns));
-            for (int i = 0; i < num_turns; i++)
-            {
-                if (m_turn[i].save(os) != e_none)
-                {
-                    os.close();
-                    return e_saving;
-                }
-            }
-            if (m_board.save(os) != e_none)
-            {
-                os.close();
-                return e_saving;
-            }
-            os.close();
-            return e_none;
-        }
-        catch (const std::exception &)
-        {
-            return e_saving;
-        }
-    }
-
-    error_e chessgame::load_xfen(std::string contents)
-    {
-        error_e ret = m_board.load_xfen(contents);
-        draw_board(turnno(), m_board);
-        return ret;
-    }
-
-    std::string chessgame::save_xfen()
-    {
-        return m_board.save_xfen();
+        m_play_pos = -1;
     }
 
     chessboard chessgame::board()
     {
+        std::lock_guard<std::mutex> guard(m_mutex);
         chessboard b(m_board);
         return b;
     }
@@ -124,11 +21,6 @@ namespace chess
     game_state_e chessgame::state()
     {
         return m_state;
-    }
-
-    color_e chessgame::user_color()
-    {
-        return m_user_color;
     }
 
     color_e chessgame::turn_color()
@@ -141,237 +33,129 @@ namespace chess
         return m_win_color;
     }
 
-    int chessgame::level()
+    chessturn_s chessgame::play_turn()
     {
-        return m_level;
-    }
-
-    chessturn_s chessgame::last_turn()
-    {
-        if (m_turn.size() == 0)
+        if ((m_turn.size() == 0) || (m_play_pos < 0))
         {
             chessturn_s m;
+            m.b.new_board();
             return m;
         }
-        return m_turn[m_turn.size() - 1];
+        return m_turn[m_play_pos];
     }
 
-    int chessgame::turnno()
+    int16_t chessgame::playmax()
     {
-        return (int)m_turn.size();
+        return (int16_t)m_turn.size();
     }
 
-    void chessgame::set_callbacks(draw_board_callback _draw_board, game_end_callback _game_end, computer_moved_callback _computer_moved, draw_move_callback _draw_move, request_promote_callback _request_promote, thinking_callback _thinking, traces_callback _traces)
+    int16_t chessgame::playno()
     {
-        mp_cb_draw_board = _draw_board;
-        mp_cb_game_end = _game_end;
-        mp_cb_computer_moved = _computer_moved;
-        mp_cb_draw_move = _draw_move;
-        mp_cb_request_promote = _request_promote;
-        m_board.set_callbacks(_thinking, _traces);
+        return (int16_t)m_play_pos + 1;
     }
 
-    void chessgame::draw_board(int n, chessboard &b)
+    game_state_e chessgame::is_game_over(color_e col, move_s m)
     {
-        if (mp_cb_draw_board)
-            (mp_cb_draw_board)(n, b);
-    }
-
-    void chessgame::game_over(game_state_e state, color_e win_color)
-    {
-        m_state = state;
-        m_win_color = win_color;
-        if (mp_cb_game_end)
-            (mp_cb_game_end)(state, win_color);
-    }
-
-    void chessgame::computer_moved(int n, chessturn_s &t)
-    {
-        if (mp_cb_computer_moved)
-            (mp_cb_computer_moved)(n, t);
-    }
-
-    void chessgame::draw_move(int n, move_s &m, color_e c)
-    {
-        if (mp_cb_draw_move)
-            (mp_cb_draw_move)(n, m, c);
-    }
-
-    void chessgame::draw_turn(int n, chessboard &b, move_s &m, color_e c)
-    {
-        if (mp_cb_draw_board)
-            (mp_cb_draw_board)(n, b);
-        if (mp_cb_draw_move)
-            (mp_cb_draw_move)(n, m, c);
-    }
-
-    game_state_e chessgame::is_game_over(color_e col, move_s &m)
-    {
-        if (m_state == play_e)
+        game_state_e g = m_state;
+        if (g == play_e)
         {
-            color_e winner_col = col == c_white ? c_black : c_white;
+            // Defensive Checkmate
+            color_e winner_col = other(col);
+            if (!m.is_valid())
+            {
+                // Player was unable to obtain a move
+                // or an erroneous move was set.  Let's check
+                m.mate = true;
+                m.check = check_state(col);
+                if (!m.check)
+                    m.mate = false;
+            }
+            // Offensive Checkmate
+            if (!m.mate)
+            {
+                color_e opponent = other(col);
+                m.mate = true;
+                m.check = check_state(opponent);
+                if (!m.check)
+                    m.mate = false;
+                // Check all moves
+                std::vector<move_s> pm = possible_moves(opponent);
+                for (size_t i = 0; i < pm.size(); i++)
+                {
+                    chessboard b(m_board);
+                    move_s m0 = b.attempt_move(opponent, pm[i]);
+                    if (m0.is_valid())
+                    {
+                        m.mate = false;
+                        break;
+                    }
+                }
+                if (m.mate)
+                    winner_col = col;
+            }
+            // Conclusion
             if (m.mate)
             {
                 if (m.check)
-                    m_state = checkmate_e;
+                {
+                    g = checkmate_e;
+                    m_win_color = winner_col;
+                }
                 else
-                    m_state = stalemate_e;
+                    g = draw_stalemate_e;
             }
-        }
-        return m_state;
-    }
-
-    error_e chessgame::computer_move(color_e col)
-    {
-        if (m_state != play_e)
-            return e_invalid_game_state;
-        if (col == m_board.turn_color())
-        {
-            move_s m = m_board.computer_move(col, m_level);
-            m_state = is_game_over(col, m);
-            m_turn.push_back(new_turn(m_board, m, col));
-            draw_turn(turnno(), m_board, m, col);
-            if (m_state != play_e)
-                game_over(m_state, m_win_color);
-            return e_none;
-        }
-        return e_out_of_turn;
-    }
-
-    error_e chessgame::computer_move_async(color_e col)
-    {
-        if (computer_moving())
-            return e_busy;
-        if (m_state != play_e)
-            return e_invalid_game_state;
-        if (col != m_board.turn_color())
-            return e_out_of_turn;
-        m_thread_running = true;
-        std::thread background(&chessgame::computer_move_background, this, col);
-        m_thread_id = background.get_id();
-        background.detach();
-        return e_none;
-    }
-
-    void chessgame::computer_move_background(color_e col)
-    {
-        move_s m = m_board.computer_move(col, m_level);
-        m_state = is_game_over(col, m);
-        chessturn_s thread_result = new_turn(m_board, m, col);
-        m_turn.push_back(thread_result);
-        m_thread_running = false;
-        computer_moved(turnno(), thread_result);
-    }
-
-    void chessgame::computer_move_cancel()
-    {
-        m_board.cancel(true);
-    }
-
-    bool chessgame::computer_moving()
-    {
-        return m_thread_running;
-    }
-
-    error_e chessgame::forfeit()
-    {
-        m_state = forfeit_e;
-        m_win_color = other(m_user_color);
-        return e_none;
-    }
-
-    error_e chessgame::user_move(color_e col, move_s m0)
-    {
-        if (m_state != play_e)
-            return e_invalid_game_state;
-        if (col == m_board.turn_color())
-        {
-            move_s m = m_board.user_move(col, m0);
-            if (!m.is_valid())
-                return e_invalid_move;
-            if (m.check)
-                return e_check;
-            if (m.promote == request_promote)
+            // Fivefold Repetition
+            if (prev_position_count() >= 4)
             {
-                m0.promote = p_queen;
-                if (mp_cb_request_promote)
-                    m0.promote = (mp_cb_request_promote)();
-                m = m_board.user_move(col, m0);
+                g = draw_fivefold_e;
+                m_win_color = c_none;
             }
-            m_state = is_game_over(col, m);
-            m_turn.push_back(new_turn(m_board, m, col));
-            draw_turn(turnno(), m_board, m, col);
-            if (m_state != play_e)
-                game_over(m_state, m_win_color);
+        }
+        return g;
+    }
+
+    void chessgame::clock_remaining(color_e col, int32_t &wt, int32_t &bt)
+    {
+        // *** NATHANAEL ***
+        // This can be the event that gets called 'on turn' that would cause you
+        // to return the current remaining times as well as internally call
+        // your method to start counting in behalf of the player designated
+        // as color_e col (c_white or c_black)
+        wt = 0;
+        bt = 0;
+    }
+
+    error_e chessgame::forfeit(color_e col)
+    {
+        return end_game(forfeit_e, other(col));
+    }
+
+    error_e chessgame::move(color_e col, move_s m0)
+    {
+        std::unique_lock<std::mutex> guard(m_mutex);
+        if (m_state != play_e)
+            return e_invalid_game_state;
+        if (col == m_board.turn_color())
+        {
+            move_s m = m_board.attempt_move(col, m0);
+            if (m.error)
+                return m.error;
+            guard.unlock();
+            set_state(is_game_over(col, m));
+            push_new_turn(m);
         }
         return e_none;
     }
 
-    error_e chessgame::user_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
+    error_e chessgame::move(color_e col, coord_s p0, coord_s p1, piece_e promote)
     {
         move_s m(p0, p1, promote);
-        return user_move(col, m);
+        return move(col, m);
     }
 
     std::vector<move_s> chessgame::possible_moves(color_e col)
     {
         return m_board.possible_moves(col);
-    }
-
-    error_e chessgame::suggest_move(move_s m)
-    {
-        if (!m.is_valid())
-            return e_invalid_move;
-        return m_board.suggest_move(m);
-    }
-
-    error_e chessgame::suggest_move(coord_s p0, coord_s p1, int cx, bool en_passant, piece_e promote)
-    {
-        move_s m(p0, p1, cx, en_passant);
-        m.promote = promote;
-        return m_board.suggest_move(m);
-    }
-
-    error_e chessgame::remove_piece(coord_s p0)
-    {
-        if (m_board.remove(p0) == e_none)
-        {
-            draw_board(turnno(), m_board);
-            return e_none;
-        }
-        return e_removing;
-    }
-
-    error_e chessgame::add_piece(coord_s p0, chesspiece &p1)
-    {
-        if (m_board.add(p0, p1) == e_none)
-        {
-            draw_board(turnno(), m_board);
-            return e_none;
-        }
-        return e_adding;
-    }
-
-    error_e chessgame::rewind_game(int move_no)
-    {
-        int idx = move_no - 1;
-        if (idx == turnno())
-            return e_none;
-        if ((idx < -1) || (idx >= turnno()))
-            return e_rewind_failed;
-        if (idx >= 0)
-        {
-            m_board.copy(m_turn[idx].b);
-            m_turn.resize(idx + 1);
-        }
-        else
-        {
-            m_turn.clear();
-            m_board.new_board();
-        }
-        draw_board(turnno(), m_board);
-        clear_cache();
-        return e_none;
     }
 
     bool chessgame::check_state(color_e col)
@@ -382,6 +166,376 @@ namespace chess
     std::string chessgame::check_state()
     {
         return m_board.check_state();
+    }
+
+    // Lobby or Administrative Functions
+    error_e chessgame::remove_piece(coord_s p0)
+    {
+        if (m_board.remove(p0) == e_none)
+        {
+            signal_refresh_board();
+            return e_none;
+        }
+        return e_removing;
+    }
+
+    error_e chessgame::add_piece(coord_s p0, chesspiece &p1)
+    {
+        if (m_board.add(p0, p1) == e_none)
+        {
+            signal_refresh_board();
+            return e_none;
+        }
+        return e_adding;
+    }
+
+    void chessgame::set_turn_to(int idx)
+    {
+        if (idx != m_play_pos)
+        {
+            if ((idx >= 0) && (m_turn.size() > 0))
+            {
+                m_board.copy(m_turn[idx].b);
+                if (m_state == play_e)
+                    m_turn.resize(idx + 1);
+                m_play_pos = idx;
+            }
+            else
+            {
+                m_board.new_board();
+                if (m_state == play_e)
+                    m_turn.clear();
+                m_play_pos = -1;
+            }
+            if (m_state == play_e)
+                refresh_board_positions();
+        }
+        signal_on_turn();
+    }
+
+    error_e chessgame::rewind_game()
+    {
+        int idx = m_play_pos - 1;
+        if (idx < -1)
+            return e_rewind_failed;
+        set_turn_to(idx);
+        return e_none;
+    }
+
+    error_e chessgame::advance_game()
+    {
+        int idx = m_play_pos + 1;
+        if (idx >= playmax())
+            return e_advance_failed;
+        set_turn_to(idx);
+        return e_none;
+    }
+
+    error_e chessgame::goto_turn(int turn_no)
+    {
+        int idx = turn_no - 1;
+        if ((idx < -1) || (idx >= playmax()))
+            return e_advance_failed;
+        set_turn_to(idx);
+        return e_none;
+    }
+
+    error_e chessgame::play_game()
+    {
+        if (m_state != play_e)
+        {
+            // accomplishes a trim
+            m_win_color = c_none;
+            set_state(play_e);
+            set_turn_to(m_play_pos);
+        }
+        return e_none;
+    }
+
+    error_e chessgame::pause_game()
+    {
+        if (m_state != idle_e)
+        {
+            set_state(idle_e);
+        }
+        return e_none;
+    }
+
+    error_e chessgame::new_game(const chessclock_s &clock)
+    {
+        m_win_color = c_none;
+        // *** NATHANAEL ***
+        // Your class could take clock and use it for it's
+        // data storage and read and write a chessclock_s
+        // in the load and save functions.
+        // I recommend you act sort of like
+        // the board, and just have a method to reset
+        // the clock to default settings
+        // maybe something like
+        // m_clock.new();
+        m_board.new_board();
+        m_turn.clear();
+        m_play_pos = -1;
+        refresh_board_positions();
+        set_state(play_e, true);
+        signal_on_turn();
+        return e_none;
+    }
+
+    error_e chessgame::load_game(json &jsonf)
+    {
+        try
+        {
+            if (jsonf.is_null())
+                return e_loading;
+            // *** NATHANAEL ***
+            // Read in to your class would be done here, for load game.
+            // I recommend using something like my chessclock_s structure (common.h)
+            // at any rate, your function signature might look like
+            // if (m_clock.load(jsonf) != e_none)
+            //     return e_loading;
+            // note you would immediately begin functioning your clock
+            // as per the settings loaded.
+            m_state = str_game_state(jsonf["state"]);
+            m_win_color = str_color(jsonf["win_color"]);
+
+            auto turns = jsonf["turns"];
+            m_turn.clear();
+
+            chessturn_s t;
+            for (auto turn : turns)
+            {
+                if (t.load(turn) != e_none)
+                    return e_loading;
+                m_turn.push_back(t);
+            }
+
+            m_play_pos = jsonf["play_pos"];
+            if (m_play_pos < 0)
+                m_play_pos = 0;
+            if (m_play_pos > playmax() - 1)
+                m_play_pos = playmax() - 1;
+
+            auto board = jsonf["board"];
+            if (m_board.load(board) != e_none)
+                return e_loading;
+
+            refresh_board_positions();
+            // when we load any game, if it's state
+            // is play we turn to idle (review mode)
+            set_state(idle_e, true);
+            signal_on_turn();
+            return e_none;
+        }
+        catch (const std::exception &)
+        {
+            return e_loading;
+        }
+    }
+
+    error_e chessgame::save_game(json &jsonf)
+    {
+        try
+        {
+            // *** NATHANAEL ***
+            // Here is where your class would write settings to a save
+            // game file, this would be consistent with that of
+            // the load function in terms of content strategy.  I recommend
+            // utilizing chessclock_s structure but within your class
+            // this code might look like
+            // auto clock = json::object();
+            // if (m_clock.save(os) != e_none)
+            //     return e_saving;
+            // jsonf["clock"] = clock;
+            //
+            jsonf["state"] = game_state_str(m_state);
+            jsonf["win_color"] = color_str(win_color());
+
+            auto turns = json::array();
+            int16_t num_turns = playmax();
+            for (int i = 0; i < num_turns; i++)
+            {
+                auto turn = json::object();
+                if (m_turn[i].save(turn) != e_none)
+                    return e_saving;
+                turns.push_back(turn);
+            }
+            jsonf["turns"] = turns;
+
+            jsonf["play_pos"] = m_play_pos;
+
+            auto board = json::object();
+            if (m_board.save(board) != e_none)
+                return e_saving;
+
+            jsonf["board"] = board;
+            return e_none;
+        }
+        catch (const std::exception &)
+        {
+            return e_saving;
+        }
+    }
+
+    error_e chessgame::load_xfen(std::string contents)
+    {
+        error_e ret = m_board.load_xfen(contents);
+        signal_refresh_board();
+        return ret;
+    }
+
+    std::string chessgame::save_xfen()
+    {
+        return m_board.save_xfen();
+    }
+
+    error_e chessgame::listen(std::shared_ptr<chessgamelistener> plistener)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if (plistener == NULL)
+            return e_invalid_listener;
+        int id = plistener->id();
+        mp_listeners[id] = plistener;
+        return e_none;
+    }
+
+    error_e chessgame::unlisten(int id)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if (mp_listeners.count(id))
+            mp_listeners.erase(id);
+        return e_none;
+    }
+
+    error_e chessgame::end_game(game_state_e end_state, color_e win_color)
+    {
+        // *** NATHANAEL ***
+        // You are going to need to be able to call this function
+        // with a time_up_e value for end_state, and declare the winner.
+        // It is a bit of a conundrum with how to get the reference
+        // to the game object for the clock.  I suppose it would be
+        // OK to use a traditional pointer with a set_game function
+        // Alternatively we could do all of this up above at the lobby level
+        // where a shared pointer to the game exists.  A third option
+        // that might be cleanest, is to give the clock a pointer to
+        // this function as a callback.
+        std::unique_lock<std::mutex> guard(m_mutex);
+        m_win_color = win_color;
+        set_state(end_state);
+        guard.unlock();
+        signal_on_state();
+        return e_none;
+    }
+
+    error_e chessgame::chat(std::string msg, color_e col)
+    {
+        signal_chat(msg, col);
+        return e_none;
+    }
+
+    error_e chessgame::consider(move_s m, color_e c, int8_t p)
+    {
+        signal_on_consider(m, c, p);
+        return e_none;
+    }
+
+    void chessgame::set_state(game_state_e g, bool force_notify)
+    {
+        if ((g != m_state) || (force_notify))
+        {
+            m_state = g;
+            signal_on_state();
+        }
+    }
+
+    chessturn_s chessgame::new_turn(move_s m)
+    {
+        int16_t n = playmax() + 1;
+        if ((m_turn.size() == 0) && (!m.is_valid()))
+            n = 0;
+        game_state_e g = state();
+        color_e c = turn_color();
+        bool ch = check_state(c);
+        color_e wc = win_color();
+        int32_t wt = 0;
+        int32_t bt = 0;
+        clock_remaining(c, wt, bt);
+        return chess::new_turn(n, m, ch, m_board, c, g, wc, wt, bt);
+    }
+
+    void chessgame::push_new_turn(move_s m)
+    {
+        if (m.is_valid())
+        {
+            add_board_position();
+            m_turn.push_back(new_turn(m));
+            m_play_pos = (int)m_turn.size() - 1;
+            signal_on_turn();
+        }
+    }
+
+    void chessgame::refresh_board_positions()
+    {
+        m_board_positions.clear();
+        for (size_t i = 0; i < m_turn.size(); i++)
+        {
+            uint32_t curpos = m_turn[i].b.hash();
+            int c = m_board_positions[curpos];
+            m_board_positions[curpos] = c + 1;
+        }
+    }
+
+    int chessgame::prev_position_count()
+    {
+        uint32_t curpos = m_board.hash();
+        std::map<uint32_t, int>::iterator it = m_board_positions.find(curpos);
+        if (it != m_board_positions.end())
+            return it->second;
+        return 0;
+    }
+
+    void chessgame::add_board_position()
+    {
+        uint32_t curpos = m_board.hash();
+        int c = m_board_positions[curpos];
+        m_board_positions[curpos] = c + 1;
+    }
+
+    void chessgame::signal_refresh_board()
+    {
+        int16_t n = playno();
+        for (const auto &kv : mp_listeners)
+            kv.second->signal_refresh_board(n, m_board);
+    }
+
+    void chessgame::signal_on_consider(move_s m, color_e c, int8_t p)
+    {
+        for (const auto &kv : mp_listeners)
+            kv.second->signal_on_consider(m, c, p);
+    }
+
+    void chessgame::signal_on_turn()
+    {
+        move_s m;
+        chessturn_s l = m_turn.size() > 0 ? play_turn() : new_turn(m);
+        for (const auto &kv : mp_listeners)
+            kv.second->signal_on_turn(l.t, l.m, l.ch, l.b, l.c, l.g, l.wc, l.wt, l.bt);
+    }
+
+    void chessgame::signal_on_state()
+    {
+        for (const auto &kv : mp_listeners)
+            kv.second->signal_on_state(m_state, m_win_color);
+        // *** NATHANAEL ***
+        // See above, you will need to react to this event.  later
+        // we will add a pause or resume event but for now it's just
+        // this
+    }
+
+    void chessgame::signal_chat(std::string msg, color_e c)
+    {
+        for (const auto &kv : mp_listeners)
+            kv.second->signal_chat(msg, c);
     }
 
 }

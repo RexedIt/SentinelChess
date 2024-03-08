@@ -1,8 +1,8 @@
-@uid("uid://feu87e4pw2w") # Generated automatically, do not modify.
 extends Sprite2D
 
 @onready var game : SentinelChess = get_parent().get_node('SentinelChess')
 @onready var PieceProto : Area2D = get_node('Piece')
+@onready var HiLight : Sprite2D = get_node('HiLight')
 
 var piece_arr = []
 var cell_arr = []
@@ -18,9 +18,8 @@ var possible_moves : Array
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	piece_arr.resize(64)
+	HiLight.visible = false
 	
-
-
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
@@ -31,10 +30,11 @@ func setup(_color):
 	else:
 		rotation_degrees = 180
 	
-func refreshpieces():
+func refreshpieces(b : ChessBoard):
+	thinking(null)
 	for y in 8:
 		for x in 8:
-			var pc : SentinelChess.ChessColor = game.cell_color(y,x)
+			var pc : SentinelChess.ChessColor = b.color_(y,x)
 			var po = piece_arr[y*8+x]
 			if (pc == SentinelChess.ChessColor.cNone):
 				if (po!=null):
@@ -42,7 +42,7 @@ func refreshpieces():
 					po.queue_free()
 					po=null
 			else:
-				var pt : SentinelChess.ChessPiece = game.cell_piece(y,x)
+				var pt : SentinelChess.ChessPiece = b.piece(y,x)
 				if (po!=null):
 					po.refresh(pc,pt,rotation_degrees)
 				else:
@@ -50,7 +50,7 @@ func refreshpieces():
 					add_child(po)
 					po.initialize(pc,pt,y,x,screen_y(y),screen_x(x),rotation_degrees)
 			piece_arr[y*8+x]=po
-					
+
 func screen_y(by : int) -> int:
 	var sy = board_y0 - by * board_dy
 	if sy < board_y0 - 8 * board_dy or sy > board_y0:
@@ -93,12 +93,13 @@ func board_c(s: Vector2) -> ChessCoord:
 	
 # called by piece
 func drag_start(y : int, x : int) -> bool:
+	var g = game.gamestate;
 	if game.gamestate != game.GameState.USERMOVE:
 		return false
-	if game.cell_color(y,x) == game.user_color():
+	if game.cell_interactive(y,x):
 		last_drag_y = y
 		last_drag_x = x
-		possible_moves = game.possible_moves(game.user_color())
+		possible_moves = game.possible_moves(game.turn_color())
 		return true
 	return false
 	
@@ -118,17 +119,11 @@ func drop_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
 		return false
 	if not can_drop(p0, p1):
 		return false
-	var err : int = game.user_move_c(game.user_color(), p0, p1, SentinelChess.ChessPiece.pNone)
-	if err != 0:
-		handle_error(err)
-		return false
-	if game.check_state(game.user_color()):
-		if game.state() == SentinelChess.ChessGameState.Play:
-			handle_error_msg("You are in Check.")
-			return false
-		# *** REM *** TODO Extra Checks?
-	game._on_user_moved()
-	return true
+	var c : SentinelChess.ChessColor = game.turn_color();
+	var m : ChessMove = ChessMove.new()
+	m.p0 = p0
+	m.p1 = p1
+	return game.user_move(c, m, false)
 
 func move_piece(p0 : ChessCoord, p1 : ChessCoord):
 	var pc : Area2D = piece_arr[p0.y*8+p0.x]
@@ -139,6 +134,8 @@ func move_piece(p0 : ChessCoord, p1 : ChessCoord):
 		pd.queue_free()
 	piece_arr[p0.y*8+p0.x] = null
 	piece_arr[p1.y*8+p1.x] = pc
+	pc.position.y = screen_y(p1.y)
+	pc.position.x = screen_x(p1.x)
 	
 func handle_error(err : int):
 	game._on_error(err)
@@ -146,7 +143,7 @@ func handle_error(err : int):
 func handle_error_msg(err : String):
 	game._on_error_msg(err)
 	
-func animate_move(m : ChessMove):
+func animate_move(m : ChessMove) -> bool:
 	if m != null:
 		var p0 : ChessCoord = m.p0
 		var p1 : ChessCoord = m.p1
@@ -154,6 +151,9 @@ func animate_move(m : ChessMove):
 			var po = piece_arr[p0.y*8+p0.x]
 			if po != null:
 				po.animate_move(p1)
+				return true
+	return false
+		
 
 func coordstr(p0 : ChessCoord) -> String:
 	var s = "%d.%d"
@@ -162,7 +162,20 @@ func coordstr(p0 : ChessCoord) -> String:
 func _on_animated(p0 : ChessCoord, p1 : ChessCoord):
 	move_piece(p0,p1)
 	# we do this just in case of moves like promotion or castling, en passant
-	refreshpieces()
+	refreshpieces(game.get_board())
 	# print('_on_animated ' + coordstr(p0) + ' to ' + coordstr(p1))
 	game._on_animated()			
+
+func thinking(p1 : ChessCoord):
+	if p1 == null:
+		HiLight.visible = false
+	else:
+		HiLight.visible = true
+		HiLight.position = screen_v(p1)
 		
+func set_idle(b : bool):
+	thinking(null)
+
+func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
+	print('Board: Finish Game *** TODO ***')
+

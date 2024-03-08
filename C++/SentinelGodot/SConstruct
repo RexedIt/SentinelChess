@@ -7,6 +7,11 @@ if godot_cpp == "":
     print("Environment for GODOT_CPP is not set!")
     Exit(2)
 
+# debreldir = "../build/SentinelLib/Release/SentinelLib.lib"
+# mymode = ARGUMENTS.get('target', 'template_debug')
+# if mymode == 'template_debug':
+#    debreldir = "../build/SentinelLib/Debug/SentinelLib.lib"
+
 env = SConscript(godot_cpp + "/SConstruct")
 # For reference:
 # - CCFLAGS are compilation flags shared between C and C++
@@ -17,8 +22,11 @@ env = SConscript(godot_cpp + "/SConstruct")
 # - LINKFLAGS are for linking flags
 
 # tweak this if you want to use different folders, or more folders, to store your source code in.
-env.Append(CPPPATH=["src/","../SentinelLib/"])
-env.Append(LIBS=["../build/SentinelLib/Debug/SentinelLib.lib"])
+if env["CXX"] == "g++":
+    env.Append(CXXFLAGS="-fexceptions")
+
+env.Append(CPPPATH=["src/", "../SentinelLib/"])
+# env.Append(LIBS=[debreldir])
 sources = [Glob("src/*.cpp"), Glob("../SentinelLib/*.cpp")]
 
 library = env.SharedLibrary(

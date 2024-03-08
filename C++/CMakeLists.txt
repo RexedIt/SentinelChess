@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(SentinelChess VERSION 0.1.0 LANGUAGES C CXX)
+#set(CMAKE_CXX_STANDARD_17)
+
+project(SentinelChess VERSION 0.2.0 LANGUAGES C CXX)
 
 if (MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)

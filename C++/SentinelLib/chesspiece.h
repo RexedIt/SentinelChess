@@ -15,7 +15,10 @@ namespace chess
         chesspiece(unsigned char c);
         chesspiece(char code);
         chesspiece(color_e c, piece_e p);
-        
+        chesspiece(const chesspiece &);
+        void copy(const chesspiece &);
+        void operator=(const chesspiece &);
+
         void possible_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8], unsigned char castled_left, unsigned char castled_right, coord_s ep);
         void update_kill_bits(coord_s p0, unsigned char (&cells)[8][8], int &kc);
 
@@ -25,10 +28,12 @@ namespace chess
         std::string name;
         unsigned char value;
         unsigned char kill_mask;
+        unsigned char enemy_kill_mask;
 
     private:
         void calc_direction_moves(std::vector<move_s> &possible, coord_s p0, int8_t dy, int8_t dx, int8_t max, unsigned char (&cells)[8][8]);
         void calc_single_move(std::vector<move_s> &possible, coord_s p0, int8_t dy, int8_t dx, unsigned char (&cells)[8][8]);
+        void calc_king_move(std::vector<move_s> &possible, coord_s p0, int8_t dy, int8_t dx, unsigned char (&cells)[8][8]);
         void pawn_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8], coord_s ep);
         void bishop_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8]);
         void knight_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8]);

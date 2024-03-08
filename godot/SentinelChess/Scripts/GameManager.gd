@@ -1,5 +1,3 @@
-@uid("uid://c2fxtcukqail3") # Generated automatically, do not modify.
-
 extends SentinelChess
 
 # siblings
@@ -8,25 +6,17 @@ extends SentinelChess
 @onready var popSave : FileDialog = get_parent().get_node("popSave")
 @onready var board : Node2D = get_parent().get_node("Board")
 @onready var gameUI : CanvasLayer = get_parent().get_node("GameUI")
+@onready var popEnd : Panel = get_parent().get_node("popEnd")
+@onready var popPromote : Panel = get_parent().get_node("popPromote")
+@onready var pnlCaptured : Panel = get_parent().get_node("GameUI/pnlCaptured")
 
-enum GameState {
-		INIT,
-		NEWORLOAD,
-		NEW,
-		LOAD,
-		SAVE,
-		PLAY,
-		USERMOVE,
-		COMPUTERMOVE,
-		ANIMATEMOVE,
-		PIECESELECT,
-		END		
-	 }
+const GameState = preload("res://Scripts/GameState.gd").GameState_
 
 @export var gamestate : GameState = GameState.INIT
 var prepopgamestate : GameState = GameState.INIT
 @export var statewait : bool = false
 var filename : String
+var promotemove : ChessMove
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -34,32 +24,51 @@ func _ready():
 	popNew.on_closed.connect(_on_closed_new)
 	popLoad.on_closed.connect(_on_closed_load)
 	popSave.on_closed.connect(_on_closed_save)
-	trace.connect(_trace)
-	draw_move.connect(_draw_move)
-	draw_board.connect(_draw_board)
-	#signals cannot be fired outside of ours so we poll.
-	#computer_moved.connect(_computer_moved)
-	thinking.connect(_thinking)
+	popPromote.on_closed.connect(_on_closed_promote)
 	_gamestatereact(GameState.INIT)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
 	
-var lasttime : float = 0.0
-var thistime : float = 0.0
-
 func _physics_process(delta):
-	thistime += delta
 	# polling, unfortunately.
-	if gamestate == GameState.COMPUTERMOVE and statewait:
-		if thistime - lasttime > .1:
-			lasttime = thistime
-			if computer_moving() == false:
-				_computer_moved(null, turnno(), lastmove(), computer_color())
-			else:
-				print('wait')
-			
+	if hasevent():
+		var ce : ChessEvent = popevent()
+		match ce.event_type():
+			ChessEvent.ChessEventType.ceRefreshBoard:
+				print('ceRefreshBoard')
+				refresh_board(ce.color(), ce.board())
+			ChessEvent.ChessEventType.ceConsider:
+				board.thinking(ce.move().p1)
+			ChessEvent.ChessEventType.ceTurn:
+				var n : int = ce.turn_no()
+				var m : ChessMove = ce.move()
+				var ch : bool = ce.check()
+				var b : ChessBoard = ce.board()
+				var c : ChessColor = ce.color()
+				var g : ChessGameState = ce.game_state()
+				var wc : ChessColor = ce.win_color();
+				var wt : int = ce.white_time()
+				var bt : int = ce.black_time()
+				if m.is_valid():
+					var cm : ChessColor = ChessColor.White
+					if c == ChessColor.White:
+						cm = ChessColor.Black
+					if has_local() and !is_local(cm):
+						_computer_moved(n, m, b, cm)
+					else:
+						_draw_move(n, m, b, cm)
+				if gamestate != GameState.ANIMATEMOVE:
+					_on_turn(n,b,c)
+				gameUI.clock_turn(c, wt, bt)
+				if g > ChessGameState.Play:
+					finish_game(g, wc)
+			ChessEvent.ChessEventType.ceState:
+				print('ceState')
+				_on_state(ce.game_state(), ce.win_color())
+			ChessEvent.ChessEventType.ceChat:
+				print('ceChat *** REM *** TODO')
 
 func _gamestatereact(gs):
 	gamestate = gs
@@ -70,13 +79,7 @@ func _gamestatereact(gs):
 			print("GS: Initialization")
 			# for now, we want to move to the new game prompt
 			# later we will select new or load
-			_newgameprompt()
-		GameState.NEWORLOAD:
-			# Select new or Load Option
-			print("GS: New or Load Prompt")
-			# for now, we want to move to the new game prompt
-			# later we will select new or load
-			_newgameprompt()
+			# _newgameprompt()
 		GameState.NEW:
 			# Select New Game Option
 			print("GS: New Prompt")
@@ -92,12 +95,18 @@ func _gamestatereact(gs):
 		GameState.PLAY:
 			print("GS: Game Play")
 			_gameplay()
+		GameState.IDLE:
+			print("GS: Idle")
 		GameState.USERMOVE:
 			print("GS: User Move")
 			_usermove()
 		GameState.COMPUTERMOVE:
 			print("GS: Computer Move")
 			_computermove()
+		GameState.PIECESELECT:
+			print('GS: Piece Select')
+			_pieceselect()
+	gameUI.gamestate(gs)
 
 func _newgameprompt():
 	popNew.visible = true
@@ -112,11 +121,13 @@ func _savegameprompt():
 	statewait = true
 	
 func _gameplay():
-	if (state() == SentinelChess.ChessGameState.Play):
-		if (turn_color() == user_color()):
+	if state() == SentinelChess.ChessGameState.Play:
+		if is_local(turn_color()):
 			_gamestatereact(GameState.USERMOVE)
 		else:
 			_gamestatereact(GameState.COMPUTERMOVE)
+	elif state() == SentinelChess.ChessGameState.Idle:
+		_gamestatereact(GameState.IDLE)
 	else:
 		_gamestatereact(GameState.END)
 	
@@ -125,29 +136,51 @@ func _usermove():
 
 func _computermove():
 	statewait = true
-	var err = computer_move(computer_color())
-	if err > 0:
+
+func _pieceselect():
+	popPromote.visible = true
+		
+func user_move(c : ChessColor, m : ChessMove, a : bool):
+	var err : int = move_m(c, m)
+	if err != 0:
+		if errorstr(err).contains('Promote'):
+			promotemove = m
+			_gamestatereact(GameState.PIECESELECT)
+			return true
 		_on_error(err)
-	
+		return false
+	if a:
+		board.animate_move(m)
+		gamestate = GameState.ANIMATEMOVE
+	else:
+		_on_user_moved()
+	return true
+
 # Callbacks
 func _on_user_moved():
-	gameUI.append_move(turnno(), lastmove(), user_color())
+	#gameUI.append_move(n, m, get_board(), c)
 	_gamestatereact(GameState.PLAY)
 
 func _on_animated():
+	var c : ChessColor = turn_color();
+	if is_local_active(c):
+		var b : ChessBoard = get_board()
+		refresh_board(c, b)
+		gameUI.refreshPrompt(c)
 	_gamestatereact(GameState.PLAY)
 	
 # Dialog Handlers
-func _on_closed_new(_cancelled, _level, _color):
+func _on_closed_new(_cancelled, _white, _black, _clock):
 	print("on_closed_new")
 	if _cancelled:
 		_gamestatereact(prepopgamestate)
 		return
 	# start new game
-	board.setup(_color)
-	new_game(_color, _level)
+	new_game(_white, _black, _clock)
+	board.setup(preferred_board_color())
 	gameUI.clear_history()
 	gameUI.append_history('New Game')
+	gameUI.announceTurn(turn_color())
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
@@ -165,6 +198,7 @@ func _on_closed_load(_cancelled, _filename):
 		return
 	gameUI.clear_history()
 	gameUI.append_load(_filename)
+	gameUI.announceTurn(turn_color())
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
@@ -185,20 +219,25 @@ func _on_closed_save(_cancelled, _filename):
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
+func _on_closed_promote(_cancelled, _color, _piece):
+	if !_cancelled:
+		promotemove.set_promote(_piece)
+		user_move(_color,promotemove,false)
+		
 func _on_new_game():
-	var list = [GameState.INIT,GameState.PLAY,GameState.USERMOVE]
+	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE,GameState.END]
 	if list.has(gamestate):
 		prepopgamestate = gamestate
 		_gamestatereact(GameState.NEW)
 		
 func _on_load_game():
-	var list = [GameState.INIT,GameState.PLAY,GameState.USERMOVE]
+	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE,GameState.END]
 	if list.has(gamestate):
 		prepopgamestate = gamestate
 		_gamestatereact(GameState.LOAD)
 
 func _on_save_game():
-	var list = [GameState.INIT,GameState.PLAY,GameState.USERMOVE]
+	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE,GameState.END]
 	if list.has(gamestate):
 		prepopgamestate = gamestate
 		_gamestatereact(GameState.SAVE)
@@ -206,43 +245,67 @@ func _on_save_game():
 func _on_error(_err : int):
 	gameUI.show_error('! ' + errorstr(_err))
 	print('***** ERROR *****' + errorstr(_err))
-	
-func _on_error_msg(msg : String):
-	gameUI.show_error(msg)
-	
-# Signal Handlers
-func _draw_move(node, n, m, c):
-	print("move!")
-	
-func _draw_board(node, n):
-	# we restrict when this gets
-	# executed to load and new game
-	if (gamestate < GameState.PLAY):
-		refresh_board()
-		
-func refresh_board():
-	board.setup(user_color())
-	board.refreshpieces()
 
-func refresh_turn():
-	board.refreshpieces()
+func _on_error_msg(_err : String):
+	gameUI.show_error(_err)
+	print('***** ERROR *****' + _err)
+		
+# Signal Handlers
+func _draw_move(n, m, b, c):
+	gameUI.append_move(n,m,b,c)
+	board.move_piece(m.p0, m.p1)
+	board.refreshpieces(b)	
+	pnlCaptured.refreshpieces(c, b)
+	
+func _on_turn(n, b, c):
+	if is_local_active(c):
+		refresh_board(c, b)
+	gameUI.refreshPrompt(c)
+
+func set_idle(b : bool):
+	if b:
+		_gamestatereact(GameState.IDLE)
+	else:
+		_gamestatereact(GameState.PLAY)
+	gameUI.set_idle(b)
+	board.set_idle(b)
+
+func finish_game(s : ChessGameState, w : ChessColor):
+	_gamestatereact(GameState.END)
+	gameUI.finish_game(s, w)
+	board.finish_game(s, w)
+	popEnd.finish_game(s, w)
+		
+func _on_state(s : ChessGameState, w : ChessColor):
+	if s == Idle:
+		set_idle(true)
+	if s == Play:
+		set_idle(false)
+	if s > Play:
+		finish_game(s, w)
+	
+func refresh_board(c : ChessColor, b : ChessBoard):
+	board.setup(turn_color())
+	board.refreshpieces(b)
+	pnlCaptured.refreshpieces(c,b)
+	
+func refresh_turn(c : ChessColor, b : ChessBoard):
+	board.refreshpieces(b)
+	pnlCaptured.refreshpieces(c,b)
 	_gamestatereact(GameState.PLAY)
 	
 func _user_moved(m):
 	board.animate_move(m)
 	gamestate = GameState.ANIMATEMOVE
 		
-func _computer_moved(node, n, m, c):
+func _computer_moved(n, m, b, c):
 	# for now we ONLY will paint the board
 	# eventually we will animate the move
 	# which will force the board to be redrawn.
-	statewait = false
-	gameUI.append_move(n,m,c)
-	board.animate_move(m)
-	gamestate = GameState.ANIMATEMOVE
-	
-func _thinking(node, m, p):
-	print("thinking!")
-	
-func _trace(node, msg):
-	print(":" + msg)
+	# if the opponent is ALSO computer, do not
+	# animate as we will miss the action.
+	if board.animate_move(m):
+		statewait = false
+		gameUI.append_move(n,m,b,c)
+		gamestate = GameState.ANIMATEMOVE
+			

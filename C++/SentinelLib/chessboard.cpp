@@ -1,6 +1,5 @@
 #include "chessboard.h"
 #include "chesspiece.h"
-#include "chesscache.h"
 #include "chessturn.h"
 
 #include <memory.h>
@@ -16,6 +15,7 @@ namespace chess
     chessboard::chessboard()
     {
         memset(&m_cells, 0, sizeof(m_cells));
+        memset(&m_captured, 0, sizeof(m_captured));
         m_castled_left = 0;
         m_castled_right = 0;
         m_turn = c_white;
@@ -23,33 +23,40 @@ namespace chess
         m_halfmove = 0;
         m_fullmove = 1;
         m_kill_updated = false;
-        mp_cb_thinking = NULL;
-        mp_cb_traces = NULL;
+        m_check[0] = m_check[1] = false;
     }
 
-    chessboard::chessboard(chessboard &other)
+    chessboard::chessboard(const chessboard &other)
     {
-        mp_cb_thinking = other.mp_cb_thinking;
-        mp_cb_traces = other.mp_cb_traces;
-        m_halfmove = other.m_halfmove;
-        m_fullmove = other.m_fullmove;
         copy(other);
     }
 
-    void chessboard::copy(chessboard &other)
+    void chessboard::operator=(const chessboard &other)
+    {
+        copy(other);
+    }
+
+    void chessboard::copy(const chessboard &other)
     {
         memcpy(&m_cells, other.m_cells, sizeof(m_cells));
+        memcpy(&m_captured, other.m_captured, sizeof(m_captured));
         m_castled_left = other.m_castled_left;
         m_castled_right = other.m_castled_right;
         m_ep = other.m_ep;
-        m_check = other.m_check;
+        m_check[0] = other.m_check[0];
+        m_check[1] = other.m_check[1];
+        m_king_pos[0] = other.m_king_pos[0];
+        m_king_pos[1] = other.m_king_pos[1];
         m_turn = other.m_turn;
+        m_halfmove = other.m_halfmove;
+        m_fullmove = other.m_fullmove;
         m_hash = 0;
         m_kill_updated = false;
     }
 
     void chessboard::new_board()
     {
+        memset(&m_captured, 0, sizeof(m_captured));
         set_kings_row(0, c_white);
         set_pawns_row(1, c_white);
         set_empty_rows();
@@ -59,8 +66,10 @@ namespace chess
         m_castled_right = 0;
         m_ep.y = -1;
         m_ep.x = -1;
-        m_king_pos.clear();
-        m_check.clear();
+        m_king_pos[0].clear();
+        m_king_pos[1].clear();
+        m_check[0] = false;
+        m_check[1] = false;
         m_turn = c_white;
         m_halfmove = 0;
         m_fullmove = 1;
@@ -68,17 +77,13 @@ namespace chess
         m_hash = 0;
     }
 
-    error_e chessboard::save(std::ofstream &os)
+    error_e chessboard::save(json &o)
     {
-        os.write((char *)&m_cells, sizeof(m_cells));
-        os.write((char *)&m_castled_left, sizeof(m_castled_left));
-        os.write((char *)&m_castled_right, sizeof(m_castled_right));
-        bool white_check = m_check[c_white];
-        bool black_check = m_check[c_black];
-        os.write((char *)&white_check, sizeof(white_check));
-        os.write((char *)&black_check, sizeof(black_check));
-        os.write((char *)&m_turn, sizeof(m_turn));
-        os.write((char *)&m_ep, sizeof(m_ep));
+        o["xfen"] = save_xfen();
+        o["white_check"] = m_check[0];
+        o["black_check"] = m_check[1];
+        o["turn"] = color_str(m_turn);
+        o["captured"] = captured_pieces_abbr(c_none);
         return e_none;
     }
 
@@ -135,23 +140,19 @@ namespace chess
         return ss.str();
     }
 
-    error_e chessboard::load(std::ifstream &is)
+    error_e chessboard::load(json &o)
     {
-        is.read((char *)&m_cells, sizeof(m_cells));
-        is.read((char *)&m_castled_left, sizeof(m_castled_left));
-        is.read((char *)&m_castled_right, sizeof(m_castled_right));
-        bool white_check;
-        bool black_check;
-        is.read((char *)&white_check, sizeof(white_check));
-        is.read((char *)&black_check, sizeof(black_check));
-        m_check[c_white] = white_check;
-        m_check[c_black] = black_check;
-        is.read((char *)&m_turn, sizeof(m_turn));
-        is.read((char *)&m_ep, sizeof(m_ep));
-        return e_none;
+        if (o.is_null())
+            return e_loading;
+        load_xfen(o["xfen"], false);
+        update_kill_bits();
+        m_check[0] = o["white_check"];
+        m_check[1] = o["black_check"];
+        m_turn = str_color(o["turn"]);
+        return set_captured_pieces(o["captured"]);
     }
 
-    error_e chessboard::load_xfen(std::string contents)
+    error_e chessboard::load_xfen(std::string contents, bool recalc_captured)
     {
         std::vector<std::string> args = split_string(contents, ' ');
         if (args.size() < 4)
@@ -238,6 +239,9 @@ namespace chess
 
         m_hash = 0;
 
+        if (recalc_captured)
+            calc_captured_pieces();
+
         return e_none;
     }
 
@@ -266,15 +270,12 @@ namespace chess
                 m_cells[i][j] = 0;
     }
 
-    weight_metric_s chessboard::weight(color_e col)
+    board_metric_s chessboard::board_metric(color_e col)
     {
-        int pc = 0;
-        int bp = 0;
-        int kc = 0;
+        board_metric_s bm;
+
         color_e enemy_col = other(col);
         unsigned char kill_mask = col * color_kill_mask_mult;
-
-        bp = 0;
 
         for (int8_t y = 0; y < 8; y++)
         {
@@ -285,28 +286,25 @@ namespace chess
                 {
                     if (m_cells[y][x] & col)
                     {
-                        pc += (piece);
-                        bp += (col == c_white) ? y + 1 : 8 - y;
+                        bm.pc[piece]++;
+                        bm.bp += (col == c_white) ? y + 1 : 8 - y;
                     }
                     else if (m_cells[y][x] & enemy_col)
                     {
-                        pc -= (piece);
-                        bp -= (enemy_col == c_white) ? y + 1 : 8 - y;
+                        bm.opc[piece]++;
+                        bm.bp -= (enemy_col == c_white) ? y + 1 : 8 - y;
                     }
                 }
                 if ((m_cells[y][x] & kill_mask) == kill_mask)
-                    kc++;
+                    bm.kc++;
             }
         }
 
-        float ret = ((float)pc) * piece_weight +
-                    ((float)kc) * kill_count_weight +
-                    ((float)bp) * board_position_weight;
+        // opponent king capture?
+        bm.ch = m_check[color_idx(col)];
+        bm.och = m_check[color_idx(other(col))];
 
-        if (m_king_pos.count(other(col)) == 0)
-            ret += check_points;
-
-        return weight_metric_s(ret, pc, kc, bp);
+        return bm;
     }
 
     unsigned char chessboard::get(coord_s s)
@@ -346,7 +344,7 @@ namespace chess
         if (!m_kill_updated)
             update_kill_bits();
         unsigned char kill_mask = other(turn_col) * color_kill_mask_mult;
-        coord_s k = m_king_pos[turn_col];
+        coord_s k = m_king_pos[color_idx(turn_col)];
         bool ret = (m_cells[k.y][k.x] & kill_mask) == kill_mask;
         return ret;
     }
@@ -361,7 +359,7 @@ namespace chess
         for (size_t i = 0; i < possible.size(); i++)
         {
             chessboard b(*this);
-            b.move(possible[i]);
+            b.execute_move(possible[i]);
             if (!b.find_check(col))
             {
                 m = possible[i];
@@ -377,7 +375,7 @@ namespace chess
         if (!in_range(p0))
             return e_invalid_coord;
         // Can't remove a king either.
-        if ((p0 == m_king_pos[c_white]) || (p0 == m_king_pos[c_black]))
+        if ((p0 == m_king_pos[0]) || (p0 == m_king_pos[1]))
             return e_cannot_remove_a_king;
         if ((m_cells[p0.y][p0.x] & piece_mask) == 0)
             return e_no_piece_there;
@@ -396,7 +394,7 @@ namespace chess
         if (p1.ptype == p_none)
             return e_piece_undefined;
         // Can't remove a king either.
-        if ((p0 == m_king_pos[c_white]) || (p0 == m_king_pos[c_black]))
+        if ((p0 == m_king_pos[0]) || (p0 == m_king_pos[1]))
             return e_cannot_add_over_king;
         m_cells[p0.y][p0.x] = p1.value;
         update_kill_bits();
@@ -410,13 +408,13 @@ namespace chess
         if (m.is_valid())
         {
             chessboard b(*this);
-            m = b.move(m);
+            m = b.execute_move(m);
         }
         m.mate = true;
         for (size_t i = 0; i < possible.size(); i++)
         {
             chessboard b(*this);
-            b.move(possible[i]);
+            b.execute_move(possible[i]);
             if (!b.find_check(col))
             {
                 m.mate = false;
@@ -427,15 +425,15 @@ namespace chess
 
     bool chessboard::check_state(color_e col)
     {
-        return m_check[col];
+        return m_check[color_idx(col)];
     }
 
     std::string chessboard::check_state()
     {
         std::string s = "";
-        if (m_check[c_white])
+        if (m_check[0])
             s += "White in Check ";
-        if (m_check[c_black])
+        if (m_check[1])
             s += "Black in Check ";
         return s;
     }
@@ -445,9 +443,10 @@ namespace chess
         return m_turn;
     }
 
-    move_s chessboard::user_move(color_e col, move_s m)
+    move_s chessboard::attempt_move(color_e col, move_s m)
     {
         move_s empty;
+        empty.error = e_invalid_move;
         coord_s p0 = m.p0;
         coord_s p1 = m.p1;
         if ((!in_range(p0)) || (!in_range(p1)))
@@ -465,8 +464,8 @@ namespace chess
         int ptarget = (col == c_white) ? 7 : 0;
         if ((p.ptype == p_pawn) && (p1.y == ptarget) && (m.promote == p_none))
         {
-            m.promote = request_promote; // special flag to request
-            return m;
+            empty.error = e_invalid_move_needs_promote;
+            return empty;
         }
         // Castling etc?
         // For this we have to evaluate all possible moves
@@ -476,114 +475,34 @@ namespace chess
         if (m.is_valid())
         {
             if (m.check)
+            {
+                m.error = e_check;
                 return m;
+            }
             m_turn = other(col);
-            return move(m);
+            return execute_move(m);
         }
         return empty;
     }
 
-    move_s chessboard::user_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
+    move_s chessboard::attempt_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
     {
         move_s m(p0, p1, promote);
-        return user_move(col, m);
+        return attempt_move(col, m);
     }
 
-    error_e chessboard::suggest_move(move_s m)
+    // *** MUST GO ***
+    float weight(board_metric_s bm)
     {
-        m_suggestion = m;
-        return e_none;
-    }
-
-    move_s chessboard::computer_move(color_e turn_col, int rec)
-    {
-        m_cancel = false;
-        move_s best;
-        m_turn = turn_col;
-        std::vector<move_s> possible = possible_moves(turn_col);
-        // Suggested move?
-        if (m_suggestion.is_valid())
-        {
-            best = m_suggestion;
-            m_suggestion.invalidate();
-        }
-        else
-        {
-            // Figure move?
-            float alpha = -999;
-            float beta = 999;
-            for (size_t i = 0; i < possible.size(); i++)
-            {
-                if (m_cancel)
-                    return best;
-                chessboard b(*this);
-                move_s candidate = b.move(possible[i]);
-                float score = b.computer_move_min(other(turn_col), alpha, beta, rec - 1);
-                candidate.weight = score;
-                if (score >= beta)
-                {
-                    candidate.weight = beta;
-                    best = candidate;
-                    break;
-                }
-                else if (score > alpha)
-                {
-                    candidate.weight = alpha;
-                    best = candidate;
-                    alpha = score;
-                }
-                thinking(candidate, i * 100 / possible.size());
-            }
-        }
-        evaluate_check_and_mate(turn_col, possible, best);
-        if (best.is_valid())
-        {
-            m_turn = other(m_turn);
-            best = move(best);
-        }
-        return best;
-    }
-
-    float chessboard::computer_move_max(color_e turn_col, float _alpha, float _beta, int rec)
-    {
-        if ((rec == 0) || (m_cancel))
-            return weight(turn_col).weight;
-        float alpha = _alpha;
-        float beta = _beta;
-        std::vector<move_s> possible = possible_moves(turn_col);
-        for (size_t i = 0; i < possible.size(); i++)
-        {
-            chessboard b(*this);
-            // Execute the move
-            b.move(possible[i]);
-            float score = b.computer_move_min(other(turn_col), alpha, beta, rec - 1);
-            if (score >= beta)
-                return beta;
-            if (score > alpha)
-                alpha = score;
-        }
-        return alpha;
-    }
-
-    float chessboard::computer_move_min(color_e turn_col, float _alpha, float _beta, int rec)
-    {
-        if ((rec == 0) || (m_cancel))
-            return -1.0f * weight(turn_col).weight;
-        float alpha = _alpha;
-        float beta = _beta;
-        std::vector<move_s> possible = possible_moves(turn_col);
-        for (size_t i = 0; i < possible.size(); i++)
-        {
-            chessboard b(*this);
-            // Execute the move
-            b.move(possible[i]);
-            float score = b.computer_move_max(other(turn_col), alpha, beta, rec - 1);
-            if (score <= alpha)
-                return alpha;
-            if (score < beta)
-                beta = score;
-        }
-        return beta;
+        const float kc_weight = 0.25f;
+        const float bp_weight = 0.5f;
+        int pw = 0;
+        for (int i = 0; i < 7; i++)
+            pw += bm.pc[i] * piece_default_weights[i] -
+                  bm.opc[i] * piece_default_weights[i];
+        return ((float)pw) +
+               ((float)bm.kc) * kc_weight +
+               ((float)bm.bp) * bp_weight;
     }
 
     std::vector<move_s> chessboard::possible_moves(color_e turn_col)
@@ -611,11 +530,89 @@ namespace chess
         piece.possible_moves(possible, p0, m_cells, m_castled_left, m_castled_right, m_ep);
     }
 
+    std::vector<piece_e> chessboard::captured_pieces(color_e col)
+    {
+        std::vector<piece_e> pieces;
+        for (int i = 0; i < CHESSBOARD_CAPTURE_MAX; i++)
+        {
+            unsigned char upc = m_captured[i];
+            unsigned char uc = (unsigned char)col;
+            if (upc == 0)
+                break;
+            if ((col == c_none) || ((upc & uc) == uc))
+            {
+                piece_e pc = (piece_e)(upc & piece_mask);
+                pieces.push_back(pc);
+            }
+        }
+        return pieces;
+    }
+
+    std::string chessboard::captured_pieces_abbr(color_e col)
+    {
+        char ret[CHESSBOARD_CAPTURE_MAX + 1];
+        int r = 0;
+        for (int i = 0; i < CHESSBOARD_CAPTURE_MAX; i++)
+        {
+            unsigned char upc = m_captured[i];
+            unsigned char uc = (unsigned char)col;
+            if (upc == 0)
+                break;
+            if ((col == c_none) || ((upc & uc) == uc))
+            {
+                piece_e pc = (piece_e)(upc & piece_mask);
+                ret[r++] = abbr_char(pc, (color_e)(upc & color_mask));
+            }
+        }
+        ret[r++] = 0;
+        return ret;
+    }
+
+    error_e chessboard::set_captured_pieces(std::string pieces)
+    {
+        memset(&m_captured, 0, sizeof(m_captured));
+        int r = 0;
+        for (size_t i = 0; i < pieces.length(); i++)
+        {
+            if (i >= CHESSBOARD_CAPTURE_MAX)
+                return e_invalid_piece;
+            chesspiece p(pieces[i]);
+            m_captured[r++] = p.value;
+        }
+        return e_none;
+    }
+
+    void chessboard::calc_captured_pieces()
+    {
+        std::vector<char> poss = {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
+                                  'B', 'B', 'N', 'N', 'R', 'R', 'Q', 'K',
+                                  'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
+                                  'b', 'b', 'n', 'n', 'r', 'r', 'q', 'k'};
+        for (int8_t y = 0; y < 8; y++)
+            for (int8_t x = 0; x < 8; x++)
+            {
+                unsigned char cell = m_cells[y][x] & piece_and_color_mask;
+                if (cell != 0)
+                {
+                    chesspiece p(cell);
+                    auto f = std::find(poss.begin(), poss.end(), p.abbr);
+                    if (f != poss.end())
+                        poss.erase(f);
+                }
+            }
+        memset(&m_captured, 0, sizeof(m_captured));
+        for (size_t i = 0; i < poss.size(); i++)
+        {
+            chesspiece p(poss[i]);
+            m_captured[i] = p.value;
+        }
+    }
+
     void chessboard::update_check(color_e c)
     {
-        coord_s k = m_king_pos[c];
+        coord_s k = m_king_pos[color_idx(c)];
         unsigned char kill_mask = other(c) * color_kill_mask_mult;
-        m_check[c] = ((m_cells[k.y][k.x] & kill_mask) == kill_mask);
+        m_check[color_idx(c)] = ((m_cells[k.y][k.x] & kill_mask) == kill_mask);
     }
 
     void chessboard::update_kill_bits()
@@ -623,7 +620,8 @@ namespace chess
         for (int8_t y = 0; y < 8; y++)
             for (int8_t x = 0; x < 8; x++)
                 m_cells[y][x] &= 63;
-        m_king_pos.clear();
+        m_king_pos[0].clear();
+        m_king_pos[1].clear();
         // Set the ones of our color
         for (int8_t y = 0; y < 8; y++)
             for (int8_t x = 0; x < 8; x++)
@@ -638,7 +636,7 @@ namespace chess
                         int pc = 0;
                         piece.update_kill_bits(coord_s(y, x), m_cells, pc);
                         if ((m_cells[y][x] & piece_mask) == p_king)
-                            m_king_pos[content_col] = coord_s(y, x);
+                            m_king_pos[color_idx(content_col)] = coord_s(y, x);
                     }
                 }
             }
@@ -651,11 +649,11 @@ namespace chess
         m_kill_updated = true;
     }
 
-    move_s chessboard::move(const move_s &m0)
+    move_s chessboard::execute_move(const move_s &m0)
     {
         move_s m1 = m0;
         chesspiece piece(m_cells[m0.p0.y][m0.p0.x]);
-        m_cells[m0.p1.y][m0.p1.x] = m_cells[m0.p0.y][m0.p0.x];
+        move_piece(m0);
         if (m_cells[m0.p0.y][m0.p0.x] & piece_mask)
         {
             m_halfmove = 0; // resets on any capture
@@ -698,23 +696,58 @@ namespace chess
                 m_ep.y = m0.p1.y;
             }
             if (m0.en_passant)
-                m_cells[m0.p0.y][m0.p1.x] = 0;
+                capture_piece(m0.p0.y, m0.p1.x);
             if (m0.promote != p_none)
-                m_cells[m0.p1.y][m0.p1.x] = m0.promote + piece.color;
+                capture_piece(m0.p1.y, m0.p1.x);
             m_halfmove = 0; // resets
         }
         // Adjust bitmask, returns balance of kill cells
         update_kill_bits();
 
         m_hash = 0;
-        m1.check = m_check[piece.color];
-        m1.terminal = m_king_pos.count(other(piece.color)) == 0;
+        m1.check = m_check[color_idx(piece.color)];
+        if (m1.check)
+            m1.error = e_check;
 
         m_fullmove++;
         return m1;
     }
 
-    uint32_t chessboard::hash(int rec)
+    void chessboard::move_piece(move_s m)
+    {
+        unsigned char dest = m_cells[m.p1.y][m.p1.x] & piece_and_color_mask;
+        m_cells[m.p1.y][m.p1.x] = m_cells[m.p0.y][m.p0.x];
+        if (dest != 0)
+            add_captured(dest);
+    }
+
+    void chessboard::capture_piece(coord_s &c)
+    {
+        unsigned char dest = m_cells[c.y][c.x] & piece_and_color_mask;
+        m_cells[c.y][c.x] = 0;
+        if (dest != 0)
+            add_captured(dest);
+    }
+
+    void chessboard::capture_piece(int8_t y, int8_t x)
+    {
+        unsigned char dest = m_cells[y][x] & piece_and_color_mask;
+        m_cells[y][x] = 0;
+        if (dest != 0)
+            add_captured(dest);
+    }
+
+    void chessboard::add_captured(unsigned char piece)
+    {
+        for (int i = 0; i < CHESSBOARD_CAPTURE_MAX; i++)
+            if (m_captured[i] == 0)
+            {
+                m_captured[i] = piece;
+                return;
+            }
+    }
+
+    uint32_t chessboard::hash()
     {
         if (m_hash != 0)
             return m_hash;
@@ -728,30 +761,7 @@ namespace chess
                            ((uint32_t)m_cells[y][x + 2] << 8) +
                            ((uint32_t)m_cells[y][x + 3]));
             }
-
-        // Take into account the recursion level
-        m_hash += (m_hash << 1) + (m_hash << 4) + (m_hash << 7) + (m_hash << 8) + (m_hash << 24);
-        m_hash ^= rec;
-
         return m_hash;
-    }
-
-    void chessboard::set_callbacks(thinking_callback _thinking, traces_callback _traces)
-    {
-        mp_cb_thinking = _thinking;
-        mp_cb_traces = _traces;
-    }
-
-    void chessboard::thinking(move_s m, int pct)
-    {
-        if (mp_cb_thinking)
-            (mp_cb_thinking)(m, pct);
-    }
-
-    void chessboard::trace(std::string msg)
-    {
-        if (mp_cb_traces)
-            (mp_cb_traces)(msg);
     }
 
 }
