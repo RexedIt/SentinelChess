@@ -34,7 +34,7 @@ namespace chess
 
         chessboard board();
 
-        chessturn_s play_turn();
+        chessturn play_turn();
 
         game_state_e state();
 
@@ -45,10 +45,12 @@ namespace chess
 
         // Any Player
         error_e forfeit(color_e col);
-        error_e move(color_e col, move_s m0);
+        error_e move(color_e col, chessmove m0);
         error_e move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
-        std::vector<move_s> possible_moves(color_e col);
-        game_state_e is_game_over(color_e col, move_s m);
+        error_e move(color_e col, std::string s);
+
+        std::vector<chessmove> possible_moves(color_e col);
+        game_state_e is_game_over(color_e col, chessmove m);
         void clock_remaining(color_e col, int32_t &wt, int32_t &bt);
 
         // Check?
@@ -74,26 +76,26 @@ namespace chess
         error_e unlisten(int);
         error_e end_game(game_state_e, color_e);
         error_e chat(std::string, color_e);
-        error_e consider(move_s, color_e, int8_t pct = -1);
+        error_e consider(chessmove, color_e, int8_t pct = -1);
 
     private:
         void set_state(game_state_e g, bool force_notify = false);
         void set_turn_to(int idx);
-        void push_new_turn(move_s m);
+        void push_new_turn(chessmove m);
         void refresh_board_positions();
         int prev_position_count();
         void add_board_position();
-        chessturn_s new_turn(move_s);
+        chessturn new_turn(chessmove);
 
         // Signallers
         void signal_refresh_board();
-        void signal_on_consider(move_s, color_e, int8_t pct = -1);
+        void signal_on_consider(chessmove, color_e, int8_t pct = -1);
         void signal_on_turn();
         void signal_on_state();
         void signal_chat(std::string, color_e);
 
         game_state_e m_state;
-        std::vector<chessturn_s> m_turn;
+        std::vector<chessturn> m_turn;
         int m_play_pos;
 
         color_e m_win_color;

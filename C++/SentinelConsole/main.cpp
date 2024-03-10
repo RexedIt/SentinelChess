@@ -44,7 +44,7 @@ std::vector<std::string> get_args(std::string cmdu, char sep)
     return split_string(cmdu, sep);
 }
 
-bool get_move(std::string cmdu, color_e c, chessboard &b, move_s &m)
+bool get_move(std::string cmdu, color_e c, chessboard b, chessmove &m)
 {
     error_e err = str_move(cmdu, c, b, m);
     if (err != e_none)
@@ -52,7 +52,7 @@ bool get_move(std::string cmdu, color_e c, chessboard &b, move_s &m)
     return true;
 }
 
-bool get_promotion(move_s &m)
+bool get_promotion(chessmove &m)
 {
     std::string cmd;
     std::cout << "Promote pawn to [Q,R,N,B] : ";
@@ -229,11 +229,17 @@ bool new_game(chesslobby &lobby)
 
 void refresh_board(int16_t t, chessboard &b)
 {
-    bool r = locals.count(b.turn_color()) > 0;
-    board_to_console(t, b, r);
+    color_e bottom = c_white;
+    if (locals.count(c_white) == 0)
+        if (locals.count(c_black))
+            bottom = c_black;
+    color_e turn_color = b.turn_color();
+    if (locals.count(turn_color) > 0)
+        bottom = turn_color;
+    board_to_console(t, b, bottom);
 }
 
-void on_consider(move_s m, color_e c, int8_t p)
+void on_consider(chessmove m, color_e c, int8_t p)
 {
     std::cout << ".";
 }
@@ -241,7 +247,7 @@ void on_consider(move_s m, color_e c, int8_t p)
 int32_t time_rem = 0;
 bool is_idle = false;
 
-void on_turn(int16_t t, move_s m, bool ch, chessboard &b, color_e tc, game_state_e g, color_e wc, int32_t wt, int32_t bt)
+void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_state_e g, color_e wc, int32_t wt, int32_t bt)
 {
     time_to_console(wt, bt);
     time_rem = (tc == c_black) ? bt : wt;
@@ -509,15 +515,15 @@ int main(void)
                 {
                     if (cmdl == "M")
                     {
-                        cmdu = get_arg(cmdu);
-                        if (cmdu == "")
+                        cmd = get_arg(cmd);
+                        if (cmd == "")
                         {
                             print_error(e_missing_move);
                             continue;
                         }
                     }
-                    move_s m;
-                    if (!get_move(cmdu, p_game->turn_color(), p_game->board(), m))
+                    chessmove m;
+                    if (!get_move(cmd, p_game->turn_color(), p_game->board(), m))
                         continue;
                     color_e whose_turn = p_game->turn_color();
                     error_e err = p_game->move(whose_turn, m);

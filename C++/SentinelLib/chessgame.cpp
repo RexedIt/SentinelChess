@@ -33,11 +33,11 @@ namespace chess
         return m_win_color;
     }
 
-    chessturn_s chessgame::play_turn()
+    chessturn chessgame::play_turn()
     {
         if ((m_turn.size() == 0) || (m_play_pos < 0))
         {
-            chessturn_s m;
+            chessturn m;
             m.b.new_board();
             return m;
         }
@@ -54,7 +54,7 @@ namespace chess
         return (int16_t)m_play_pos + 1;
     }
 
-    game_state_e chessgame::is_game_over(color_e col, move_s m)
+    game_state_e chessgame::is_game_over(color_e col, chessmove m)
     {
         game_state_e g = m_state;
         if (g == play_e)
@@ -79,11 +79,11 @@ namespace chess
                 if (!m.check)
                     m.mate = false;
                 // Check all moves
-                std::vector<move_s> pm = possible_moves(opponent);
+                std::vector<chessmove> pm = possible_moves(opponent);
                 for (size_t i = 0; i < pm.size(); i++)
                 {
                     chessboard b(m_board);
-                    move_s m0 = b.attempt_move(opponent, pm[i]);
+                    chessmove m0 = b.attempt_move(opponent, pm[i]);
                     if (m0.is_valid())
                     {
                         m.mate = false;
@@ -130,14 +130,14 @@ namespace chess
         return end_game(forfeit_e, other(col));
     }
 
-    error_e chessgame::move(color_e col, move_s m0)
+    error_e chessgame::move(color_e col, chessmove m0)
     {
         std::unique_lock<std::mutex> guard(m_mutex);
         if (m_state != play_e)
             return e_invalid_game_state;
         if (col == m_board.turn_color())
         {
-            move_s m = m_board.attempt_move(col, m0);
+            chessmove m = m_board.attempt_move(col, m0);
             if (m.error)
                 return m.error;
             guard.unlock();
@@ -149,11 +149,22 @@ namespace chess
 
     error_e chessgame::move(color_e col, coord_s p0, coord_s p1, piece_e promote)
     {
-        move_s m(p0, p1, promote);
+        chessmove m(p0, p1, promote);
         return move(col, m);
     }
 
-    std::vector<move_s> chessgame::possible_moves(color_e col)
+    error_e chessgame::move(color_e col, std::string s)
+    {
+        if (col != turn_color())
+            return e_out_of_turn;
+        chessmove m0;
+        error_e err = str_move(s, col, m_board, m0);
+        if (err == e_none)
+            return move(col, m0);
+        return err;
+    }
+
+    std::vector<chessmove> chessgame::possible_moves(color_e col)
     {
         return m_board.possible_moves(col);
     }
@@ -302,7 +313,7 @@ namespace chess
             auto turns = jsonf["turns"];
             m_turn.clear();
 
-            chessturn_s t;
+            chessturn t;
             for (auto turn : turns)
             {
                 if (t.load(turn) != e_none)
@@ -433,7 +444,7 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::consider(move_s m, color_e c, int8_t p)
+    error_e chessgame::consider(chessmove m, color_e c, int8_t p)
     {
         signal_on_consider(m, c, p);
         return e_none;
@@ -448,7 +459,7 @@ namespace chess
         }
     }
 
-    chessturn_s chessgame::new_turn(move_s m)
+    chessturn chessgame::new_turn(chessmove m)
     {
         int16_t n = playmax() + 1;
         if ((m_turn.size() == 0) && (!m.is_valid()))
@@ -463,7 +474,7 @@ namespace chess
         return chess::new_turn(n, m, ch, m_board, c, g, wc, wt, bt);
     }
 
-    void chessgame::push_new_turn(move_s m)
+    void chessgame::push_new_turn(chessmove m)
     {
         if (m.is_valid())
         {
@@ -508,7 +519,7 @@ namespace chess
             kv.second->signal_refresh_board(n, m_board);
     }
 
-    void chessgame::signal_on_consider(move_s m, color_e c, int8_t p)
+    void chessgame::signal_on_consider(chessmove m, color_e c, int8_t p)
     {
         for (const auto &kv : mp_listeners)
             kv.second->signal_on_consider(m, c, p);
@@ -516,8 +527,8 @@ namespace chess
 
     void chessgame::signal_on_turn()
     {
-        move_s m;
-        chessturn_s l = m_turn.size() > 0 ? play_turn() : new_turn(m);
+        chessmove m;
+        chessturn l = m_turn.size() > 0 ? play_turn() : new_turn(m);
         for (const auto &kv : mp_listeners)
             kv.second->signal_on_turn(l.t, l.m, l.ch, l.b, l.c, l.g, l.wc, l.wt, l.bt);
     }

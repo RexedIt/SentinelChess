@@ -18,6 +18,25 @@ namespace chess
 
     class chesspiece;
 
+    typedef struct board_metric_s
+    {
+        board_metric_s()
+        {
+            kc = 0;
+            bp = 0;
+            ch = false;
+            och = false;
+            for (int i = 0; i < 7; i++)
+                pc[i] = opc[i] = 0;
+        }
+        int8_t pc[7];  // Piece Count, own Color
+        int8_t opc[7]; // Piece Count, other color
+        int kc;        // Kill Coverage
+        int bp;        // Board Position
+        bool ch;       // Me in Check
+        bool och;      // Opponent in Check
+    } board_metric_s;
+
     class chessboard
     {
         // first index is a-h, second index is 1-8.  Note
@@ -48,16 +67,16 @@ namespace chess
         bool find_piece(piece_e pc, color_e col, coord_s &c);
 
         // User Move
-        move_s attempt_move(color_e col, move_s m);
-        move_s attempt_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
-        std::vector<move_s> possible_moves(color_e col);
-        std::vector<move_s> possible_moves(color_e col, piece_e piece, int8_t yc = -1, int8_t xc = -1);
+        chessmove attempt_move(color_e col, chessmove m);
+        chessmove attempt_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
+        std::vector<chessmove> possible_moves(color_e col);
+        std::vector<chessmove> possible_moves(color_e col, piece_e piece, int8_t yc = -1, int8_t xc = -1);
         std::vector<piece_e> captured_pieces(color_e col);
         std::string captured_pieces_abbr(color_e col);
         error_e set_captured_pieces(std::string pieces);
         void calc_captured_pieces();
 
-        move_s is_game_over(color_e color);
+        chessmove is_game_over(color_e color);
         // Remove a piece
         error_e remove(coord_s p0);
         error_e add(coord_s p0, chesspiece &p1);
@@ -74,7 +93,7 @@ namespace chess
 
     protected:
         // Move
-        move_s execute_move(const move_s &m);
+        chessmove execute_move(const chessmove &m);
 
         unsigned char m_cells[8][8];
         unsigned char m_castled_left;
@@ -96,15 +115,15 @@ namespace chess
         // Special
         bool find_check(color_e col);
 
-        void evaluate_check_and_mate(color_e col, std::vector<move_s> &possible, move_s &m);
-        void possible_moves(std::vector<move_s> &possible, coord_s c);
-        void move_piece(move_s m);
+        void evaluate_check_and_mate(color_e col, std::vector<chessmove> &possible, chessmove &m);
+        void possible_moves(std::vector<chessmove> &possible, coord_s c);
+        void move_piece(chessmove m);
         void capture_piece(coord_s &c);
         void capture_piece(int8_t y, int8_t x);
         void add_captured(unsigned char dest);
         void update_kill_bits();
         void update_check(color_e col);
-        void thinking(move_s, int pct);
+        void thinking(chessmove, int pct);
         uint32_t m_hash;
         bool m_kill_updated;
         volatile bool m_cancel;

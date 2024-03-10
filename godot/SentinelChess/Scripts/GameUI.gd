@@ -195,8 +195,8 @@ func handle_play():
 func _on_txt_cmd_text_submitted(new_text):
 	if new_text == '':
 		return
-	var ucmd : String = new_text.to_upper()	
-	var ucmd1 : String = ucmd.left(1)
+	var cmd : String = new_text;
+	var ucmd1 : String = cmd.left(1).to_upper();
 	var m : ChessMove
 	var handled : bool = false
 	match ucmd1:
@@ -204,13 +204,13 @@ func _on_txt_cmd_text_submitted(new_text):
 			_on_btn_new_pressed()
 			handled = true
 		'M':
-			handled = handle_move(ucmd.get_slice(' ',1))
+			handled = handle_move(cmd.get_slice(' ',1))
 		'L':
-			handled = handle_load(new_text.get_slice(' ',1))
+			handled = handle_load(cmd.get_slice(' ',1))
 		'S':
-			handled = handle_save(new_text.get_slice(' ',1))
+			handled = handle_save(cmd.get_slice(' ',1))
 		'T':
-			var s : String = new_text.get_slice(' ',1)
+			var s : String = cmd.get_slice(' ',1)
 			var turn_no : int = int(s)
 			if s == '':
 				show_error('Need Turn Number')
@@ -225,7 +225,7 @@ func _on_txt_cmd_text_submitted(new_text):
 			handled = handle_pause()
 		# a move?
 		_:
-			handled = handle_move(ucmd)
+			handled = handle_move(cmd)
 	if handled:
 		txtCmd.text = ''		
 	else:
@@ -263,21 +263,8 @@ func handle_save(filename: String) -> bool:
 	return true
 	
 func handle_move(cmd: String) -> bool:
-	if cmd.get_slice_count('-')==2:
-		var p0str: String = cmd.get_slice('-',0)
-		var p1str: String = cmd.get_slice('-',1)
-		if p0str.length()==2 and p1str.length()==2:
-			var p0: ChessCoord = strcoord(p0str)
-			var p1: ChessCoord = strcoord(p1str)
-			if p0 != null and p1 != null:
-				# time to check
-				if possible_move(p0,p1):
-					var c : SentinelChess.ChessColor = game_manager.turn_color()
-					var m : ChessMove = ChessMove.new()
-					m.p0=p0
-					m.p1=p1
-					return game_manager.user_move(c, m, true)
-	return false
+	var c : SentinelChess.ChessColor = game_manager.turn_color()
+	return game_manager.user_move_str(c, cmd, true)
 
 var countdown : float = 0
 var countcol : SentinelChess.ChessColor

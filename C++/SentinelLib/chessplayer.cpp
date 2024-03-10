@@ -94,7 +94,7 @@ namespace chess
         return mp_game->forfeit(m_color);
     }
 
-    error_e chessplayer::move(move_s m0)
+    error_e chessplayer::move(chessmove m0)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         if (mp_game == NULL)
@@ -110,15 +110,23 @@ namespace chess
         return mp_game->move(m_color, p0, p1, promote);
     }
 
+    error_e chessplayer::move(std::string s)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if (mp_game == NULL)
+            return e_no_game;
+        return mp_game->move(m_color, s);
+    }
+
     chessboard chessplayer::board()
     {
         return mp_game->board();
     }
 
-    std::vector<move_s> chessplayer::possible_moves()
+    std::vector<chessmove> chessplayer::possible_moves()
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        std::vector<move_s> p;
+        std::vector<chessmove> p;
         if (mp_game != NULL)
             p = mp_game->possible_moves(m_color);
         return p;
@@ -134,7 +142,7 @@ namespace chess
         return e_no_game;
     }
 
-    error_e chessplayer::consider(move_s &m, int8_t p)
+    error_e chessplayer::consider(chessmove &m, int8_t p)
     {
         if (mp_game != NULL)
         {

@@ -5,6 +5,7 @@ extends Panel
 const piece_arr_size = 27
 const piece_delta = 36
 var piece_arr = []
+var bottom_color : SentinelChess.ChessColor = SentinelChess.White
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -16,8 +17,11 @@ func _ready():
 		add_child(po)
 		piece_arr[y]=po
 
-func refreshpieces(turn_color : SentinelChess.ChessColor, board : ChessBoard):
-		if turn_color == SentinelChess.White:
+func setup(bc : SentinelChess.ChessColor):
+	bottom_color = bc;
+
+func refreshpieces(board : ChessBoard):
+		if bottom_color == SentinelChess.White:
 			refreshCaptured(
 				board.captured_pieces_abbr(SentinelChess.White),
 				board.captured_pieces_abbr(SentinelChess.Black))

@@ -1,5 +1,6 @@
 #include "chessboard.h"
 #include "chesspiece.h"
+#include "chessmove.h"
 
 namespace chess
 {
@@ -72,7 +73,7 @@ namespace chess
         copy(oth);
     }
 
-    void chesspiece::possible_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8], unsigned char castled_left, unsigned char castled_right, coord_s ep)
+    void chesspiece::possible_moves(std::vector<chessmove> &possible, coord_s p0, unsigned char (&cells)[8][8], unsigned char castled_left, unsigned char castled_right, coord_s ep)
     {
         switch (ptype)
         {
@@ -97,7 +98,7 @@ namespace chess
         }
     }
 
-    void chesspiece::pawn_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8], coord_s ep)
+    void chesspiece::pawn_moves(std::vector<chessmove> &possible, coord_s p0, unsigned char (&cells)[8][8], coord_s ep)
     {
         // black is on top so dy =  1;
         int8_t dy = color == c_black ? -1 : 1;
@@ -154,7 +155,7 @@ namespace chess
         }
     }
 
-    void chesspiece::calc_direction_moves(std::vector<move_s> &possible, coord_s p0, int8_t dy, int8_t dx, int8_t max, unsigned char (&cells)[8][8])
+    void chesspiece::calc_direction_moves(std::vector<chessmove> &possible, coord_s p0, int8_t dy, int8_t dx, int8_t max, unsigned char (&cells)[8][8])
     {
         color_e enemy_col = other(color);
         int8_t y = p0.y + dy;
@@ -178,7 +179,7 @@ namespace chess
         }
     }
 
-    void chesspiece::calc_single_move(std::vector<move_s> &possible, coord_s p0, int8_t dy, int8_t dx, unsigned char (&cells)[8][8])
+    void chesspiece::calc_single_move(std::vector<chessmove> &possible, coord_s p0, int8_t dy, int8_t dx, unsigned char (&cells)[8][8])
     {
         int8_t y = p0.y + dy;
         int8_t x = p0.x + dx;
@@ -189,7 +190,7 @@ namespace chess
             possible.push_back(new_move(p0, coord_s(y, x)));
     }
 
-    void chesspiece::calc_king_move(std::vector<move_s> &possible, coord_s p0, int8_t dy, int8_t dx, unsigned char (&cells)[8][8])
+    void chesspiece::calc_king_move(std::vector<chessmove> &possible, coord_s p0, int8_t dy, int8_t dx, unsigned char (&cells)[8][8])
     {
         int8_t y = p0.y + dy;
         int8_t x = p0.x + dx;
@@ -203,7 +204,7 @@ namespace chess
         }
     }
 
-    void chesspiece::bishop_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8])
+    void chesspiece::bishop_moves(std::vector<chessmove> &possible, coord_s p0, unsigned char (&cells)[8][8])
     {
         calc_direction_moves(possible, p0, -1, -1, 8, cells);
         calc_direction_moves(possible, p0, -1, 1, 8, cells);
@@ -247,7 +248,7 @@ namespace chess
         kc++;
     }
 
-    void chesspiece::knight_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8])
+    void chesspiece::knight_moves(std::vector<chessmove> &possible, coord_s p0, unsigned char (&cells)[8][8])
     {
         calc_single_move(possible, p0, -1, 2, cells);
         calc_single_move(possible, p0, -1, -2, cells);
@@ -271,7 +272,7 @@ namespace chess
         calc_single_kill(p0, 2, 1, cells, kc);
     }
 
-    void chesspiece::rook_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8])
+    void chesspiece::rook_moves(std::vector<chessmove> &possible, coord_s p0, unsigned char (&cells)[8][8])
     {
         calc_direction_moves(possible, p0, -1, 0, 8, cells);
         calc_direction_moves(possible, p0, 0, -1, 8, cells);
@@ -287,7 +288,7 @@ namespace chess
         calc_direction_kills(p0, 0, 1, 8, cells, kc);
     }
 
-    void chesspiece::queen_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8])
+    void chesspiece::queen_moves(std::vector<chessmove> &possible, coord_s p0, unsigned char (&cells)[8][8])
     {
         calc_direction_moves(possible, p0, -1, 0, 8, cells);
         calc_direction_moves(possible, p0, 0, -1, 8, cells);
@@ -311,7 +312,7 @@ namespace chess
         calc_direction_kills(p0, 1, 1, 8, cells, kc);
     }
 
-    void chesspiece::king_moves(std::vector<move_s> &possible, coord_s p0, unsigned char (&cells)[8][8], unsigned char castled_left, unsigned char castled_right)
+    void chesspiece::king_moves(std::vector<chessmove> &possible, coord_s p0, unsigned char (&cells)[8][8], unsigned char castled_left, unsigned char castled_right)
     {
         // kill mask should be set so that should dictate
         // if this call returns a possible move (check)
@@ -364,7 +365,7 @@ namespace chess
         return true;
     }
 
-    void chesspiece::possible_pawn_move(std::vector<move_s> &possible, coord_s p0, int8_t dy, int8_t dx)
+    void chesspiece::possible_pawn_move(std::vector<chessmove> &possible, coord_s p0, int8_t dy, int8_t dx)
     {
         int8_t y1 = p0.y + dy;
         int8_t x1 = p0.x + dx;

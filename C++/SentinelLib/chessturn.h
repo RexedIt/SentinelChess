@@ -1,16 +1,23 @@
 #pragma once
 
 #include "chessboard.h"
+#include "chessmove.h"
 
 #include "nlohmann/json.hpp"
 using namespace nlohmann;
 
 namespace chess
 {
-    typedef struct chessturn_s
+
+    class chessturn
     {
+    public:
+        chessturn();
+        chessturn(const chessturn &oth);
+        chessturn(int16_t _t, chessmove &_m, bool _ch, chessboard &_b, color_e _c, game_state_e _g, color_e _wc, int32_t _wt, int32_t _bt);
+
         int16_t t;
-        move_s m;
+        chessmove m;
         bool ch;
         chessboard b;
         color_e c;
@@ -18,21 +25,12 @@ namespace chess
         color_e wc;
         int32_t wt;
         int32_t bt;
-        chessturn_s()
-        {
-            t = 0;
-            c = c_none;
-            g = none_e;
-            wc = c_none;
-            wt = 0;
-            bt = 0;
-        }
-        chessturn_s(const chessturn_s &oth);
-        chessturn_s(int16_t _t, move_s &_m, bool _ch, chessboard &_b, color_e _c, game_state_e _g, color_e _wc, int32_t _wt, int32_t _bt);
+
         error_e load(json &turn);
         error_e save(json &turn);
-    } chessturn_s;
+    };
 
-    chessturn_s new_turn(int16_t _t, move_s &_m, bool _ch, chessboard &_b, color_e _c, game_state_e _g, color_e _wc, int32_t _wt, int32_t _bt);
+    // related functions not necessary to be static members
+    chessturn new_turn(int16_t _t, chessmove &_m, bool _ch, chessboard &_b, color_e _c, game_state_e _g, color_e _wc, int32_t _wt, int32_t _bt);
 
 }
