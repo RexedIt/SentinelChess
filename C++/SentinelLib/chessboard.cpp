@@ -524,6 +524,31 @@ namespace chess
         return possible;
     }
 
+    std::vector<move_s> chessboard::possible_moves(color_e turn_col, piece_e piece, int8_t yc, int8_t xc)
+    {
+        std::vector<move_s> possible;
+        for (int8_t y = 0; y < 8; y++)
+        {
+            if ((yc != -1) && (y != yc))
+                continue;
+            for (int8_t x = 0; x < 8; x++)
+            {
+                if ((xc != -1) && (x != xc))
+                    continue;
+                unsigned char content = m_cells[y][x];
+                if (content != 0)
+                {
+                    if ((content & piece_mask) != (unsigned char)piece)
+                        continue;
+                    color_e content_col = (color_e)(content & color_mask);
+                    if (content_col == turn_col)
+                        possible_moves(possible, coord_s(y, x));
+                }
+            }
+        }
+        return possible;
+    }
+
     void chessboard::possible_moves(std::vector<move_s> &possible, coord_s p0)
     {
         chesspiece piece(m_cells[p0.y][p0.x]);

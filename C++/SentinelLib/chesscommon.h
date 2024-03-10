@@ -231,6 +231,8 @@ namespace chess
 
     game_state_e is_game_over(color_e col, move_s &m);
     bool contains_move(std::vector<move_s> possible_moves, move_s &m, bool inherit = false);
+    bool contains_move_dest(std::vector<move_s> possible_moves, move_s &m);
+
     int color_idx(color_e c);
     std::string color_str(color_e col);
     color_e str_color(std::string col);
@@ -242,7 +244,7 @@ namespace chess
     game_state_e str_game_state(std::string g);
     std::string move_str(move_s m);
     error_e str_move(std::string s, move_s &m);
-    error_e str_move(std::string s, chessboard &b, move_s &m);
+    error_e str_move(std::string s, color_e c, chessboard &b, move_s &m);
     std::string coord_str(coord_s c);
     std::string time_str(int32_t t);
     bool coord_int(std::string s, coord_s &c);
@@ -250,6 +252,7 @@ namespace chess
     bool in_range(coord_s c);
     bool is_color(unsigned char cell, color_e color);
     color_e other(color_e c);
+    move_s new_move(int8_t y0, int8_t x0, int8_t y1, int8_t x1);
     move_s new_move(coord_s p0, coord_s p1, int8_t cx = -1, bool en_passant = false);
     move_s new_move(coord_s p0, coord_s p1, piece_e promote);
 

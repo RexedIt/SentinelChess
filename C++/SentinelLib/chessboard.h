@@ -51,6 +51,7 @@ namespace chess
         move_s attempt_move(color_e col, move_s m);
         move_s attempt_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
         std::vector<move_s> possible_moves(color_e col);
+        std::vector<move_s> possible_moves(color_e col, piece_e piece, int8_t yc = -1, int8_t xc = -1);
         std::vector<piece_e> captured_pieces(color_e col);
         std::string captured_pieces_abbr(color_e col);
         error_e set_captured_pieces(std::string pieces);

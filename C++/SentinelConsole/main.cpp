@@ -44,9 +44,9 @@ std::vector<std::string> get_args(std::string cmdu, char sep)
     return split_string(cmdu, sep);
 }
 
-bool get_move(std::string cmdu, move_s &m)
+bool get_move(std::string cmdu, color_e c, chessboard &b, move_s &m)
 {
-    error_e err = str_move(cmdu, m);
+    error_e err = str_move(cmdu, c, b, m);
     if (err != e_none)
         return print_error(err);
     return true;
@@ -517,7 +517,7 @@ int main(void)
                         }
                     }
                     move_s m;
-                    if (!get_move(cmdu, m))
+                    if (!get_move(cmdu, p_game->turn_color(), p_game->board(), m))
                         continue;
                     color_e whose_turn = p_game->turn_color();
                     error_e err = p_game->move(whose_turn, m);

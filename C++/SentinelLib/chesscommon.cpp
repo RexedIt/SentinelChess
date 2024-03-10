@@ -6,6 +6,7 @@
 
 #include "chesscommon.h"
 #include "chesspiece.h"
+#include "chessboard.h"
 
 namespace chess
 {
@@ -312,6 +313,26 @@ namespace chess
         return p_none;
     }
 
+    piece_e char_abbr_an(char c)
+    {
+        switch (c)
+        {
+        case 'P':
+            return p_pawn;
+        case 'B':
+            return p_bishop;
+        case 'N':
+            return p_knight;
+        case 'R':
+            return p_rook;
+        case 'K':
+            return p_king;
+        case 'Q':
+            return p_queen;
+        }
+        return p_none;
+    }
+
     std::string game_state_str(game_state_e g)
     {
         switch (g)
@@ -394,11 +415,113 @@ namespace chess
         return e_none;
     }
 
-    error_e str_move(std::string s, chessboard &b, move_s &m)
+    error_e str_move(std::string s, color_e col, chessboard &b, move_s &m)
     {
-        // *** NATHANAEL ***
-        // This is intended for more advanced
-        // advanced move parsing (PGN)
+        // Is it a coordinate move?
+        size_t l = s.length();
+        if (l < 2)
+            return e_invalid_move;
+        if (l >= 5)
+            if (s[2] == '-')
+                return str_move(s, m);
+        std::vector<move_s> poss;
+        // Handle castlingit is vastly different
+        // note we are using 'contains move' to
+        // find and conform a move with the necessary details for our engine
+        int8_t our_cx = -1;
+        if ((s == "O-O") || (s == "0-0"))
+            our_cx = 6;
+        else if ((s == "O-O-O") || (s == "0-0-0"))
+            our_cx = 2;
+        if (our_cx != -1)
+        {
+            // Kingside Castling
+            poss = b.possible_moves(col, p_king);
+            int8_t kingsrow = (col == c_white) ? 0 : 7;
+            m = new_move(kingsrow, 4, kingsrow, our_cx);
+            if (contains_move(poss, m, true))
+                return e_none;
+        }
+        // strip out any special characters, this includes
+        // those for promotion assignment as well as check
+        // and checkmate etc as those are determined by
+        // our engine and can be rebuilt
+        std::string si;
+        for (size_t i = 0; i < l; i++)
+        {
+            char c = s[i];
+            bool inc = false;
+            if ((c >= 'a') && (c <= 'h'))
+                inc = true;
+            if ((c >= '1') && (c <= '8'))
+                inc = true;
+            if ((c == 'N') || (c == 'B') || (c == 'R') || (c == 'Q') || (c == 'K'))
+                inc = true;
+            if (inc)
+                si += c;
+        }
+        l = si.length();
+        if (l < 2)
+            return e_invalid_move;
+        // Now the string has been rebuilt, let's look at the
+        // last character.  If it is a piece character,
+        // let's assign promote and cut that off so that
+        // the last 2 characters are expected to be the destination
+        // coordinate.
+        piece_e promote = char_abbr_an(si[l - 1]);
+        if (promote != p_none)
+        {
+            m.promote = promote;
+            si = si.substr(0, l - 1);
+            l = si.length();
+        }
+        // If no piece indicated, it is possibly a pawn move
+        piece_e p = p_pawn; // the default if none provided
+        int8_t yc = -1;
+        int8_t xc = -1;
+        bool cap = false;
+        // Determine the components based on their character ranges.
+        // note we are expecting the last two characters to be destination
+        for (size_t i = 0; i < l - 2; i++)
+        {
+            char c = si[i];
+            if ((c >= 'a') && (c <= 'h'))
+                xc = c - 'a';
+            if ((c >= '1') && (c <= '8'))
+                yc = c - '1';
+            if (c == 'x')
+                cap = true;
+            piece_e p1 = char_abbr_an(c);
+            if (p1 != p_none)
+                p = p1;
+        }
+        // let's now observe the destination coordinate
+        std::string ms = si.substr(l - 2);
+        if (coord_int(ms, m.p1))
+        {
+            poss = b.possible_moves(col, p, yc, xc);
+            if (contains_move_dest(poss, m))
+            {
+                // Double check capture
+                if (cap)
+                {
+                    piece_e dp = b.get_piece(m.p1);
+                    if (dp == p_none)
+                        return e_invalid_move;
+                }
+                if (p == p_pawn)
+                {
+                    // last check for promote
+                    int8_t promoterow = (col == c_white) ? 7 : 0;
+                    if ((m.p1.y == promoterow) && (promote == p_none))
+                        return e_invalid_move;
+                    m.promote = promote;
+                    // and en-passant
+                    // *** REM *** TODO
+                }
+                return e_none;
+            }
+        }
         return e_invalid_move;
     }
 
@@ -470,6 +593,31 @@ namespace chess
                 }
         }
         return false;
+    }
+
+    bool contains_move_dest(std::vector<move_s> possible_moves, move_s &m)
+    {
+        // assumes that possible moves have been narrowed.
+        int count = 0;
+        for (size_t i = 0; i < possible_moves.size(); i++)
+        {
+            if (possible_moves[i].p1 == m.p1)
+            {
+                // inherit is allowing a user move to pick up the en passant and
+                // castle flags the CPU would have determined possible for the
+                // square so the user move need only be a coordinate not additional
+                // instructions.
+                m = possible_moves[i];
+                count++;
+            }
+        }
+        return (count == 1);
+    }
+
+    move_s new_move(int8_t y0, int8_t x0, int8_t y1, int8_t x1)
+    {
+        move_s m(coord_s(y0, x0), coord_s(y1, x1));
+        return m;
     }
 
     move_s new_move(coord_s p0, coord_s p1, int8_t cx, bool en_passant)
