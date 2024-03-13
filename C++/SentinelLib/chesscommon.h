@@ -8,6 +8,15 @@
 namespace chess
 {
 
+#define JSON_LOAD(o, k, v, d) \
+    if (o.contains(k))        \
+        v = o[k];             \
+    else                      \
+        v = d;
+
+#define JSON_GET(o, k, d) \
+    (o.contains(k) ? o[k] : d)
+
     typedef enum error_e
     {
         e_none,
@@ -156,7 +165,8 @@ namespace chess
     {
         t_none,
         t_human,
-        t_computer
+        t_computer,
+        t_puzzle
     } chessplayertype_e;
 
     typedef enum chessgamelistenertype
@@ -196,5 +206,6 @@ namespace chess
     unsigned char read_hex_uchar(std::string line);
     std::string uppercase(std::string l);
     std::string lowercase(std::string u);
+    uintmax_t get_file_size(std::string f);
 
 }

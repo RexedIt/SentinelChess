@@ -1,6 +1,7 @@
 #include "chesslobby.h"
 #include "chessplayer.h"
 #include "chesscomputer.h"
+#include "chesspuzzleplayer.h"
 
 namespace chess
 {
@@ -107,7 +108,7 @@ namespace chess
                 int32_t skill = it["skill"];
                 chessplayertype_e ptype = it["type"];
                 if (add_player(color, name, skill, ptype) != e_none)
-                    return e_loading;
+                    return restore(e_loading);
             }
 
             error_e err = mp_game->load_game(jsonf);
@@ -162,6 +163,48 @@ namespace chess
         return e_none;
     }
 
+    error_e chesslobby::load_puzzle(chesspuzzle p)
+    {
+        // determine the human color
+        chessboard b;
+        error_e err = b.load_xfen(p.fen);
+        if (err != e_none)
+            return err;
+        color_e tc = b.turn_color();
+
+        backup();
+
+        // create game object early
+        mp_game = std::shared_ptr<chessgame>(new chessgame());
+        attach_to_game();
+
+        err = add_player(other(tc), "Human", p.rating, t_human);
+        if (err != e_none)
+            return restore(err);
+
+        err = add_player(tc, "Puzzle", p.rating, t_puzzle);
+        if (err != e_none)
+            return restore(err);
+
+        err = mp_game->load_puzzle(p);
+        if (err != e_none)
+            return restore(err);
+
+        attach_to_game();
+        return err;
+    }
+
+    error_e chesslobby::load_puzzle(std::string filename, int rating)
+    {
+        // determine the human color
+        chesspuzzle p;
+        error_e err = p.load_random(filename, rating);
+        if (err != e_none)
+            return err;
+
+        return load_puzzle(p);
+    }
+
     error_e chesslobby::add_player(color_e color, std::string name, int skill, chessplayertype_e ptype)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
@@ -169,19 +212,28 @@ namespace chess
         {
         case t_human:
         {
-            std::shared_ptr<chessplayer> p_chessplayer(new chessplayer(color, name, skill, t_human));
+            std::shared_ptr<chessplayer> p(new chessplayer(color, name, skill, t_human));
             m_locals.insert(color);
-            mp_players[color] = p_chessplayer;
-            p_chessplayer->set_game(mp_game);
+            mp_players[color] = p;
+            p->set_game(mp_game);
             return e_none;
         }
         case t_computer:
         {
-            std::shared_ptr<chesscomputer> p_chesscomputer(new chesscomputer(color, name, skill));
+            std::shared_ptr<chesscomputer> p(new chesscomputer(color, name, skill));
             // if the type is a listener, do this
-            mp_game->listen(p_chesscomputer);
-            mp_players[color] = p_chesscomputer;
-            p_chesscomputer->set_game(mp_game);
+            mp_game->listen(p);
+            mp_players[color] = p;
+            p->set_game(mp_game);
+            return e_none;
+        }
+        case t_puzzle:
+        {
+            std::shared_ptr<chesspuzzleplayer> p(new chesspuzzleplayer(color, name, skill));
+            // if the type is a listener, do this
+            mp_game->listen(p);
+            mp_players[color] = p;
+            p->set_game(mp_game);
             return e_none;
         }
         }

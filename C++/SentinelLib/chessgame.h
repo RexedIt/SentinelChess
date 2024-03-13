@@ -4,9 +4,9 @@
 #include "chessplayer.h"
 #include "chessgamelistener.h"
 #include "chessturn.h"
+#include "chesspuzzle.h"
 
 #include <fstream>
-#include <iostream>
 #include <mutex>
 #include <map>
 
@@ -50,6 +50,8 @@ namespace chess
         error_e move(color_e col, std::string s);
 
         std::vector<chessmove> possible_moves(color_e col);
+        std::map<int16_t, chessmove> player_moves(color_e col);
+
         game_state_e is_game_over(color_e col, chessmove m);
         void clock_remaining(color_e col, int32_t &wt, int32_t &bt);
 
@@ -71,6 +73,7 @@ namespace chess
         error_e new_game(const chessclock_s &clock);
         error_e load_game(json &j);
         error_e save_game(json &j);
+        error_e load_puzzle(chesspuzzle &p);
 
         error_e listen(std::shared_ptr<chessgamelistener>);
         error_e unlisten(int);
@@ -97,6 +100,8 @@ namespace chess
         game_state_e m_state;
         std::vector<chessturn> m_turn;
         int m_play_pos;
+        bool m_puzzle;
+        std::string m_opening;
 
         color_e m_win_color;
 

@@ -90,6 +90,16 @@ namespace chess
     {
         // Simple parse only!
         std::vector<std::string> c = split_string(s, '-');
+        if ((c.size() == 1) && (s.length() >= 4))
+        {
+            if (s.length() > 5)
+                return e_invalid_move;
+            c.clear();
+            c.push_back(s.substr(0, 2));
+            c.push_back(s.substr(2, 2));
+            if (s.length() == 5)
+                c.push_back(s.substr(4, 1));
+        }
         if ((c.size() < 2) || (c.size() > 3))
             return e_invalid_move;
         if ((!coord_int(c[0], m.p0)) ||
@@ -129,6 +139,8 @@ namespace chess
         if (l >= 5)
             if (s[2] == '-')
                 return str_move(s, m);
+        if (((l == 4) || (l == 5)) && (s == lowercase(s)))
+            return str_move(s, m);
         std::vector<chessmove> poss;
         // Handle castlingit is vastly different
         // note we are using 'contains move' to

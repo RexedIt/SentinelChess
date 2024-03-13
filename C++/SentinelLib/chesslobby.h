@@ -3,6 +3,8 @@
 #include "chessgame.h"
 #include "chessgamelistener.h"
 #include "chessplayer.h"
+#include "chesspuzzle.h"
+
 #include <mutex>
 #include <map>
 #include <set>
@@ -25,7 +27,8 @@ namespace chess
         error_e new_game(color_e user_color, std::string name, int skill, chessplayertype_e ptype, const chessclock_s &clock);
         error_e load_game(std::string filename);
         error_e save_game(std::string filename);
-
+        error_e load_puzzle(chesspuzzle puzzle);
+        error_e load_puzzle(std::string filename, int rating);
         error_e add_player(color_e color, std::string name, int skill, chessplayertype_e ptype);
         error_e drop_player(color_e color);
         error_e clear_players();

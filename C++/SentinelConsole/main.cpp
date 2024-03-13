@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include <iostream>
 #include <string>
 #include <windows.h>
 #include <conio.h>
+#include <iostream>
 #include <chrono>
 #include <thread>
 #include <set>
@@ -80,6 +80,21 @@ bool load_game(std::string cmd, chesslobby &lobby)
     if (filename == "")
         return print_error(e_missing_filename);
     error_e err = lobby.load_game(filename);
+    if (err != e_none)
+        return print_error(e_loading);
+    refresh_data(lobby);
+    return true;
+}
+
+bool load_puzzle(std::string cmd, chesslobby &lobby)
+{
+    std::vector<std::string> args = get_args(cmd);
+    if (args.size() == 0)
+        return print_error("Need Filename and Rating");
+    int rating = 600;
+    if (args.size() > 1)
+        rating = atoi(args[1].c_str());
+    error_e err = lobby.load_puzzle(args[0], rating);
     if (err != e_none)
         return print_error(e_loading);
     refresh_data(lobby);
@@ -352,7 +367,7 @@ int main(void)
     {
         process_queue_listener(p_listener);
         std::cout << "\r\nWelcome to Sentinel Console Chess!!!\r\n";
-        std::cout << "\r\nNEW, LOAD FileName, or QUIT?\r\n";
+        std::cout << "\r\n(N)EW, (L)OAD FileName, PU(Z)ZLE or (Q)UIT?\r\n";
         std::string cmd;
         std::cout << "> ";
         std::getline(std::cin, cmd);
@@ -366,6 +381,11 @@ int main(void)
         else if (cmdl == "L")
         {
             if (load_game(cmd, lobby))
+                break;
+        }
+        else if ((cmdl == "Z") || (cmdu == "PUZZLE"))
+        {
+            if (load_puzzle(cmd, lobby))
                 break;
         }
         else if (cmdl == "Q")
@@ -386,10 +406,11 @@ int main(void)
             std::string cmdl = cmdu.substr(0, 1);
             if ((cmdu == "?") || (cmdu == "HELP") || (cmdu == "H"))
             {
-                std::cout << "\r\nCommands: NEW/N, LOAD/L Filename, SAVE/S FileName, PLAY/P, IDLE/I, QUIT/Q, " << std::endl;
+                std::cout << "\r\nCommands: (N)EW, (L)OAD Filename, (S)AVE FileName, PU(Z)ZLE FileName Difficulty, " << std::endl;
+                std::cout << "\t(P)LAY, (I)DLE, (Q)UIT, ";
                 if (!is_idle)
-                    std::cout << "MOVE/M [XX-XX], ";
-                std::cout << "< [Turn], >, T Turn PIECE [Coord Piece], - [Coord], XFEN [String] " << std::endl;
+                    std::cout << "(M)OVE MoveStr, ";
+                std::cout << "<, >, T Turn PIECE Coord Piece, - [Coord], (X)FEN [String] " << std::endl;
                 continue;
             }
             if (cmdl == "N")
@@ -400,6 +421,11 @@ int main(void)
             else if (cmdl == "L")
             {
                 if (load_game(cmd, lobby))
+                    continue;
+            }
+            else if ((cmdl == "Z") || (cmdu == "PUZZLE"))
+            {
+                if (load_puzzle(cmd, lobby))
                     continue;
             }
             else if (cmdl == "S")

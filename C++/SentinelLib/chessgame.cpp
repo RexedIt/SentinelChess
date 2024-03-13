@@ -9,6 +9,7 @@ namespace chess
         m_state = none_e;
         m_win_color = c_none;
         m_play_pos = -1;
+        m_puzzle = false;
     }
 
     chessboard chessgame::board()
@@ -169,6 +170,16 @@ namespace chess
         return m_board.possible_moves(col);
     }
 
+    std::map<int16_t, chessmove> chessgame::player_moves(color_e col)
+    {
+        std::map<int16_t, chessmove> ret;
+        int16_t num_turns = playmax();
+        for (int16_t i = 0; i < num_turns; i++)
+            if (m_turn[i].c == col)
+                ret[m_turn[i].t] = m_turn[i].m;
+        return ret;
+    }
+
     bool chessgame::check_state(color_e col)
     {
         return m_board.check_state(col);
@@ -321,6 +332,9 @@ namespace chess
                 m_turn.push_back(t);
             }
 
+            JSON_LOAD(jsonf, "puzzle", m_puzzle, false);
+            JSON_LOAD(jsonf, "opening", m_opening, "");
+
             m_play_pos = jsonf["play_pos"];
             if (m_play_pos < 0)
                 m_play_pos = 0;
@@ -342,6 +356,61 @@ namespace chess
         {
             return e_loading;
         }
+    }
+
+    error_e chessgame::load_puzzle(chesspuzzle &p)
+    {
+        chessboard b;
+        error_e err = b.load_xfen(p.fen);
+        if (err != e_none)
+            return err;
+        std::vector<std::string> moves = split_string(p.moves, ' ');
+        if (moves.size() < 2)
+            return e_loading;
+
+        color_e tc = b.turn_color();
+        std::vector<chessturn> turns;
+
+        int16_t n = 0;
+        chessturn t;
+
+        t.t = n++;
+        t.b = b;
+        t.c = tc;
+        t.g = play_e;
+        t.ch = b.check_state(tc);
+        t.wc = c_none;
+
+        turns.push_back(t);
+
+        for (std::string move : moves)
+        {
+            chessmove m;
+            err = str_move(move, tc, b, m);
+            if (err != e_none)
+                return err;
+            m = b.attempt_move(tc, m);
+            if (m.error != e_none)
+                return err;
+            t.t = n++;
+            t.b = b;
+            t.c = tc;
+            t.m = m;
+            t.ch = b.check_state(tc);
+            t.g = play_e;
+            t.wc = c_none;
+            turns.push_back(t);
+            tc = other(tc);
+        }
+
+        m_turn = turns;
+        m_play_pos = 0;
+        m_board.copy(turns[0].b);
+        m_puzzle = true;
+        refresh_board_positions();
+        set_state(idle_e, true);
+        signal_on_turn();
+        return e_none;
     }
 
     error_e chessgame::save_game(json &jsonf)
@@ -373,6 +442,8 @@ namespace chess
             }
             jsonf["turns"] = turns;
 
+            jsonf["puzzle"] = m_puzzle;
+            jsonf["opening"] = m_opening;
             jsonf["play_pos"] = m_play_pos;
 
             auto board = json::object();
@@ -390,8 +461,23 @@ namespace chess
 
     error_e chessgame::load_xfen(std::string contents)
     {
-        error_e ret = m_board.load_xfen(contents);
-        signal_refresh_board();
+        chessboard b;
+        error_e ret = b.load_xfen(contents);
+        if (ret != e_none)
+            return ret;
+        m_board.copy(b);
+        m_win_color = c_none;
+        // *** NATHANAEL ***
+        // in the case of an XFEN paste, we should
+        // remove the clock I think since the
+        // game state is indeterminate.
+        m_turn.clear();
+        m_play_pos = -1;
+        refresh_board_positions();
+        // when we load any game, if it's state
+        // is play we turn to idle (review mode)
+        set_state(idle_e, true);
+        signal_on_turn();
         return ret;
     }
 

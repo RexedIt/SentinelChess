@@ -3,7 +3,6 @@
 #include "chessturn.h"
 
 #include <memory.h>
-#include <iostream>
 #include <cstdlib>
 #include <fstream>
 #include <cstring>

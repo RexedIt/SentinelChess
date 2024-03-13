@@ -1,5 +1,4 @@
 #include <ctime>
-#include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
@@ -434,15 +433,24 @@ namespace chess
         std::vector<std::string> ret;
         std::string rem = cmd;
         size_t pos = rem.find(div);
+        bool last_div = false;
         while (pos != std::string::npos)
         {
+            last_div = (pos == rem.length() - 1);
             ret.push_back(trim(rem.substr(0, pos)));
             rem = rem.substr(pos + 1);
             pos = rem.find(div);
         }
-        if (rem != "")
+        if ((rem != "") || (last_div))
             ret.push_back(trim(rem));
         return ret;
+    }
+
+    uintmax_t get_file_size(std::string filename)
+    {
+        struct stat stat_buf;
+        uintmax_t rc = stat(filename.c_str(), &stat_buf);
+        return rc == 0 ? stat_buf.st_size : -1;
     }
 
 }
