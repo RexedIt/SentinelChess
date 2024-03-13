@@ -10,6 +10,7 @@
     <ClCompile Include="chesslobby.cpp" />
     <ClCompile Include="chessplayer.cpp" />
     <ClCompile Include="chessgamelistener.cpp" />
+    <ClCompile Include="chessmove.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="chessboard.h" />
@@ -21,5 +22,6 @@
     <ClInclude Include="chesslobby.h" />
     <ClInclude Include="chessplayer.h" />
     <ClInclude Include="chessgamelistener.h" />
+    <ClInclude Include="chessmove.h" />
   </ItemGroup>
 </Project>

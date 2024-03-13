@@ -1,11 +1,11 @@
 #include <ctime>
-#include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
 
 #include "chesscommon.h"
 #include "chesspiece.h"
+#include "chessboard.h"
 
 namespace chess
 {
@@ -91,50 +91,6 @@ namespace chess
         default:
             return "Unknown Error";
         }
-    }
-
-    std::string move_s::to_string()
-    {
-        std::string s = "";
-        s += coord_str(p0) + " to " + coord_str(p1);
-        if (cx != -1)
-        {
-            s += " Castle ";
-            s += (cx == 0) ? "Queen Side" : "King Side";
-        }
-        if (en_passant)
-            s += " En Passant";
-        if (promote != p_none)
-        {
-            chesspiece p((unsigned char)promote);
-            s += " Promote to " + p.name;
-        }
-        return s;
-    }
-
-    bool move_s::is_valid()
-    {
-        return ((p0.y != -1) && (error == e_none));
-    }
-
-    void move_s::invalidate()
-    {
-        p0.x = -1;
-        p0.y = -1;
-        p1.x = -1;
-        p1.y = -1;
-        cx = -1;
-        en_passant = false;
-        promote = p_none;
-        error = e_none;
-    }
-
-    bool move_s::matches(const move_s &m)
-    {
-        if (p0 == m.p0)
-            if (p1 == m.p1)
-                return true;
-        return false;
     }
 
     chessclock_s::chessclock_s()
@@ -366,54 +322,6 @@ namespace chess
         return none_e;
     }
 
-    std::string coord_str(coord_s s)
-    {
-        char pos[3];
-        pos[0] = 'a' + s.x;
-        pos[1] = '1' + s.y;
-        pos[2] = 0;
-        return std::string(pos);
-    }
-
-    std::string move_str(move_s m)
-    {
-        return coord_str(m.p0) + "-" + coord_str(m.p1);
-    }
-
-    error_e str_move(std::string s, move_s &m)
-    {
-        // Simple parse only!
-        std::vector<std::string> c = split_string(s, '-');
-        if ((c.size() < 2) || (c.size() > 3))
-            return e_invalid_move;
-        if ((!coord_int(c[0], m.p0)) ||
-            (!coord_int(c[1], m.p1)))
-            return e_invalid_move;
-        if (c.size() == 3)
-            m.promote = char_abbr(c[2][0]);
-        return e_none;
-    }
-
-    error_e str_move(std::string s, chessboard &b, move_s &m)
-    {
-        // *** NATHANAEL ***
-        // This is intended for more advanced
-        // advanced move parsing (PGN)
-        return e_invalid_move;
-    }
-
-    std::string time_str(int32_t t)
-    {
-        char tbuf[32];
-        int32_t tenths = (t % 100) / 10;
-        int32_t seconds = (t / 1000) % 60;
-        int32_t minutes = (t / 60000) % 60;
-        int32_t hours = (t / 360000);
-        sprintf_s(tbuf, 32, "%d:%2.2d:%2.2d.%d", hours, minutes, seconds, tenths);
-        std::string ret(tbuf);
-        return ret;
-    }
-
     bool coord_int(std::string s, coord_s &c)
     {
         if (s.length() != 2)
@@ -442,6 +350,27 @@ namespace chess
         return true;
     }
 
+    std::string coord_str(coord_s s)
+    {
+        char pos[3];
+        pos[0] = 'a' + s.x;
+        pos[1] = '1' + s.y;
+        pos[2] = 0;
+        return std::string(pos);
+    }
+
+    std::string time_str(int32_t t)
+    {
+        char tbuf[32];
+        int32_t tenths = (t % 100) / 10;
+        int32_t seconds = (t / 1000) % 60;
+        int32_t minutes = (t / 60000) % 60;
+        int32_t hours = (t / 360000);
+        sprintf_s(tbuf, 32, "%d:%2.2d:%2.2d.%d", hours, minutes, seconds, tenths);
+        std::string ret(tbuf);
+        return ret;
+    }
+
     bool is_color(unsigned char cell, color_e color)
     {
         return (color_e)(cell & color_mask) == color;
@@ -450,38 +379,6 @@ namespace chess
     color_e other(color_e t)
     {
         return t == c_white ? c_black : c_white;
-    }
-
-    bool contains_move(std::vector<move_s> possible_moves, move_s &m, bool inherit)
-    {
-        for (size_t i = 0; i < possible_moves.size(); i++)
-        {
-            if (possible_moves[i].p0 == m.p0)
-                if (possible_moves[i].p1 == m.p1)
-                {
-                    // inherit is allowing a user move to pick up the en passant and
-                    // castle flags the CPU would have determined possible for the
-                    // square so the user move need only be a coordinate not additional
-                    // instructions.
-                    if (inherit)
-                        if (possible_moves[i].promote == 0) // don't do this for promotion
-                            m = possible_moves[i];
-                    return true;
-                }
-        }
-        return false;
-    }
-
-    move_s new_move(coord_s p0, coord_s p1, int8_t cx, bool en_passant)
-    {
-        move_s m(p0, p1, cx, en_passant);
-        return m;
-    }
-
-    move_s new_move(coord_s p0, coord_s p1, piece_e promote)
-    {
-        move_s m(p0, p1, promote);
-        return m;
     }
 
     static volatile bool _sinit = false;
@@ -536,25 +433,24 @@ namespace chess
         std::vector<std::string> ret;
         std::string rem = cmd;
         size_t pos = rem.find(div);
+        bool last_div = false;
         while (pos != std::string::npos)
         {
+            last_div = (pos == rem.length() - 1);
             ret.push_back(trim(rem.substr(0, pos)));
             rem = rem.substr(pos + 1);
             pos = rem.find(div);
         }
-        if (rem != "")
+        if ((rem != "") || (last_div))
             ret.push_back(trim(rem));
         return ret;
     }
 
-    void write_hex_uchar(std::ofstream &file1, unsigned char c)
+    uintmax_t get_file_size(std::string filename)
     {
-        file1 << std::hex << std::setw(2) << std::setfill('0') << (int)c;
-        file1 << std::endl;
+        struct stat stat_buf;
+        uintmax_t rc = stat(filename.c_str(), &stat_buf);
+        return rc == 0 ? stat_buf.st_size : -1;
     }
 
-    unsigned char read_hex_uchar(std::string line)
-    {
-        return (unsigned char)std::stoi(line, 0, 16);
-    }
 }

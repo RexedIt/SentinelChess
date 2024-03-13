@@ -27,12 +27,14 @@ namespace chess
         bool is(color_e);
 
         error_e forfeit();
-        error_e move(move_s m0);
+        error_e move(chessmove m0);
         error_e move(coord_s p0, coord_s p1, piece_e promote = p_none);
+        error_e move(std::string s);
+
         chessboard board();
-        std::vector<move_s> possible_moves();
+        std::vector<chessmove> possible_moves();
         error_e chat(std::string msg);
-        error_e consider(move_s &, int8_t pct = -1);
+        error_e consider(chessmove &, int8_t pct = -1);
 
         color_e playercolor();
         chessplayertype_e playertype();

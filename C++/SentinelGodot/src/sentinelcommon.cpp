@@ -75,7 +75,7 @@ ChessMove::ChessMove()
     p1.reference_ptr(memnew(ChessCoord()));
 }
 
-ChessMove::ChessMove(move_s &c)
+ChessMove::ChessMove(chessmove &c)
 {
     m_move = c;
     p0.reference_ptr(memnew(ChessCoord(c.p0)));
@@ -154,7 +154,7 @@ bool ChessMove::matches(const Ref<ChessMove> &m)
 {
     if (m.is_valid())
     {
-        move_s mm = m->get();
+        chessmove mm = m->get();
         if (mm.p0 == m_move.p0)
             if (mm.p1 == m_move.p1)
                 return true;
@@ -190,7 +190,7 @@ ChessPiece ChessMove::get_promote() const
 
 void ChessMove::set_promote(const ChessPiece p)
 {
-    m_move.promote = (int8_t)p;
+    m_move.promote = (piece_e)p;
 }
 
 bool ChessMove::en_passant() const

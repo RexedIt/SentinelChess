@@ -1,15 +1,16 @@
 #pragma once
 
 #include <stdio.h>
-#include <iostream>
 #include <string>
 #include <windows.h>
 #include <chrono>
 
+#include "chesscommon.h"
+
 namespace chess
 {
     class chessboard;
-    struct move_s;
+    class chessmove;
 }
 
 std::string colorchar(int bkgnd, int fgnd, std::string s);
@@ -46,6 +47,6 @@ private:
     std::chrono::steady_clock::time_point start;
 };
 
-void board_to_console(int n, chess::chessboard &b, bool r);
-void move_to_console(chess::move_s &m, std::string s);
+void board_to_console(int n, chess::chessboard &b, chess::color_e bottom);
+void move_to_console(chess::chessmove &m, std::string s);
 void time_to_console(int32_t wt, int32_t bt);

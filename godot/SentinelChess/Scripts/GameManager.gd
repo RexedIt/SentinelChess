@@ -156,6 +156,18 @@ func user_move(c : ChessColor, m : ChessMove, a : bool):
 		_on_user_moved()
 	return true
 
+func user_move_str( c : ChessColor, s : String, a : bool):
+	var err : int = move_s(c, s)
+	if err != 0:
+		_on_error(err)
+		return false
+	if a:
+		board.animate_move(lastmove())
+		gamestate = GameState.ANIMATEMOVE
+	else:
+		_on_user_moved()
+	return true
+	
 # Callbacks
 func _on_user_moved():
 	#gameUI.append_move(n, m, get_board(), c)
@@ -178,6 +190,7 @@ func _on_closed_new(_cancelled, _white, _black, _clock):
 	# start new game
 	new_game(_white, _black, _clock)
 	board.setup(preferred_board_color())
+	pnlCaptured.setup(preferred_board_color())
 	gameUI.clear_history()
 	gameUI.append_history('New Game')
 	gameUI.announceTurn(turn_color())
@@ -255,11 +268,13 @@ func _draw_move(n, m, b, c):
 	gameUI.append_move(n,m,b,c)
 	board.move_piece(m.p0, m.p1)
 	board.refreshpieces(b)	
-	pnlCaptured.refreshpieces(c, b)
+	pnlCaptured.refreshpieces(b)
 	
 func _on_turn(n, b, c):
 	if is_local_active(c):
 		refresh_board(c, b)
+	else:
+		refresh_board(preferred_board_color(), b)
 	gameUI.refreshPrompt(c)
 
 func set_idle(b : bool):
@@ -285,13 +300,14 @@ func _on_state(s : ChessGameState, w : ChessColor):
 		finish_game(s, w)
 	
 func refresh_board(c : ChessColor, b : ChessBoard):
-	board.setup(turn_color())
+	board.setup(c)
 	board.refreshpieces(b)
-	pnlCaptured.refreshpieces(c,b)
+	pnlCaptured.setup(c)
+	pnlCaptured.refreshpieces(b)
 	
 func refresh_turn(c : ChessColor, b : ChessBoard):
 	board.refreshpieces(b)
-	pnlCaptured.refreshpieces(c,b)
+	pnlCaptured.refreshpieces(b)
 	_gamestatereact(GameState.PLAY)
 	
 func _user_moved(m):

@@ -1,14 +1,15 @@
 #pragma once
 
 #include <stdio.h>
-#include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
 #include <string>
 #include <windows.h>
 #include "console.h"
 #include "chessboard.h"
 #include "chesspiece.h"
+#include "chessmove.h"
 
 using namespace chess;
 
@@ -46,11 +47,11 @@ std::string pad(std::string orig, int n)
     return s;
 }
 
-void board_to_console(int n, chess::chessboard &b, bool r)
+void board_to_console(int n, chess::chessboard &b, chess::color_e bottom)
 {
     std::cout << "\r\n\r\n--- #" << n << " --------------------\r\n";
 
-    if ((b.turn_color() == c_white) || (r == false))
+    if (bottom == c_white)
     {
         std::cout << pad(b.captured_pieces_abbr(c_white), 26) << std::endl;
         std::cout << colorchar(ansi_black, ansi_light_blue, "    A  B  C  D  E  F  G  H\r\n") << std::endl;
@@ -98,7 +99,7 @@ void board_to_console(int n, chess::chessboard &b, bool r)
     std::cout << "---------------------------" << std::endl;
 }
 
-void move_to_console(chess::move_s &m, std::string s)
+void move_to_console(chess::chessmove &m, std::string s)
 {
     std::cout << s << " move " << m.to_string() << std::endl;
 }

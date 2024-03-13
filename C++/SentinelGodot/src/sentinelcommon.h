@@ -101,7 +101,7 @@ class ChessMove : public RefCounted
 
 public:
     ChessMove();
-    ChessMove(move_s &c);
+    ChessMove(chessmove &c);
     ~ChessMove();
 
     void set_p0(const Ref<ChessCoord> &c);
@@ -121,13 +121,13 @@ public:
     bool check() const;
     bool is_valid();
 
-    move_s get() { return m_move; }
+    chessmove get() { return m_move; }
 
 private:
     Ref<ChessCoord> p0;
     Ref<ChessCoord> p1;
 
-    move_s m_move;
+    chessmove m_move;
 
 protected:
     static void _bind_methods();

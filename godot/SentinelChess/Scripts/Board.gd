@@ -148,6 +148,7 @@ func animate_move(m : ChessMove) -> bool:
 		var p0 : ChessCoord = m.p0
 		var p1 : ChessCoord = m.p1
 		if p0 != null and p1 != null:
+			print (str(p0.y) + ',' + str(p0.x))
 			var po = piece_arr[p0.y*8+p0.x]
 			if po != null:
 				po.animate_move(p1)

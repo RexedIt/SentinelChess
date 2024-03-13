@@ -153,6 +153,7 @@
     <ClCompile Include="chessgame.cpp" />
     <ClCompile Include="chessgamelistener.cpp" />
     <ClCompile Include="chesslobby.cpp" />
+    <ClCompile Include="chessmove.cpp" />
     <ClCompile Include="chesspiece.cpp" />
     <ClCompile Include="chessplayer.cpp" />
     <ClCompile Include="chessturn.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="chessgame.h" />
     <ClInclude Include="chessgamelistener.h" />
     <ClInclude Include="chesslobby.h" />
+    <ClInclude Include="chessmove.h" />
     <ClInclude Include="chesspiece.h" />
     <ClInclude Include="chessplayer.h" />
     <ClInclude Include="chessturn.h" />

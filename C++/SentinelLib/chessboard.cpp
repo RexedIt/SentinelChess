@@ -3,7 +3,6 @@
 #include "chessturn.h"
 
 #include <memory.h>
-#include <iostream>
 #include <cstdlib>
 #include <fstream>
 #include <cstring>
@@ -349,10 +348,10 @@ namespace chess
         return ret;
     }
 
-    move_s chessboard::is_game_over(color_e col)
+    chessmove chessboard::is_game_over(color_e col)
     {
-        move_s m;
-        std::vector<move_s> possible = possible_moves(col);
+        chessmove m;
+        std::vector<chessmove> possible = possible_moves(col);
         if (find_check(col))
             m.check = true;
         m.mate = true;
@@ -402,7 +401,7 @@ namespace chess
         return e_none;
     }
 
-    void chessboard::evaluate_check_and_mate(color_e col, std::vector<move_s> &possible, move_s &m)
+    void chessboard::evaluate_check_and_mate(color_e col, std::vector<chessmove> &possible, chessmove &m)
     {
         // If we are in check currently, our move MUST remove check
         if (m.is_valid())
@@ -443,9 +442,9 @@ namespace chess
         return m_turn;
     }
 
-    move_s chessboard::attempt_move(color_e col, move_s m)
+    chessmove chessboard::attempt_move(color_e col, chessmove m)
     {
-        move_s empty;
+        chessmove empty;
         empty.error = e_invalid_move;
         coord_s p0 = m.p0;
         coord_s p1 = m.p1;
@@ -456,7 +455,7 @@ namespace chess
         chesspiece p(get(p0));
         if (p.color != col)
             return empty;
-        std::vector<move_s> possible;
+        std::vector<chessmove> possible;
         possible_moves(possible, p0);
         if (!contains_move(possible, m, true))
             return empty;
@@ -485,9 +484,9 @@ namespace chess
         return empty;
     }
 
-    move_s chessboard::attempt_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
+    chessmove chessboard::attempt_move(color_e col, coord_s p0, coord_s p1, piece_e promote)
     {
-        move_s m(p0, p1, promote);
+        chessmove m(p0, p1, promote);
         return attempt_move(col, m);
     }
 
@@ -505,9 +504,9 @@ namespace chess
                ((float)bm.bp) * bp_weight;
     }
 
-    std::vector<move_s> chessboard::possible_moves(color_e turn_col)
+    std::vector<chessmove> chessboard::possible_moves(color_e turn_col)
     {
-        std::vector<move_s> possible;
+        std::vector<chessmove> possible;
         for (int8_t y = 0; y < 8; y++)
         {
             for (int8_t x = 0; x < 8; x++)
@@ -524,7 +523,32 @@ namespace chess
         return possible;
     }
 
-    void chessboard::possible_moves(std::vector<move_s> &possible, coord_s p0)
+    std::vector<chessmove> chessboard::possible_moves(color_e turn_col, piece_e piece, int8_t yc, int8_t xc)
+    {
+        std::vector<chessmove> possible;
+        for (int8_t y = 0; y < 8; y++)
+        {
+            if ((yc != -1) && (y != yc))
+                continue;
+            for (int8_t x = 0; x < 8; x++)
+            {
+                if ((xc != -1) && (x != xc))
+                    continue;
+                unsigned char content = m_cells[y][x];
+                if (content != 0)
+                {
+                    if ((content & piece_mask) != (unsigned char)piece)
+                        continue;
+                    color_e content_col = (color_e)(content & color_mask);
+                    if (content_col == turn_col)
+                        possible_moves(possible, coord_s(y, x));
+                }
+            }
+        }
+        return possible;
+    }
+
+    void chessboard::possible_moves(std::vector<chessmove> &possible, coord_s p0)
     {
         chesspiece piece(m_cells[p0.y][p0.x]);
         piece.possible_moves(possible, p0, m_cells, m_castled_left, m_castled_right, m_ep);
@@ -649,9 +673,9 @@ namespace chess
         m_kill_updated = true;
     }
 
-    move_s chessboard::execute_move(const move_s &m0)
+    chessmove chessboard::execute_move(const chessmove &m0)
     {
-        move_s m1 = m0;
+        chessmove m1 = m0;
         chesspiece piece(m_cells[m0.p0.y][m0.p0.x]);
         move_piece(m0);
         if (m_cells[m0.p0.y][m0.p0.x] & piece_mask)
@@ -713,7 +737,7 @@ namespace chess
         return m1;
     }
 
-    void chessboard::move_piece(move_s m)
+    void chessboard::move_piece(chessmove m)
     {
         unsigned char dest = m_cells[m.p1.y][m.p1.x] & piece_and_color_mask;
         m_cells[m.p1.y][m.p1.x] = m_cells[m.p0.y][m.p0.x];

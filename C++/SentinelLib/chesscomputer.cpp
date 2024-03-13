@@ -46,7 +46,7 @@ namespace chess
         }
     }
 
-    void chesscomputer::signal_on_turn(int16_t turn_no, move_s m, bool check, chessboard &board, color_e color, game_state_e game_state, color_e win_color, int32_t wt, int32_t bt)
+    void chesscomputer::signal_on_turn(int16_t turn_no, chessmove m, bool check, chessboard &board, color_e color, game_state_e game_state, color_e win_color, int32_t wt, int32_t bt)
     {
         // This is where we will determine game state, move, or forfeit.
         // move:
@@ -85,8 +85,8 @@ namespace chess
     {
         m_cancel = false;
         int rec = m_level;
-        move_s best;
-        std::vector<move_s> possible = board.possible_moves(m_color);
+        chessmove best;
+        std::vector<chessmove> possible = board.possible_moves(m_color);
         // Figure move?
         float maxval = -9999;
         for (size_t i = 0; i < possible.size(); i++)
@@ -97,7 +97,7 @@ namespace chess
                 return e_interrupted;
             }
             chessboard b(board);
-            move_s candidate = b.execute_move(possible[i]);
+            chessmove candidate = b.execute_move(possible[i]);
             if (candidate.is_valid())
             {
                 float score = computer_move_min(b, other(m_color), -9999, 9999, rec - 1);
@@ -121,12 +121,12 @@ namespace chess
             return weight(board, turn_col);
         float alpha = _alpha;
         float maxeval = -9999;
-        std::vector<move_s> possible = board.possible_moves(turn_col);
+        std::vector<chessmove> possible = board.possible_moves(turn_col);
         for (size_t i = 0; i < possible.size(); i++)
         {
             chessboard b(board);
             // Execute the move
-            move_s candidate = b.execute_move(possible[i]);
+            chessmove candidate = b.execute_move(possible[i]);
             if (candidate.is_valid())
             {
                 float score = computer_move_min(b, other(turn_col), alpha, beta, rec - 1);
@@ -147,12 +147,12 @@ namespace chess
             return -1.0f * weight(board, turn_col);
         float beta = _beta;
         float mineval = 9999;
-        std::vector<move_s> possible = board.possible_moves(turn_col);
+        std::vector<chessmove> possible = board.possible_moves(turn_col);
         for (size_t i = 0; i < possible.size(); i++)
         {
             chessboard b(board);
             // Execute the move
-            move_s candidate = b.execute_move(possible[i]);
+            chessmove candidate = b.execute_move(possible[i]);
             if (candidate.is_valid())
             {
                 float score = computer_move_max(b, other(turn_col), alpha, beta, rec - 1);

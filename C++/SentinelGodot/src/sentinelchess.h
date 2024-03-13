@@ -41,6 +41,8 @@ private:
     int forfeit(ChessColor col);
     int move_c(ChessColor col, const Ref<ChessCoord> &p0, const Ref<ChessCoord> &p1, ChessPiece promote);
     int move_m(ChessColor col, const Ref<ChessMove> &m);
+    int move_s(ChessColor col, String s);
+    
     Array possible_moves(ChessColor col);
 
     int play_game();

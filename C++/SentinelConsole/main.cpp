@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include <iostream>
 #include <string>
 #include <windows.h>
 #include <conio.h>
+#include <iostream>
 #include <chrono>
 #include <thread>
 #include <set>
@@ -44,15 +44,15 @@ std::vector<std::string> get_args(std::string cmdu, char sep)
     return split_string(cmdu, sep);
 }
 
-bool get_move(std::string cmdu, move_s &m)
+bool get_move(std::string cmdu, color_e c, chessboard b, chessmove &m)
 {
-    error_e err = str_move(cmdu, m);
+    error_e err = str_move(cmdu, c, b, m);
     if (err != e_none)
         return print_error(err);
     return true;
 }
 
-bool get_promotion(move_s &m)
+bool get_promotion(chessmove &m)
 {
     std::string cmd;
     std::cout << "Promote pawn to [Q,R,N,B] : ";
@@ -80,6 +80,21 @@ bool load_game(std::string cmd, chesslobby &lobby)
     if (filename == "")
         return print_error(e_missing_filename);
     error_e err = lobby.load_game(filename);
+    if (err != e_none)
+        return print_error(e_loading);
+    refresh_data(lobby);
+    return true;
+}
+
+bool load_puzzle(std::string cmd, chesslobby &lobby)
+{
+    std::vector<std::string> args = get_args(cmd);
+    if (args.size() == 0)
+        return print_error("Need Filename and Rating");
+    int rating = 600;
+    if (args.size() > 1)
+        rating = atoi(args[1].c_str());
+    error_e err = lobby.load_puzzle(args[0], rating);
     if (err != e_none)
         return print_error(e_loading);
     refresh_data(lobby);
@@ -229,11 +244,17 @@ bool new_game(chesslobby &lobby)
 
 void refresh_board(int16_t t, chessboard &b)
 {
-    bool r = locals.count(b.turn_color()) > 0;
-    board_to_console(t, b, r);
+    color_e bottom = c_white;
+    if (locals.count(c_white) == 0)
+        if (locals.count(c_black))
+            bottom = c_black;
+    color_e turn_color = b.turn_color();
+    if (locals.count(turn_color) > 0)
+        bottom = turn_color;
+    board_to_console(t, b, bottom);
 }
 
-void on_consider(move_s m, color_e c, int8_t p)
+void on_consider(chessmove m, color_e c, int8_t p)
 {
     std::cout << ".";
 }
@@ -241,7 +262,7 @@ void on_consider(move_s m, color_e c, int8_t p)
 int32_t time_rem = 0;
 bool is_idle = false;
 
-void on_turn(int16_t t, move_s m, bool ch, chessboard &b, color_e tc, game_state_e g, color_e wc, int32_t wt, int32_t bt)
+void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_state_e g, color_e wc, int32_t wt, int32_t bt)
 {
     time_to_console(wt, bt);
     time_rem = (tc == c_black) ? bt : wt;
@@ -346,7 +367,7 @@ int main(void)
     {
         process_queue_listener(p_listener);
         std::cout << "\r\nWelcome to Sentinel Console Chess!!!\r\n";
-        std::cout << "\r\nNEW, LOAD FileName, or QUIT?\r\n";
+        std::cout << "\r\n(N)EW, (L)OAD FileName, PU(Z)ZLE or (Q)UIT?\r\n";
         std::string cmd;
         std::cout << "> ";
         std::getline(std::cin, cmd);
@@ -360,6 +381,11 @@ int main(void)
         else if (cmdl == "L")
         {
             if (load_game(cmd, lobby))
+                break;
+        }
+        else if ((cmdl == "Z") || (cmdu == "PUZZLE"))
+        {
+            if (load_puzzle(cmd, lobby))
                 break;
         }
         else if (cmdl == "Q")
@@ -380,10 +406,11 @@ int main(void)
             std::string cmdl = cmdu.substr(0, 1);
             if ((cmdu == "?") || (cmdu == "HELP") || (cmdu == "H"))
             {
-                std::cout << "\r\nCommands: NEW/N, LOAD/L Filename, SAVE/S FileName, PLAY/P, IDLE/I, QUIT/Q, " << std::endl;
+                std::cout << "\r\nCommands: (N)EW, (L)OAD Filename, (S)AVE FileName, PU(Z)ZLE FileName Difficulty, " << std::endl;
+                std::cout << "\t(P)LAY, (I)DLE, (Q)UIT, ";
                 if (!is_idle)
-                    std::cout << "MOVE/M [XX-XX], ";
-                std::cout << "< [Turn], >, T Turn PIECE [Coord Piece], - [Coord], XFEN [String] " << std::endl;
+                    std::cout << "(M)OVE MoveStr, ";
+                std::cout << "<, >, T Turn PIECE Coord Piece, - [Coord], (X)FEN [String] " << std::endl;
                 continue;
             }
             if (cmdl == "N")
@@ -394,6 +421,11 @@ int main(void)
             else if (cmdl == "L")
             {
                 if (load_game(cmd, lobby))
+                    continue;
+            }
+            else if ((cmdl == "Z") || (cmdu == "PUZZLE"))
+            {
+                if (load_puzzle(cmd, lobby))
                     continue;
             }
             else if (cmdl == "S")
@@ -509,15 +541,15 @@ int main(void)
                 {
                     if (cmdl == "M")
                     {
-                        cmdu = get_arg(cmdu);
-                        if (cmdu == "")
+                        cmd = get_arg(cmd);
+                        if (cmd == "")
                         {
                             print_error(e_missing_move);
                             continue;
                         }
                     }
-                    move_s m;
-                    if (!get_move(cmdu, m))
+                    chessmove m;
+                    if (!get_move(cmd, p_game->turn_color(), p_game->board(), m))
                         continue;
                     color_e whose_turn = p_game->turn_color();
                     error_e err = p_game->move(whose_turn, m);

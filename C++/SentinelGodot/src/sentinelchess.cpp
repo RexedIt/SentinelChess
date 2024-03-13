@@ -49,6 +49,7 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("forfeit"), &SentinelChess::forfeit);
     ClassDB::bind_method(D_METHOD("move_m", "col", "m"), &SentinelChess::move_m);
     ClassDB::bind_method(D_METHOD("move_c", "col", "p0", "p1", "promote"), &SentinelChess::move_c);
+    ClassDB::bind_method(D_METHOD("move_s", "s"), &SentinelChess::move_s);
     ClassDB::bind_method(D_METHOD("possible_moves", "col"), &SentinelChess::possible_moves);
     ClassDB::bind_method(D_METHOD("play_game"), &SentinelChess::play_game);
     ClassDB::bind_method(D_METHOD("pause_game"), &SentinelChess::pause_game);
@@ -124,14 +125,14 @@ Ref<ChessEvent> SentinelChess::popevent()
 
 Ref<ChessMove> SentinelChess::lastmove()
 {
-    chessturn_s t = mp_game->play_turn();
+    chessturn t = mp_game->play_turn();
     Ref<ChessMove> cm(memnew(ChessMove(t.m)));
     return cm;
 }
 
 ChessColor SentinelChess::lastcolor()
 {
-    chessturn_s t = mp_game->play_turn();
+    chessturn t = mp_game->play_turn();
     return (ChessColor)t.c;
 }
 
@@ -326,11 +327,16 @@ int SentinelChess::move_m(ChessColor col, const Ref<ChessMove> &m)
         return e_invalid_reference;
 }
 
+int SentinelChess::move_s(ChessColor col, String s)
+{
+    return mp_game->move((color_e)col, s.ascii().get_data());
+}
+
 Array SentinelChess::possible_moves(ChessColor col)
 {
     Array a;
 
-    std::vector<move_s> sv = mp_game->possible_moves((color_e)col);
+    std::vector<chessmove> sv = mp_game->possible_moves((color_e)col);
     for (int i = 0; i < sv.size(); i++)
     {
         Ref<ChessMove> cm(memnew(ChessMove(sv[i])));

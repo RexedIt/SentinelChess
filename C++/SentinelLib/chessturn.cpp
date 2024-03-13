@@ -3,22 +3,17 @@
 namespace chess
 {
 
-    chessturn_s new_turn(int16_t _t, move_s &_m, bool _ch, chessboard &_b, color_e _c, game_state_e _g, color_e _wc, int32_t _wt, int32_t _bt)
+    chessturn::chessturn()
     {
-        chessturn_s t;
-        t.t = _t;
-        t.m = _m;
-        t.ch = _ch;
-        t.b = _b;
-        t.c = _c;
-        t.g = _g;
-        t.wc = _wc;
-        t.wt = _wt;
-        t.bt = _bt;
-        return t;
+        t = 0;
+        c = c_none;
+        g = none_e;
+        wc = c_none;
+        wt = 0;
+        bt = 0;
     }
 
-    chessturn_s::chessturn_s(int16_t _t, move_s &_m, bool _ch, chessboard &_b, color_e _c, game_state_e _g, color_e _wc, int32_t _wt, int32_t _bt)
+    chessturn::chessturn(int16_t _t, chessmove &_m, bool _ch, chessboard &_b, color_e _c, game_state_e _g, color_e _wc, int32_t _wt, int32_t _bt)
     {
         t = _t;
         m = _m;
@@ -31,7 +26,7 @@ namespace chess
         bt = _bt;
     }
 
-    chessturn_s::chessturn_s(const chessturn_s &oth)
+    chessturn::chessturn(const chessturn &oth)
     {
         t = oth.t;
         m = oth.m;
@@ -44,7 +39,7 @@ namespace chess
         bt = oth.bt;
     }
 
-    error_e chessturn_s::save(json &turn)
+    error_e chessturn::save(json &turn)
     {
         auto board = json::object();
         error_e err = b.save(board);
@@ -73,7 +68,7 @@ namespace chess
         return err;
     }
 
-    error_e chessturn_s::load(json &turn)
+    error_e chessturn::load(json &turn)
     {
         if (turn.is_null())
             return e_loading;
@@ -102,6 +97,13 @@ namespace chess
         bt = turn["black_time_ms"];
 
         return err;
+    }
+
+    // static type implementations
+    chessturn new_turn(int16_t _t, chessmove &_m, bool _ch, chessboard &_b, color_e _c, game_state_e _g, color_e _wc, int32_t _wt, int32_t _bt)
+    {
+        chessturn t(_t, _m, _ch, _b, _c, _g, _wc, _wt, _bt);
+        return t;
     }
 
 }

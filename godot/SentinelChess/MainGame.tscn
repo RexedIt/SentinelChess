@@ -47,6 +47,8 @@ script = ExtResource("1_i2www")
 
 [node name="SentinelChess" type="SentinelChess" parent="."]
 script = ExtResource("2_th60g")
+gamestate = null
+statewait = null
 
 [node name="RetroWoodBackground" type="Sprite2D" parent="."]
 texture = ExtResource("2_4tyao")
