@@ -53,6 +53,17 @@ namespace chess
             kv.second->set_game(NULL);
     }
 
+    int chesslobby::player_points()
+    {
+        if (mp_players.count(c_white) == 0)
+            return 0;
+        if (mp_players.count(c_black) == 0)
+            return 0;
+        return mp_players[c_black]->playerskill() - mp_players[c_white]->playerskill();
+        // is positive if black has higher skill.  so if white wins, points>0 are awarded.
+        // if black wins, (-points>0) are awarded.
+    }
+
     error_e chesslobby::new_game(color_e user_color, std::string name, int skill, chessplayertype_e ptype, const chessclock_s &clock)
     {
         backup();
@@ -74,6 +85,7 @@ namespace chess
         if (err != e_none)
             return restore(err);
 
+        mp_game->set_points(player_points());
         attach_to_game();
         return err;
     }
@@ -115,6 +127,7 @@ namespace chess
             if (err != e_none)
                 return restore(err);
 
+            mp_game->set_points(player_points());
             attach_to_game();
             return e_none;
         }
@@ -163,7 +176,7 @@ namespace chess
         return e_none;
     }
 
-    error_e chesslobby::load_puzzle(chesspuzzle p)
+    error_e chesslobby::load_puzzle(std::string name, int skill, chesspuzzle p)
     {
         // determine the human color
         chessboard b;
@@ -178,7 +191,7 @@ namespace chess
         mp_game = std::shared_ptr<chessgame>(new chessgame());
         attach_to_game();
 
-        err = add_player(other(tc), "Human", p.rating, t_human);
+        err = add_player(other(tc), name, skill, t_human);
         if (err != e_none)
             return restore(err);
 
@@ -190,19 +203,32 @@ namespace chess
         if (err != e_none)
             return restore(err);
 
+        int points = p.rating - skill / 2;
+        if (points < 0)
+            points = 0;
+        mp_game->set_points(points);
+
         attach_to_game();
         return err;
     }
 
-    error_e chesslobby::load_puzzle(std::string filename, int rating)
+    error_e chesslobby::load_puzzle(std::string name, int skill, std::string filename, int rating)
     {
         // determine the human color
         chesspuzzle p;
         error_e err = p.load_random(filename, rating);
         if (err != e_none)
             return err;
+        return load_puzzle(name, skill, p);
+    }
 
-        return load_puzzle(p);
+    error_e chesslobby::load_puzzle(std::string name, int skill, std::string contents)
+    {
+        chesspuzzle p;
+        error_e err = p.load_line(contents);
+        if (err != e_none)
+            return err;
+        return load_puzzle(name, skill, p);
     }
 
     error_e chesslobby::add_player(color_e color, std::string name, int skill, chessplayertype_e ptype)
@@ -319,6 +345,22 @@ namespace chess
         if (mp_game)
             return ((m_locals.count(col) > 0) && (mp_game->turn_color() == col));
         return false;
+    }
+
+    int chesslobby::win_points(color_e col)
+    {
+        int points = 0;
+        if (mp_game)
+        {
+            points = mp_game->points();
+            if (mp_game->puzzle())
+                return points;
+        }
+        if (col == c_black)
+            points = -1 * points;
+        if (points < 0)
+            points = 0;
+        return points;
     }
 
     std::string chesslobby::player_name(color_e col)

@@ -10,6 +10,8 @@ namespace chess
         m_win_color = c_none;
         m_play_pos = -1;
         m_puzzle = false;
+        m_hints = 0;
+        m_points = 0;
     }
 
     chessboard chessgame::board()
@@ -39,7 +41,11 @@ namespace chess
         if ((m_turn.size() == 0) || (m_play_pos < 0))
         {
             chessturn m;
-            m.b.new_board();
+            m.t = -1;
+            m.b.load_xfen(m_init_board);
+            m.c = m.b.turn_color();
+            m.ch = m.b.check_state(m.c);
+            m.g = play_e;
             return m;
         }
         return m_turn[m_play_pos];
@@ -111,6 +117,12 @@ namespace chess
                 g = draw_fivefold_e;
                 m_win_color = c_none;
             }
+            // Puzzle mode
+            if (m.error == e_incorrect_move)
+            {
+                m_win_color = other(col);
+                g = puzzle_solution_e;
+            }
         }
         return g;
     }
@@ -131,6 +143,11 @@ namespace chess
         return end_game(forfeit_e, other(col));
     }
 
+    error_e chessgame::puzzle_solved(color_e col)
+    {
+        return end_game(puzzle_solution_e, other(col));
+    }
+
     error_e chessgame::move(color_e col, chessmove m0)
     {
         std::unique_lock<std::mutex> guard(m_mutex);
@@ -138,14 +155,29 @@ namespace chess
             return e_invalid_game_state;
         if (col == m_board.turn_color())
         {
-            chessmove m = m_board.attempt_move(col, m0);
-            if (m.error)
-                return m.error;
+            chessmove m;
+            if (m_puzzle)
+            {
+                m = m0;
+                std::map<int16_t, chessmove> moves = player_moves(col);
+                if (moves.count(m_play_pos + 1) == 0)
+                    m.error = e_incorrect_move;
+                else
+                {
+                    chessmove pm = moves[m_play_pos + 1];
+                    if ((pm.p0 != m0.p0) || (pm.p1 != m0.p1))
+                        m.error = e_incorrect_move;
+                }
+            }
+            if (m.error == e_none)
+                m = m_board.attempt_move(col, m0);
             guard.unlock();
             set_state(is_game_over(col, m));
-            push_new_turn(m);
+            if (m.error == e_none)
+                push_new_turn(m);
+            return m.error;
         }
-        return e_none;
+        return e_out_of_turn;
     }
 
     error_e chessgame::move(color_e col, coord_s p0, coord_s p1, piece_e promote)
@@ -172,12 +204,59 @@ namespace chess
 
     std::map<int16_t, chessmove> chessgame::player_moves(color_e col)
     {
+        // as far as TURN is concerned, the records are whose turn
+        // it IS rather than WAS, and the move is 'WAS'
+        // So we search for the reverse color.
         std::map<int16_t, chessmove> ret;
         int16_t num_turns = playmax();
         for (int16_t i = 0; i < num_turns; i++)
-            if (m_turn[i].c == col)
+            if (m_turn[i].c == other(col))
                 ret[m_turn[i].t] = m_turn[i].m;
         return ret;
+    }
+
+    bool chessgame::puzzle()
+    {
+        return m_puzzle;
+    }
+
+    int chessgame::hints()
+    {
+        return m_hints;
+    }
+
+    int chessgame::points()
+    {
+        return m_points;
+    }
+
+    void chessgame::set_points(const int v)
+    {
+        m_points = v;
+    }
+
+    chessmove chessgame::hint()
+    {
+        if ((m_hints > 0) && (m_play_pos < playmax()))
+        {
+            m_hints--;
+            m_points /= 2;
+            return m_turn[m_play_pos + 1].m;
+        }
+        chessmove m;
+        m.error = e_invalid_move;
+        return m;
+    }
+
+    std::string chessgame::hintstr()
+    {
+        if ((m_hints > 0) && (m_play_pos < playmax()))
+        {
+            m_hints--;
+            m_points /= 2;
+            return move_str(m_turn[m_play_pos + 1].m);
+        }
+        return "No Hint Available";
     }
 
     bool chessgame::check_state(color_e col)
@@ -215,21 +294,22 @@ namespace chess
     {
         if (idx != m_play_pos)
         {
+            bool turn_rw = (m_state == play_e && !m_puzzle);
             if ((idx >= 0) && (m_turn.size() > 0))
             {
                 m_board.copy(m_turn[idx].b);
-                if (m_state == play_e)
+                if (turn_rw)
                     m_turn.resize(idx + 1);
                 m_play_pos = idx;
             }
             else
             {
-                m_board.new_board();
-                if (m_state == play_e)
+                m_board.load_xfen(m_init_board);
+                if (turn_rw)
                     m_turn.clear();
                 m_play_pos = -1;
             }
-            if (m_state == play_e)
+            if (turn_rw)
                 refresh_board_positions();
         }
         signal_on_turn();
@@ -295,7 +375,8 @@ namespace chess
         // the clock to default settings
         // maybe something like
         // m_clock.new();
-        m_board.new_board();
+        m_init_board = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        m_board.load_xfen(m_init_board);
         m_turn.clear();
         m_play_pos = -1;
         refresh_board_positions();
@@ -332,8 +413,11 @@ namespace chess
                 m_turn.push_back(t);
             }
 
+            JSON_LOAD(jsonf, "init_board", m_init_board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
             JSON_LOAD(jsonf, "puzzle", m_puzzle, false);
+            JSON_LOAD(jsonf, "hints", m_hints, 0);
             JSON_LOAD(jsonf, "opening", m_opening, "");
+            JSON_LOAD(jsonf, "points", m_points, 0);
 
             m_play_pos = jsonf["play_pos"];
             if (m_play_pos < 0)
@@ -374,15 +458,6 @@ namespace chess
         int16_t n = 0;
         chessturn t;
 
-        t.t = n++;
-        t.b = b;
-        t.c = tc;
-        t.g = play_e;
-        t.ch = b.check_state(tc);
-        t.wc = c_none;
-
-        turns.push_back(t);
-
         for (std::string move : moves)
         {
             chessmove m;
@@ -392,6 +467,7 @@ namespace chess
             m = b.attempt_move(tc, m);
             if (m.error != e_none)
                 return err;
+            tc = b.turn_color();
             t.t = n++;
             t.b = b;
             t.c = tc;
@@ -400,15 +476,16 @@ namespace chess
             t.g = play_e;
             t.wc = c_none;
             turns.push_back(t);
-            tc = other(tc);
         }
 
+        m_init_board = p.fen;
         m_turn = turns;
-        m_play_pos = 0;
-        m_board.copy(turns[0].b);
+        m_play_pos = -1;
+        m_board.load_xfen(p.fen);
         m_puzzle = true;
+        m_hints = turns.size() / 4;
         refresh_board_positions();
-        set_state(idle_e, true);
+        set_state(play_e, true);
         signal_on_turn();
         return e_none;
     }
@@ -442,9 +519,12 @@ namespace chess
             }
             jsonf["turns"] = turns;
 
+            jsonf["init_board"] = m_init_board;
             jsonf["puzzle"] = m_puzzle;
+            jsonf["hints"] = m_hints;
             jsonf["opening"] = m_opening;
             jsonf["play_pos"] = m_play_pos;
+            jsonf["points"] = m_points;
 
             auto board = json::object();
             if (m_board.save(board) != e_none)
@@ -564,9 +644,17 @@ namespace chess
     {
         if (m.is_valid())
         {
-            add_board_position();
-            m_turn.push_back(new_turn(m));
-            m_play_pos = (int)m_turn.size() - 1;
+            if (!m_puzzle)
+            {
+                add_board_position();
+                m_turn.push_back(new_turn(m));
+                m_play_pos = (int)m_turn.size() - 1;
+            }
+            else
+            {
+                if (m_play_pos < (int)m_turn.size() - 1)
+                    m_play_pos++;
+            }
             signal_on_turn();
         }
     }

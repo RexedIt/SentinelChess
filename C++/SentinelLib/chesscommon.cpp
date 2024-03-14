@@ -88,6 +88,10 @@ namespace chess
             return "Listener already registered";
         case e_listener_not_found:
             return "Listener not found";
+        case e_none_found:
+            return "Nothing found";
+        case e_incorrect_move:
+            return "Incorrect move";
         default:
             return "Unknown Error";
         }
@@ -282,6 +286,8 @@ namespace chess
             return "Forfeit";
         case time_up_e:
             return "Time Up";
+        case puzzle_solution_e:
+            return "Puzzle Solution";
         case terminate_e:
             return "Terminated";
         case draw_stalemate_e:
@@ -309,6 +315,8 @@ namespace chess
             return forfeit_e;
         if (gu == "TIME UP")
             return time_up_e;
+        if (gu == "PUZZLE SOLUTION")
+            return puzzle_solution_e;
         if (gu == "TERMINATED")
             return terminate_e;
         if (gu == "STALEMATE")
@@ -451,6 +459,36 @@ namespace chess
         struct stat stat_buf;
         uintmax_t rc = stat(filename.c_str(), &stat_buf);
         return rc == 0 ? stat_buf.st_size : -1;
+    }
+
+    bool get_dir_exists(std::string dirname)
+    {
+        struct stat st;
+        return (stat(dirname.c_str(), &st) == 0);
+    }
+
+    std::string data_folder;
+
+    std::string get_data_folder()
+    {
+        return data_folder;
+    }
+
+    bool set_data_folder(std::string f)
+    {
+        if (!get_dir_exists(f))
+            return false;
+        data_folder = f;
+        return true;
+    }
+
+    std::string data_file(std::string f)
+    {
+        if (data_folder == "")
+            return f;
+        if (data_folder[data_folder.length() - 1] == '\\')
+            return data_folder + f;
+        return data_folder + "\\" + f;
     }
 
 }

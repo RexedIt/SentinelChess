@@ -46,6 +46,15 @@ void SentinelChess::_bind_methods()
 
     ClassDB::bind_method(D_METHOD("state"), &SentinelChess::state);
     ClassDB::bind_method(D_METHOD("check_state"), &SentinelChess::check_state);
+
+    ClassDB::bind_method(D_METHOD("puzzle"), &SentinelChess::puzzle);
+    ClassDB::bind_method(D_METHOD("hints"), &SentinelChess::hints);
+    ClassDB::bind_method(D_METHOD("hint"), &SentinelChess::hint);
+    ClassDB::bind_method(D_METHOD("hintstr"), &SentinelChess::hintstr);
+    ClassDB::bind_method(D_METHOD("win_points", "col"), &SentinelChess::win_points);
+    ClassDB::bind_method(D_METHOD("get_datafolder"), &SentinelChess::get_datafolder);
+    ClassDB::bind_method(D_METHOD("set_datafolder", "f"), &SentinelChess::set_datafolder);
+
     ClassDB::bind_method(D_METHOD("forfeit"), &SentinelChess::forfeit);
     ClassDB::bind_method(D_METHOD("move_m", "col", "m"), &SentinelChess::move_m);
     ClassDB::bind_method(D_METHOD("move_c", "col", "p0", "p1", "promote"), &SentinelChess::move_c);
@@ -304,6 +313,42 @@ bool SentinelChess::check_state(ChessColor col)
 ChessGameState SentinelChess::state()
 {
     return (ChessGameState)mp_game->state();
+}
+
+bool SentinelChess::puzzle()
+{
+    return mp_game->puzzle();
+}
+
+int SentinelChess::hints()
+{
+    return mp_game->hints();
+}
+
+Ref<ChessMove> SentinelChess::hint()
+{
+    Ref<ChessMove> cm(memnew(ChessMove(mp_game->hint())));
+    return cm;
+}
+
+String SentinelChess::hintstr()
+{
+    return String(mp_game->hintstr().c_str());
+}
+
+int SentinelChess::win_points(ChessColor col)
+{
+    return m_lobby.win_points((color_e)col);
+}
+
+bool SentinelChess::set_datafolder(const String &r)
+{
+    return set_data_folder(r.ascii().get_data());
+}
+
+String SentinelChess::get_datafolder()
+{
+    return String(get_data_folder().c_str());
 }
 
 int SentinelChess::forfeit(ChessColor col)

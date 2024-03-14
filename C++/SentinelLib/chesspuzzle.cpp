@@ -94,6 +94,8 @@ namespace chess
             std::string line;
             std::getline(pf, line);
             int tries = 0;
+            int delta = 9999;
+            std::string best = "";
             while (tries++ < 1000)
             {
                 std::getline(pf, line);
@@ -103,16 +105,24 @@ namespace chess
                 int r = atoi(vals[LICHESS_RATING_COLUMN].c_str());
                 if (r >= rating)
                 {
-                    pf.close();
-                    return load_line(line);
+                    if (r < delta)
+                    {
+                        delta = r;
+                        best = line;
+                        if (r - rating < 50)
+                            break;
+                    }
                 }
             }
+            pf.close();
+            if (best != "")
+                return load_line(line);
         }
         catch (const std::exception &)
         {
             return e_loading;
         }
-        return e_none;
+        return e_none_found;
     }
 
 }

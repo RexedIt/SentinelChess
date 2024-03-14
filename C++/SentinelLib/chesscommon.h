@@ -56,7 +56,9 @@ namespace chess
         e_invalid_move_needs_promote,
         e_invalid_listener,
         e_listener_already_registered,
-        e_listener_not_found
+        e_listener_not_found,
+        e_none_found,
+        e_incorrect_move
     } error_e;
 
     std::string errorstr(error_e num);
@@ -72,6 +74,10 @@ namespace chess
         bool operator==(const coord_s &c1)
         {
             return (c1.y == y && c1.x == x);
+        }
+        bool operator!=(const coord_s &c1)
+        {
+            return (c1.y != y || c1.x != x);
         }
         coord_s operator+(const coord_s &c1)
         {
@@ -155,10 +161,11 @@ namespace chess
         terminate_e = 3,
         forfeit_e = 4,
         time_up_e = 5,
-        draw_stalemate_e = 6,
-        draw_fivefold_e = 7,
-        draw_fiftymove_e = 8,
-        draw_insuff_material_e = 9,
+        puzzle_solution_e = 6,
+        draw_stalemate_e = 7,
+        draw_fivefold_e = 8,
+        draw_fiftymove_e = 9,
+        draw_insuff_material_e = 10,
     } game_state_e;
 
     typedef enum chessplayertype_e
@@ -207,5 +214,10 @@ namespace chess
     std::string uppercase(std::string l);
     std::string lowercase(std::string u);
     uintmax_t get_file_size(std::string f);
+    bool get_dir_exists(std::string dirname);
+
+    std::string get_data_folder();
+    bool set_data_folder(std::string f);
+    std::string data_file(std::string f);
 
 }

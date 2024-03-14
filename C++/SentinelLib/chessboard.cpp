@@ -53,29 +53,6 @@ namespace chess
         m_kill_updated = false;
     }
 
-    void chessboard::new_board()
-    {
-        memset(&m_captured, 0, sizeof(m_captured));
-        set_kings_row(0, c_white);
-        set_pawns_row(1, c_white);
-        set_empty_rows();
-        set_pawns_row(6, c_black);
-        set_kings_row(7, c_black);
-        m_castled_left = 0;
-        m_castled_right = 0;
-        m_ep.y = -1;
-        m_ep.x = -1;
-        m_king_pos[0].clear();
-        m_king_pos[1].clear();
-        m_check[0] = false;
-        m_check[1] = false;
-        m_turn = c_white;
-        m_halfmove = 0;
-        m_fullmove = 1;
-        m_kill_updated = false;
-        m_hash = 0;
-    }
-
     error_e chessboard::save(json &o)
     {
         o["xfen"] = save_xfen();
@@ -242,31 +219,6 @@ namespace chess
             calc_captured_pieces();
 
         return e_none;
-    }
-
-    void chessboard::set_kings_row(int8_t y, color_e col)
-    {
-        m_cells[y][0] = col + p_rook;
-        m_cells[y][1] = col + p_knight;
-        m_cells[y][2] = col + p_bishop;
-        m_cells[y][3] = col + p_queen;
-        m_cells[y][4] = col + p_king;
-        m_cells[y][5] = col + p_bishop;
-        m_cells[y][6] = col + p_knight;
-        m_cells[y][7] = col + p_rook;
-    }
-
-    void chessboard::set_pawns_row(int8_t y, color_e col)
-    {
-        for (int8_t j = 0; j < 8; j++)
-            m_cells[y][j] = col + p_pawn;
-    }
-
-    void chessboard::set_empty_rows()
-    {
-        for (int i = 2; i < 6; i++)
-            for (int j = 0; j < 8; j++)
-                m_cells[i][j] = 0;
     }
 
     board_metric_s chessboard::board_metric(color_e col)

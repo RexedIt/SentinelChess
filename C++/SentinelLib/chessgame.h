@@ -42,9 +42,15 @@ namespace chess
         color_e win_color();
         int16_t playmax();
         int16_t playno();
+        bool puzzle();
+        int hints();
+
+        chessmove hint();
+        std::string hintstr();
 
         // Any Player
         error_e forfeit(color_e col);
+        error_e puzzle_solved(color_e col);
         error_e move(color_e col, chessmove m0);
         error_e move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
         error_e move(color_e col, std::string s);
@@ -81,6 +87,9 @@ namespace chess
         error_e chat(std::string, color_e);
         error_e consider(chessmove, color_e, int8_t pct = -1);
 
+        int points();
+        void set_points(const int);
+
     private:
         void set_state(game_state_e g, bool force_notify = false);
         void set_turn_to(int idx);
@@ -101,11 +110,14 @@ namespace chess
         std::vector<chessturn> m_turn;
         int m_play_pos;
         bool m_puzzle;
+        int m_hints;
+        int m_points;
         std::string m_opening;
 
         color_e m_win_color;
 
         chessboard m_board;
+        std::string m_init_board;
 
         std::mutex m_mutex;
         std::map<int, std::shared_ptr<chessgamelistener>> mp_listeners;
