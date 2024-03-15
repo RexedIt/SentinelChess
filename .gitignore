@@ -6,6 +6,9 @@
 /C++/.vs
 /C++/**/*.user
 /C++/SentinelGodot/.sconsign.dblite
+/C#/**/.vs
+/C#/**/bin/
+/C#/**/obj/
 /godot/Export
 /.vs
 /Assets

@@ -90,7 +90,7 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
 {
     std::string filename = userfile;
     if (filename == "")
-        filename = data_file("lichess_db_puzzle.csv");
+        filename = data_file("db_puzzles.csv");
     std::string name = "Human";
     int skill = 600;
     int rating = 700;

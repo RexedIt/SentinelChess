@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <fstream>
 
-#define LICHESS_COLUMNS 10
+#define LICHESS_COLUMNS 9
 #define LICHESS_RATING_COLUMN 3
 
 namespace chess
@@ -36,7 +36,6 @@ namespace chess
         popularity = oth.popularity;
         nbplays = oth.nbplays;
         themes = oth.themes;
-        gameurl = oth.gameurl;
         openingtags = oth.openingtags;
     }
 
@@ -54,33 +53,9 @@ namespace chess
         popularity = atoi(vals[idx++].c_str());
         nbplays = atoi(vals[idx++].c_str());
         themes = vals[idx++];
-        gameurl = vals[idx++];
-        openingtags = interpret_opening(vals[idx++]);
+        openingtags = vals[idx++];
 
         return e_none;
-    }
-
-    std::string chesspuzzle::interpret_opening(std::string s)
-    {
-        // example: Kings_Pawn_Game Kings_Pawn_Game_Leonardis_Variation
-        std::vector<std::string> vals = split_string(s, ' ');
-        std::string ret = s;
-        if (vals.size() == 2)
-        {
-            std::string title = vals[0];
-            std::string subtitle = vals[1];
-            size_t tl = title.length();
-            size_t sl = subtitle.length();
-            if (tl && sl > tl)
-            {
-                if (subtitle.substr(0, tl + 1) == title + "_")
-                    subtitle = subtitle.substr(tl);
-            }
-            std::replace(title.begin(), title.end(), '_', ' ');
-            std::replace(subtitle.begin(), subtitle.end(), '_', ' ');
-            ret = title + ": " + subtitle;
-        }
-        return ret;
     }
 
     error_e chesspuzzle::load_random(std::string filename, int rating)
@@ -89,7 +64,7 @@ namespace chess
         {
             uintmax_t fl = get_file_size(filename);
             std::ifstream pf(filename);
-            uintmax_t sp = (uintmax_t)(get_rand() * 0.75 * (float)fl);
+            uintmax_t sp = (uintmax_t)(get_rand() * 0.9 * (float)fl);
             pf.seekg(sp);
             std::string line;
             std::getline(pf, line);

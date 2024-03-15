@@ -23,12 +23,8 @@ namespace chess
         int popularity;
         int nbplays;
         std::string themes;
-        std::string gameurl;
         std::string openingtags;
 
         std::string title();
-
-    private:
-        std::string interpret_opening(std::string);
     };
 }
