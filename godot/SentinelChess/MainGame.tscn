@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=43 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
@@ -18,14 +18,20 @@
 [ext_resource type="ButtonGroup" uid="uid://3jisntyevh10" path="res://ClockType.tres" id="11_vfgdq"]
 [ext_resource type="Texture2D" uid="uid://dt35fbefu60ls" path="res://Sprites/RetroWood/Open.jpg" id="12_5o0s6"]
 [ext_resource type="Script" path="res://Scripts/TimeSlider.gd" id="12_jf3ul"]
+[ext_resource type="Script" path="res://Scripts/popPuzzle.gd" id="14_s72vn"]
 [ext_resource type="Texture2D" uid="uid://cphjjv5ttc3a3" path="res://Sprites/RetroWood/Save.jpg" id="15_pwrnu"]
 [ext_resource type="Texture2D" uid="uid://baiu161gnvfj0" path="res://Sprites/RetroWood/Pause.jpg" id="16_arl5w"]
+[ext_resource type="Script" path="res://Scripts/pnlPlayer.gd" id="17_di116"]
 [ext_resource type="Texture2D" uid="uid://bxdtqof8robqc" path="res://Sprites/RetroWood/Rewind.jpg" id="17_fpd0j"]
+[ext_resource type="Texture2D" uid="uid://ivggm7dv0cjq" path="res://Sprites/RetroWood/NewPuzzle.jpg" id="18_4ap6j"]
+[ext_resource type="Script" path="res://Scripts/pnlPuzzle.gd" id="18_xhj51"]
+[ext_resource type="Texture2D" uid="uid://b5wfpegpcehs1" path="res://Sprites/RetroWood/PuzzlePiece.png" id="19_a3mt2"]
 [ext_resource type="Texture2D" uid="uid://c7y0jxfkladhf" path="res://Sprites/RetroWood/Advance.jpg" id="21_12fke"]
 [ext_resource type="Script" path="res://Scripts/popEnd.gd" id="23_6dbbk"]
 [ext_resource type="Script" path="res://Scripts/pnlCaptured.gd" id="23_422qp"]
 [ext_resource type="Texture2D" uid="uid://dt77ag57cndut" path="res://Sprites/RetroWood/SmallPieces.png" id="23_e8kc2"]
 [ext_resource type="Texture2D" uid="uid://6golc5qbayib" path="res://Sprites/RetroWood/WhiteWin/SpriteSheet.jpg" id="23_urpj6"]
+[ext_resource type="Texture2D" uid="uid://gyh1s68fq4sf" path="res://Sprites/RetroWood/Help.jpg" id="24_1877g"]
 [ext_resource type="Texture2D" uid="uid://dhsklfuox63dt" path="res://Sprites/RetroWood/BlackKnight.png" id="25_3rvpk"]
 [ext_resource type="Script" path="res://Scripts/CapturedPiece.gd" id="25_4lao4"]
 [ext_resource type="Texture2D" uid="uid://c3cvktim2fl81" path="res://Sprites/RetroWood/WhiteKnight.png" id="26_8s3l2"]
@@ -33,6 +39,10 @@
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_55xmw"]
 size = Vector2(137, 96)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3n8gr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1epvs"]
 
 [sub_resource type="FontVariation" id="FontVariation_h0o2n"]
 base_font = ExtResource("3_7nhen")
@@ -47,8 +57,6 @@ script = ExtResource("1_i2www")
 
 [node name="SentinelChess" type="SentinelChess" parent="."]
 script = ExtResource("2_th60g")
-gamestate = null
-statewait = null
 
 [node name="RetroWoodBackground" type="Sprite2D" parent="."]
 texture = ExtResource("2_4tyao")
@@ -82,8 +90,8 @@ texture = ExtResource("7_kjeiy")
 
 [node name="popNew" type="Window" parent="."]
 title = "New Game Options"
-position = Vector2i(355, 271)
-size = Vector2i(750, 600)
+position = Vector2i(355, 257)
+size = Vector2i(750, 625)
 visible = false
 popup_window = true
 theme_override_fonts/title_font = ExtResource("3_7nhen")
@@ -98,6 +106,31 @@ offset_bottom = 574.0
 
 [node name="VC" type="VBoxContainer" parent="popNew/MC"]
 layout_mode = 2
+
+[node name="HC" type="HBoxContainer" parent="popNew/MC/VC"]
+layout_mode = 2
+
+[node name="lblTitle" type="Label" parent="popNew/MC/VC/HC"]
+custom_minimum_size = Vector2(125, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 20
+text = "Title"
+
+[node name="txtTitle" type="TextEdit" parent="popNew/MC/VC/HC"]
+custom_minimum_size = Vector2(565, 24)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+
+[node name="SeparatorTitle" type="Label" parent="popNew/MC/VC"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "--------------------------------------------
+"
+vertical_alignment = 1
 
 [node name="WhitePlayer" type="GridContainer" parent="popNew/MC/VC"]
 layout_mode = 2
@@ -447,6 +480,102 @@ grow_vertical = 0
 theme_override_fonts/font = ExtResource("3_7nhen")
 text = " Cancel "
 
+[node name="popPuzzle" type="Window" parent="."]
+title = "Load Puzzle"
+position = Vector2i(355, 412)
+size = Vector2i(750, 225)
+visible = false
+theme_override_fonts/title_font = ExtResource("3_7nhen")
+theme_override_font_sizes/title_font_size = 20
+script = ExtResource("14_s72vn")
+
+[node name="MC" type="MarginContainer" parent="popPuzzle"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 715.0
+offset_bottom = 124.0
+
+[node name="Player" type="GridContainer" parent="popPuzzle/MC"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 2
+
+[node name="lblName" type="Label" parent="popPuzzle/MC/Player"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 20
+text = "Name
+"
+
+[node name="txtName" type="TextEdit" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(425, 24)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+
+[node name="lblSkill" type="Label" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Skill (0-2500)
+"
+horizontal_alignment = 2
+
+[node name="lvlSkill" type="HSlider" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+max_value = 2500.0
+step = 50.0
+value = 600.0
+rounded = true
+
+[node name="lblRating" type="Label" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Rating (0-2500)
+"
+horizontal_alignment = 2
+
+[node name="lvlRating" type="HSlider" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+max_value = 2500.0
+step = 50.0
+value = 600.0
+rounded = true
+
+[node name="btnOK" type="Button" parent="popPuzzle"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -40.0
+offset_right = -30.0004
+offset_bottom = -9.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "OK"
+
+[node name="btnCancel" type="Button" parent="popPuzzle"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -290.0
+offset_top = -40.0
+offset_right = -200.0
+offset_bottom = -9.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = " Cancel "
+
 [node name="popLoad" type="FileDialog" parent="."]
 title = "Open a File"
 position = Vector2i(640, 320)
@@ -469,55 +598,190 @@ script = ExtResource("11_dt7qr")
 script = ExtResource("10_0mwoa")
 step = 16
 
+[node name="pnlPuzzle" type="Panel" parent="GameUI"]
+visible = false
+offset_right = 129.0
+offset_bottom = 97.0
+script = ExtResource("18_xhj51")
+
+[node name="sprPuzzle" type="Sprite2D" parent="GameUI/pnlPuzzle"]
+texture = ExtResource("19_a3mt2")
+centered = false
+
+[node name="lblPoints" type="Label" parent="GameUI/pnlPuzzle"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 18.0
+offset_right = 84.0
+offset_bottom = 41.0
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+text = "2400"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="lblHints" type="Label" parent="GameUI/pnlPuzzle"]
+layout_mode = 0
+offset_left = 7.0
+offset_top = 59.0
+offset_right = 87.0
+offset_bottom = 83.0
+theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 16
+text = "1 / 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="lblTitle" type="Label" parent="GameUI"]
+offset_left = 184.0
+offset_top = 34.0
+offset_right = 1198.0
+offset_bottom = 61.0
+theme_override_colors/font_color = Color(0.588235, 0.588235, 0.588235, 1)
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="pnlPlayerTop" type="Panel" parent="GameUI"]
+offset_left = 1490.0
+offset_top = 100.0
+offset_right = 1895.0
+offset_bottom = 140.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_3n8gr")
+script = ExtResource("17_di116")
+
+[node name="sprType" type="Sprite2D" parent="GameUI/pnlPlayerTop"]
+position = Vector2(1, 0)
+scale = Vector2(0.9, 0.9)
+texture = ExtResource("23_e8kc2")
+centered = false
+region_enabled = true
+region_rect = Rect2(240, 40, 40, 40)
+
+[node name="lblName" type="Label" parent="GameUI/pnlPlayerTop"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 8.0
+offset_right = 304.0
+offset_bottom = 32.0
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+vertical_alignment = 1
+
+[node name="lblSkill" type="Label" parent="GameUI/pnlPlayerTop"]
+layout_mode = 0
+offset_left = 303.0
+offset_top = 8.0
+offset_right = 400.0
+offset_bottom = 33.0
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="pnlPlayerBottom" type="Panel" parent="GameUI"]
+offset_left = 1490.0
+offset_top = 147.0
+offset_right = 1895.0
+offset_bottom = 187.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_1epvs")
+script = ExtResource("17_di116")
+
+[node name="sprType" type="Sprite2D" parent="GameUI/pnlPlayerBottom"]
+position = Vector2(1, 0)
+scale = Vector2(0.9, 0.9)
+texture = ExtResource("23_e8kc2")
+centered = false
+region_enabled = true
+region_rect = Rect2(240, 40, 40, 40)
+
+[node name="lblName" type="Label" parent="GameUI/pnlPlayerBottom"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 8.0
+offset_right = 305.0
+offset_bottom = 32.0
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+vertical_alignment = 1
+
+[node name="lblSkill" type="Label" parent="GameUI/pnlPlayerBottom"]
+layout_mode = 0
+offset_left = 303.0
+offset_top = 8.0
+offset_right = 400.0
+offset_bottom = 33.0
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 2
+vertical_alignment = 1
+
 [node name="btnNew" type="Button" parent="GameUI"]
-offset_left = 1485.0
-offset_top = 10.0
-offset_right = 1560.0
-offset_bottom = 81.0
+offset_left = 1365.0
+offset_top = 8.0
+offset_right = 1440.0
+offset_bottom = 79.0
 icon = ExtResource("11_ehsup")
 
+[node name="btnPuzzle" type="Button" parent="GameUI"]
+offset_left = 1433.0
+offset_top = 8.0
+offset_right = 1508.0
+offset_bottom = 79.0
+icon = ExtResource("18_4ap6j")
+
 [node name="btnLoad" type="Button" parent="GameUI"]
-offset_left = 1552.0
-offset_top = 10.0
-offset_right = 1627.0
-offset_bottom = 81.0
+offset_left = 1498.0
+offset_top = 8.0
+offset_right = 1573.0
+offset_bottom = 79.0
 icon = ExtResource("12_5o0s6")
 
 [node name="btnSave" type="Button" parent="GameUI"]
-offset_left = 1619.0
-offset_top = 10.0
-offset_right = 1694.0
-offset_bottom = 81.0
+offset_left = 1565.0
+offset_top = 8.0
+offset_right = 1640.0
+offset_bottom = 79.0
 disabled = true
 icon = ExtResource("15_pwrnu")
 
 [node name="btnRewind" type="Button" parent="GameUI"]
-offset_left = 1686.0
-offset_top = 10.0
-offset_right = 1761.0
-offset_bottom = 81.0
+offset_left = 1632.0
+offset_top = 8.0
+offset_right = 1707.0
+offset_bottom = 79.0
 disabled = true
 icon = ExtResource("17_fpd0j")
 
 [node name="btnPause" type="Button" parent="GameUI"]
-offset_left = 1753.0
-offset_top = 10.0
-offset_right = 1828.0
-offset_bottom = 81.0
+offset_left = 1699.0
+offset_top = 8.0
+offset_right = 1774.0
+offset_bottom = 79.0
 disabled = true
 icon = ExtResource("16_arl5w")
 
 [node name="btnAdvance" type="Button" parent="GameUI"]
-offset_left = 1820.0
-offset_top = 10.0
-offset_right = 1895.0
-offset_bottom = 81.0
+offset_left = 1766.0
+offset_top = 8.0
+offset_right = 1841.0
+offset_bottom = 79.0
 disabled = true
 icon = ExtResource("21_12fke")
 
+[node name="btnHint" type="Button" parent="GameUI"]
+offset_left = 1833.0
+offset_top = 8.0
+offset_right = 1908.0
+offset_bottom = 79.0
+disabled = true
+icon = ExtResource("24_1877g")
+
 [node name="lblHistory" type="RichTextLabel" parent="GameUI"]
 offset_left = 1490.0
-offset_top = 102.0
+offset_top = 198.0
 offset_right = 1894.0
 offset_bottom = 903.0
 theme_override_fonts/normal_font = SubResource("FontVariation_h0o2n")
@@ -584,9 +848,9 @@ max_polyphony = 2
 
 [node name="pnlCaptured" type="Panel" parent="GameUI"]
 offset_left = 1425.0
-offset_top = 80.0
+offset_top = 96.0
 offset_right = 1465.0
-offset_bottom = 1040.0
+offset_bottom = 1037.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_aqyli")
 script = ExtResource("23_422qp")
 
@@ -712,11 +976,13 @@ offset_bottom = 168.0
 [connection signal="canceled" from="popSave" to="popSave" method="_on_canceled"]
 [connection signal="confirmed" from="popSave" to="popSave" method="_on_confirmed"]
 [connection signal="pressed" from="GameUI/btnNew" to="GameUI" method="_on_btn_new_pressed"]
+[connection signal="pressed" from="GameUI/btnPuzzle" to="GameUI" method="_on_btn_puzzle_pressed"]
 [connection signal="pressed" from="GameUI/btnLoad" to="GameUI" method="_on_btn_load_pressed"]
 [connection signal="pressed" from="GameUI/btnSave" to="GameUI" method="_on_btn_save_pressed"]
 [connection signal="pressed" from="GameUI/btnRewind" to="GameUI" method="_on_btn_rewind_pressed"]
 [connection signal="pressed" from="GameUI/btnPause" to="GameUI" method="_on_btn_pause_pressed"]
 [connection signal="pressed" from="GameUI/btnAdvance" to="GameUI" method="_on_btn_advance_pressed"]
+[connection signal="pressed" from="GameUI/btnHint" to="GameUI" method="_on_btn_hint_pressed"]
 [connection signal="text_submitted" from="GameUI/txtCmd" to="GameUI" method="_on_txt_cmd_text_submitted"]
 [connection signal="pressed" from="popPromote/Cancel" to="popPromote" method="_on_cancel_pressed"]
 [connection signal="pressed" from="popPromote/Queen" to="popPromote" method="_on_queen_pressed"]

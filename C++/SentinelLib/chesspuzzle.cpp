@@ -125,4 +125,11 @@ namespace chess
         return e_none_found;
     }
 
+    std::string chesspuzzle::title()
+    {
+        if (openingtags != "")
+            return puzzleid + "- " + openingtags;
+        return puzzleid + "- " + themes;
+    }
+
 }

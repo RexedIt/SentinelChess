@@ -2,6 +2,7 @@ extends SentinelChess
 
 # siblings
 @onready var popNew : Window = get_parent().get_node("popNew")
+@onready var popPuzzle : Window = get_parent().get_node("popPuzzle")
 @onready var popLoad : FileDialog = get_parent().get_node("popLoad")
 @onready var popSave : FileDialog = get_parent().get_node("popSave")
 @onready var board : Node2D = get_parent().get_node("Board")
@@ -22,6 +23,7 @@ var promotemove : ChessMove
 func _ready():
 	# connections
 	popNew.on_closed.connect(_on_closed_new)
+	popPuzzle.on_closed.connect(_on_closed_puzzle)
 	popLoad.on_closed.connect(_on_closed_load)
 	popSave.on_closed.connect(_on_closed_save)
 	popPromote.on_closed.connect(_on_closed_promote)
@@ -77,6 +79,7 @@ func _gamestatereact(gs):
 		GameState.INIT:
 			# Initialization
 			print("GS: Initialization")
+			set_datafolder('..\\..\\ChessData\\')
 			# for now, we want to move to the new game prompt
 			# later we will select new or load
 			# _newgameprompt()
@@ -84,6 +87,10 @@ func _gamestatereact(gs):
 			# Select New Game Option
 			print("GS: New Prompt")
 			_newgameprompt()
+		GameState.PUZZLE:
+			# Select New Puzzle Option
+			print("GS: New Puzzle")
+			_newpuzzleprompt();
 		GameState.LOAD:
 			# Select Load Option
 			print("GS: Load Prompt")
@@ -110,6 +117,10 @@ func _gamestatereact(gs):
 
 func _newgameprompt():
 	popNew.visible = true
+	statewait = true
+	
+func _newpuzzleprompt():
+	popPuzzle.visible = true
 	statewait = true
 	
 func _loadgameprompt():
@@ -182,21 +193,36 @@ func _on_animated():
 	_gamestatereact(GameState.PLAY)
 	
 # Dialog Handlers
-func _on_closed_new(_cancelled, _white, _black, _clock):
+func _on_closed_new(_cancelled, _title, _white, _black, _clock):
 	print("on_closed_new")
 	if _cancelled:
 		_gamestatereact(prepopgamestate)
 		return
 	# start new game
-	new_game(_white, _black, _clock)
+	new_game(_title, _white, _black, _clock)
 	board.setup(preferred_board_color())
 	pnlCaptured.setup(preferred_board_color())
-	gameUI.clear_history()
-	gameUI.append_history('New Game')
-	gameUI.announceTurn(turn_color())
+	gameUI.initialize('New Game')
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
+func _on_closed_puzzle(_cancelled, _player, _rating):
+	print("on_closed_puzzle")
+	if _cancelled:
+		_gamestatereact(prepopgamestate)
+		return
+	# start new game
+	var err : int = load_puzzle(_player, _rating)
+	if err != 0:
+		_on_error(err)
+		_gamestatereact(prepopgamestate)
+		return
+	board.setup(preferred_board_color())
+	pnlCaptured.setup(preferred_board_color())
+	gameUI.initialize('Load Puzzle')
+	statewait = false
+	_gamestatereact(GameState.PLAY)
+		
 func _on_closed_load(_cancelled, _filename):
 	print("on_closed_load")
 	if _cancelled:
@@ -209,9 +235,7 @@ func _on_closed_load(_cancelled, _filename):
 		_on_error(err)
 		_gamestatereact(prepopgamestate)
 		return
-	gameUI.clear_history()
-	gameUI.append_load(_filename)
-	gameUI.announceTurn(turn_color())
+	gameUI.initialize('Load Game - ' + _filename)
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
@@ -227,7 +251,6 @@ func _on_closed_save(_cancelled, _filename):
 		_on_error(err)
 		_gamestatereact(prepopgamestate)
 		return
-	gameUI.clear_history()
 	gameUI.append_history('Save Game - ' + _filename)
 	statewait = false
 	_gamestatereact(GameState.PLAY)
@@ -249,6 +272,12 @@ func _on_load_game():
 		prepopgamestate = gamestate
 		_gamestatereact(GameState.LOAD)
 
+func _on_load_puzzle():
+	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE,GameState.END]
+	if list.has(gamestate):
+		prepopgamestate = gamestate
+		_gamestatereact(GameState.PUZZLE)
+	
 func _on_save_game():
 	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE,GameState.END]
 	if list.has(gamestate):

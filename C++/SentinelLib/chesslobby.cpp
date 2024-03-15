@@ -33,10 +33,10 @@ namespace chess
         mp_players_backup.clear();
     }
 
-    error_e chesslobby::new_game(const chessclock_s &clock)
+    error_e chesslobby::new_game(std::string title, const chessclock_s &clock)
     {
         attach_to_game();
-        return mp_game->new_game(clock);
+        return mp_game->new_game(title, clock);
     }
 
     void chesslobby::attach_to_game()
@@ -64,7 +64,7 @@ namespace chess
         // if black wins, (-points>0) are awarded.
     }
 
-    error_e chesslobby::new_game(color_e user_color, std::string name, int skill, chessplayertype_e ptype, const chessclock_s &clock)
+    error_e chesslobby::new_game(std::string title, color_e user_color, std::string name, int skill, chessplayertype_e ptype, const chessclock_s &clock)
     {
         backup();
 
@@ -81,7 +81,7 @@ namespace chess
         if (err != e_none)
             return restore(err);
 
-        err = mp_game->new_game(clock);
+        err = mp_game->new_game(title, clock);
         if (err != e_none)
             return restore(err);
 
@@ -203,9 +203,9 @@ namespace chess
         if (err != e_none)
             return restore(err);
 
-        int points = p.rating - skill / 2;
-        if (points < 0)
-            points = 0;
+        int points = (p.rating - skill) / 2;
+        if (points <= 0)
+            points = 5;
         mp_game->set_points(points);
 
         attach_to_game();

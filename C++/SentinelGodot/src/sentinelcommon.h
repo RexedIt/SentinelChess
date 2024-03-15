@@ -26,6 +26,7 @@ typedef enum ChessGameState
     Terminate = terminate_e,
     Forfeit = forfeit_e,
     TimeUp = time_up_e,
+    PuzzleSolution = puzzle_solution_e,
     StaleMate = draw_stalemate_e,
     FiveFold = draw_fivefold_e,
     FiftyMove = draw_fiftymove_e,
@@ -47,7 +48,8 @@ typedef enum ChessPlayerType
 {
     tNone = t_none,
     Human = t_human,
-    Computer = t_computer
+    Computer = t_computer,
+    Puzzle = t_puzzle
 } ChessPlayerType;
 
 typedef enum ChessEventType
@@ -173,6 +175,7 @@ class ChessPlayer : public RefCounted
 public:
     ChessPlayer();
     ChessPlayer(std::shared_ptr<chessplayer>);
+    ChessPlayer(std::string name, int skill, chessplayertype_e ptype);
     ~ChessPlayer();
 
     void set_name(String s);
@@ -187,6 +190,42 @@ private:
     std::string m_name;
     chessplayertype_e m_playertype;
     int m_skill;
+
+protected:
+    static void _bind_methods();
+};
+
+class ChessMeta : public RefCounted
+{
+    GDCLASS(ChessMeta, RefCounted)
+
+public:
+    ChessMeta();
+    ChessMeta(std::shared_ptr<chessgame> g, chesslobby &l);
+    ~ChessMeta();
+
+    String title();
+    Ref<ChessPlayer> white();
+    Ref<ChessPlayer> black();
+    bool puzzle();
+    int hints();
+    int points();
+    int turns();
+    int playno();
+
+private:
+    std::string m_title;
+    std::string m_w_name;
+    int m_w_skill;
+    chessplayertype_e m_w_type;
+    std::string m_b_name;
+    int m_b_skill;
+    chessplayertype_e m_b_type;
+    bool m_puzzle;
+    int m_hints;
+    int m_points;
+    int m_turns;
+    int m_playno;
 
 protected:
     static void _bind_methods();

@@ -44,9 +44,13 @@ namespace chess
         int16_t playno();
         bool puzzle();
         int hints();
+        int points();
 
         chessmove hint();
         std::string hintstr();
+
+        std::string title();
+        void set_title(std::string t);
 
         // Any Player
         error_e forfeit(color_e col);
@@ -76,7 +80,7 @@ namespace chess
         error_e pause_game();
 
     protected:
-        error_e new_game(const chessclock_s &clock);
+        error_e new_game(std::string title, const chessclock_s &clock);
         error_e load_game(json &j);
         error_e save_game(json &j);
         error_e load_puzzle(chesspuzzle &p);
@@ -87,7 +91,6 @@ namespace chess
         error_e chat(std::string, color_e);
         error_e consider(chessmove, color_e, int8_t pct = -1);
 
-        int points();
         void set_points(const int);
 
     private:
@@ -112,7 +115,7 @@ namespace chess
         bool m_puzzle;
         int m_hints;
         int m_points;
-        std::string m_opening;
+        std::string m_title;
 
         color_e m_win_color;
 

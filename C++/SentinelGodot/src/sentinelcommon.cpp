@@ -1,4 +1,5 @@
 #include "sentinelcommon.h"
+#include "chesslobby.h"
 
 #include <godot_cpp/core/class_db.hpp>
 
@@ -225,6 +226,13 @@ ChessPlayer::ChessPlayer(std::shared_ptr<chessplayer> p)
     }
 }
 
+ChessPlayer::ChessPlayer(std::string name, int skill, chessplayertype_e ptype)
+{
+    m_name = name;
+    m_skill = skill;
+    m_playertype = ptype;
+}
+
 ChessPlayer::~ChessPlayer()
 {
 }
@@ -245,6 +253,7 @@ void ChessPlayer::_bind_methods()
     BIND_ENUM_CONSTANT(tNone);
     BIND_ENUM_CONSTANT(Human);
     BIND_ENUM_CONSTANT(Computer);
+    BIND_ENUM_CONSTANT(Puzzle);
 }
 
 void ChessPlayer::set_name(String s)
@@ -402,4 +411,101 @@ int ChessClock::get_remain_black()
 chessclock_s ChessClock::get()
 {
     return m_clock;
+}
+
+ChessMeta::ChessMeta()
+{
+    m_w_skill = 0;
+    m_w_type = t_none;
+    m_b_skill = 0;
+    m_b_type = t_none;
+    m_puzzle = false;
+    m_hints = 0;
+    m_points = 0;
+    m_turns = 0;
+    m_playno = 0;
+}
+
+ChessMeta::ChessMeta(std::shared_ptr<chessgame> g, chesslobby &l)
+{
+    if (g != NULL)
+    {
+        m_title = g->title();
+        m_puzzle = g->puzzle();
+        m_points = g->points();
+        m_hints = g->hints();
+        m_turns = g->playmax();
+        m_playno = g->playno();
+    }
+    std::map<color_e, std::shared_ptr<chessplayer>> pl = l.players();
+    if (pl.count(c_white))
+    {
+        m_w_name = pl[c_white]->playername();
+        m_w_skill = pl[c_white]->playerskill();
+        m_w_type = pl[c_white]->playertype();
+    }
+    if (pl.count(c_black))
+    {
+        m_b_name = pl[c_black]->playername();
+        m_b_skill = pl[c_black]->playerskill();
+        m_b_type = pl[c_black]->playertype();
+    }
+}
+
+ChessMeta::~ChessMeta()
+{
+}
+
+void ChessMeta::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("title"), &ChessMeta::title);
+    ClassDB::bind_method(D_METHOD("white"), &ChessMeta::white);
+    ClassDB::bind_method(D_METHOD("black"), &ChessMeta::black);
+    ClassDB::bind_method(D_METHOD("puzzle"), &ChessMeta::puzzle);
+    ClassDB::bind_method(D_METHOD("hints"), &ChessMeta::hints);
+    ClassDB::bind_method(D_METHOD("points"), &ChessMeta::points);
+    ClassDB::bind_method(D_METHOD("turns"), &ChessMeta::turns);
+    ClassDB::bind_method(D_METHOD("playno"), &ChessMeta::playno);
+}
+
+String ChessMeta::title()
+{
+    return String(m_title.c_str());
+}
+
+Ref<ChessPlayer> ChessMeta::white()
+{
+    Ref<ChessPlayer> cp(memnew(ChessPlayer(m_w_name, m_w_skill, m_w_type)));
+    return cp;
+}
+
+Ref<ChessPlayer> ChessMeta::black()
+{
+    Ref<ChessPlayer> cp(memnew(ChessPlayer(m_b_name, m_b_skill, m_b_type)));
+    return cp;
+}
+
+bool ChessMeta::puzzle()
+{
+    return m_puzzle;
+}
+
+int ChessMeta::hints()
+{
+    return m_hints;
+}
+
+int ChessMeta::points()
+{
+    return m_points;
+}
+
+int ChessMeta::turns()
+{
+    return m_turns;
+}
+
+int ChessMeta::playno()
+{
+    return m_playno;
 }

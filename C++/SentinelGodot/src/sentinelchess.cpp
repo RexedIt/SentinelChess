@@ -27,6 +27,7 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("new_game", "white", "black"), &SentinelChess::new_game);
     ClassDB::bind_method(D_METHOD("save_game", "filename"), &SentinelChess::save_game);
     ClassDB::bind_method(D_METHOD("load_game", "filename"), &SentinelChess::load_game);
+    ClassDB::bind_method(D_METHOD("load_puzzle", "player", "rating"), &SentinelChess::load_puzzle);
     ClassDB::bind_method(D_METHOD("save_xfen"), &SentinelChess::save_xfen);
     ClassDB::bind_method(D_METHOD("load_xfen", "contents"), &SentinelChess::load_xfen);
     ClassDB::bind_method(D_METHOD("turn_color"), &SentinelChess::turn_color);
@@ -54,7 +55,7 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("win_points", "col"), &SentinelChess::win_points);
     ClassDB::bind_method(D_METHOD("get_datafolder"), &SentinelChess::get_datafolder);
     ClassDB::bind_method(D_METHOD("set_datafolder", "f"), &SentinelChess::set_datafolder);
-
+    ClassDB::bind_method(D_METHOD("get_meta"), &SentinelChess::get_meta);
     ClassDB::bind_method(D_METHOD("forfeit"), &SentinelChess::forfeit);
     ClassDB::bind_method(D_METHOD("move_m", "col", "m"), &SentinelChess::move_m);
     ClassDB::bind_method(D_METHOD("move_c", "col", "p0", "p1", "promote"), &SentinelChess::move_c);
@@ -90,6 +91,7 @@ void SentinelChess::_bind_methods()
     BIND_ENUM_CONSTANT(Terminate);
     BIND_ENUM_CONSTANT(Forfeit);
     BIND_ENUM_CONSTANT(TimeUp);
+    BIND_ENUM_CONSTANT(PuzzleSolution);
     BIND_ENUM_CONSTANT(CheckMate);
     BIND_ENUM_CONSTANT(StaleMate);
     BIND_ENUM_CONSTANT(FiveFold);
@@ -139,6 +141,12 @@ Ref<ChessMove> SentinelChess::lastmove()
     return cm;
 }
 
+Ref<ChessMeta> SentinelChess::get_meta()
+{
+    Ref<ChessMeta> cm(memnew(ChessMeta(mp_game, m_lobby)));
+    return cm;
+}
+
 ChessColor SentinelChess::lastcolor()
 {
     chessturn t = mp_game->play_turn();
@@ -147,12 +155,16 @@ ChessColor SentinelChess::lastcolor()
 
 int SentinelChess::playno()
 {
-    return mp_game->playno();
+    if (mp_game)
+        return mp_game->playno();
+    return -1;
 }
 
 int SentinelChess::playmax()
 {
-    return mp_game->playmax();
+    if (mp_game)
+        return mp_game->playmax();
+    return -1;
 }
 
 void SentinelChess::refresh_data()
@@ -160,7 +172,7 @@ void SentinelChess::refresh_data()
     mp_game = m_lobby.game();
 }
 
-int SentinelChess::new_game(const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black, const Ref<ChessClock> &clock)
+int SentinelChess::new_game(String title, const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black, const Ref<ChessClock> &clock)
 {
     m_lobby.clear_players();
     std::string n;
@@ -186,7 +198,19 @@ int SentinelChess::new_game(const Ref<ChessPlayer> &white, const Ref<ChessPlayer
     if (clock.is_valid())
         sclock = clock->get();
 
-    err = m_lobby.new_game(sclock);
+    err = m_lobby.new_game(title.ascii().get_data(), sclock);
+    refresh_data();
+    return err;
+}
+
+int SentinelChess::load_puzzle(const Ref<ChessPlayer> &player, const int rating)
+{
+    if (!player.is_valid())
+        return -1;
+    std::string n = player->get_name().ascii().get_data();
+    int s = player->get_skill();
+    std::string f = data_file("lichess_db_puzzle.csv");
+    int err = m_lobby.load_puzzle(n, s, f, rating);
     refresh_data();
     return err;
 }
@@ -205,12 +229,16 @@ int SentinelChess::load_game(String filename)
 
 int SentinelChess::load_xfen(String content)
 {
-    return mp_game->load_xfen(content.ascii().get_data());
+    if (mp_game)
+        return mp_game->load_xfen(content.ascii().get_data());
+    return e_invalid_reference;
 }
 
 String SentinelChess::save_xfen()
 {
-    return String(mp_game->save_xfen().c_str());
+    if (mp_game)
+        return String(mp_game->save_xfen().c_str());
+    return "";
 }
 
 ChessColor SentinelChess::turn_color()
@@ -307,22 +335,30 @@ ChessColor SentinelChess::preferred_board_color()
 
 bool SentinelChess::check_state(ChessColor col)
 {
-    return mp_game->check_state((color_e)col);
+    if (mp_game)
+        return mp_game->check_state((color_e)col);
+    return false;
 }
 
 ChessGameState SentinelChess::state()
 {
-    return (ChessGameState)mp_game->state();
+    if (mp_game)
+        return (ChessGameState)mp_game->state();
+    return sNone;
 }
 
 bool SentinelChess::puzzle()
 {
-    return mp_game->puzzle();
+    if (mp_game)
+        return mp_game->puzzle();
+    return false;
 }
 
 int SentinelChess::hints()
 {
-    return mp_game->hints();
+    if (mp_game)
+        return mp_game->hints();
+    return 0;
 }
 
 Ref<ChessMove> SentinelChess::hint()
@@ -353,7 +389,9 @@ String SentinelChess::get_datafolder()
 
 int SentinelChess::forfeit(ChessColor col)
 {
-    return mp_game->forfeit((color_e)col);
+    if (mp_game)
+        return mp_game->forfeit((color_e)col);
+    return e_invalid_reference;
 }
 
 int SentinelChess::move_c(ChessColor col, const Ref<ChessCoord> &p0, const Ref<ChessCoord> &p1, ChessPiece promote)
@@ -374,7 +412,9 @@ int SentinelChess::move_m(ChessColor col, const Ref<ChessMove> &m)
 
 int SentinelChess::move_s(ChessColor col, String s)
 {
-    return mp_game->move((color_e)col, s.ascii().get_data());
+    if (mp_game)
+        return mp_game->move((color_e)col, s.ascii().get_data());
+    return e_invalid_reference;
 }
 
 Array SentinelChess::possible_moves(ChessColor col)
@@ -392,32 +432,42 @@ Array SentinelChess::possible_moves(ChessColor col)
 
 int SentinelChess::play_game()
 {
-    return mp_game->play_game();
+    if (mp_game)
+        return mp_game->play_game();
+    return e_invalid_reference;
 }
 
 int SentinelChess::pause_game()
 {
-    return mp_game->pause_game();
+    if (mp_game)
+        return mp_game->pause_game();
+    return e_invalid_reference;
 }
 
 int SentinelChess::rewind_game()
 {
-    return mp_game->rewind_game();
+    if (mp_game)
+        return mp_game->rewind_game();
+    return e_invalid_reference;
 }
 
 int SentinelChess::advance_game()
 {
-    return mp_game->advance_game();
+    if (mp_game)
+        return mp_game->advance_game();
+    return e_invalid_reference;
 }
 
 int SentinelChess::goto_turn(int turn_no)
 {
-    return mp_game->goto_turn(turn_no);
+    if (mp_game)
+        return mp_game->goto_turn(turn_no);
+    return e_invalid_reference;
 }
 
 int SentinelChess::remove_piece(const Ref<ChessCoord> &p0)
 {
-    if (p0.is_valid())
+    if ((p0.is_valid()) && (mp_game))
         return mp_game->remove_piece(p0->get());
     else
         return e_invalid_reference;
@@ -425,7 +475,7 @@ int SentinelChess::remove_piece(const Ref<ChessCoord> &p0)
 
 int SentinelChess::add_piece(const Ref<ChessCoord> &p0, ChessColor col, ChessPiece piece)
 {
-    if (p0.is_valid())
+    if ((p0.is_valid()) && (mp_game))
     {
         chesspiece p((color_e)col, (piece_e)piece);
         return mp_game->add_piece(p0->get(), p);

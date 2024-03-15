@@ -259,6 +259,16 @@ namespace chess
         return "No Hint Available";
     }
 
+    std::string chessgame::title()
+    {
+        return m_title;
+    }
+
+    void chessgame::set_title(std::string t)
+    {
+        m_title = t;
+    }
+
     bool chessgame::check_state(color_e col)
     {
         return m_board.check_state(col);
@@ -363,7 +373,7 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::new_game(const chessclock_s &clock)
+    error_e chessgame::new_game(std::string title, const chessclock_s &clock)
     {
         m_win_color = c_none;
         // *** NATHANAEL ***
@@ -379,6 +389,7 @@ namespace chess
         m_board.load_xfen(m_init_board);
         m_turn.clear();
         m_play_pos = -1;
+        m_title = title;
         refresh_board_positions();
         set_state(play_e, true);
         signal_on_turn();
@@ -416,7 +427,7 @@ namespace chess
             JSON_LOAD(jsonf, "init_board", m_init_board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
             JSON_LOAD(jsonf, "puzzle", m_puzzle, false);
             JSON_LOAD(jsonf, "hints", m_hints, 0);
-            JSON_LOAD(jsonf, "opening", m_opening, "");
+            JSON_LOAD(jsonf, "title", m_title, "");
             JSON_LOAD(jsonf, "points", m_points, 0);
 
             m_play_pos = jsonf["play_pos"];
@@ -483,6 +494,7 @@ namespace chess
         m_play_pos = -1;
         m_board.load_xfen(p.fen);
         m_puzzle = true;
+        m_title = p.title();
         m_hints = turns.size() / 4;
         refresh_board_positions();
         set_state(play_e, true);
@@ -522,7 +534,7 @@ namespace chess
             jsonf["init_board"] = m_init_board;
             jsonf["puzzle"] = m_puzzle;
             jsonf["hints"] = m_hints;
-            jsonf["opening"] = m_opening;
+            jsonf["title"] = m_title;
             jsonf["play_pos"] = m_play_pos;
             jsonf["points"] = m_points;
 

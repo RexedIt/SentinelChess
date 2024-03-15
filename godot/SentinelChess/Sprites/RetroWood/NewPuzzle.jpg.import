@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b72i4peurx1th"
-path="res://.godot/imported/RetroBanner.jpg-9cecd549e6c33f29b46d858ec243ef77.ctex"
+uid="uid://ivggm7dv0cjq"
+path="res://.godot/imported/NewPuzzle.jpg-1dc857e80f42a97c8cd399a5b57d8edf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Sprites/RetroWood/RetroBanner.jpg"
-dest_files=["res://.godot/imported/RetroBanner.jpg-9cecd549e6c33f29b46d858ec243ef77.ctex"]
+source_file="res://Sprites/RetroWood/NewPuzzle.jpg"
+dest_files=["res://.godot/imported/NewPuzzle.jpg-1dc857e80f42a97c8cd399a5b57d8edf.ctex"]
 
 [params]
 

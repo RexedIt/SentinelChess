@@ -250,7 +250,7 @@ bool new_game(chesslobby &lobby)
         return false;
     // Now, for clock options
     chessclock_s clock = get_clock_options();
-    error_e err = lobby.new_game(clock);
+    error_e err = lobby.new_game("New Game - Console", clock);
     if (err != e_none)
         return print_error(err);
     refresh_data(lobby);

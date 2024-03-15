@@ -1,10 +1,12 @@
 extends Window
 
 @export var cancelled : bool = false
+var _title : String
 var _white : ChessPlayer
 var _black : ChessPlayer
 var _clock : ChessClock
 
+@onready var txtTitle : TextEdit = get_node("MC/VC/HC/txtTitle")
 @onready var btnCancel : Button = get_node("btnCancel")
 @onready var btnOK : Button = get_node("btnOK")
 @onready var optNone : CheckBox = get_node("MC/VC/Clock/HC/VC/optNone")
@@ -41,19 +43,21 @@ func _process(delta):
 	pass
 
 # outbound signal
-signal on_closed(_cancelled, _white, _black, _clock)
+signal on_closed(_cancelled, _text, _white, _black, _clock)
 
 func _VisibilityChanged():
 	if (visible):
+		txtTitle.text = "New Game"
 		initializePlayer('White','',600,'Human')
 		initializePlayer('Black','Computer',600,'Computer')
 		initializeClock(ChessClock.ccNone, 60, 10)
 		cancelled = false
 	else:
+		_title = txtTitle.text
 		readPlayer(_white,'White')
 		readPlayer(_black,'Black')
 		readClock(_clock)
-		on_closed.emit(cancelled, _white, _black, _clock)
+		on_closed.emit(cancelled, _title, _white, _black, _clock)
 	
 func _OnCancel():
 	cancelled = true
