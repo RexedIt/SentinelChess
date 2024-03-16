@@ -206,13 +206,13 @@ func _on_closed_new(_cancelled, _title, _white, _black, _clock):
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
-func _on_closed_puzzle(_cancelled, _player, _rating):
+func _on_closed_puzzle(_cancelled, _player, _keywords, _rating):
 	print("on_closed_puzzle")
 	if _cancelled:
 		_gamestatereact(prepopgamestate)
 		return
 	# start new game
-	var err : int = load_puzzle(_player, _rating)
+	var err : int = load_puzzle(_player, _keywords, _rating)
 	if err != 0:
 		_on_error(err)
 		_gamestatereact(prepopgamestate)

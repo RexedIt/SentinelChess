@@ -28,7 +28,7 @@ namespace chess
         error_e load_game(std::string filename);
         error_e save_game(std::string filename);
         error_e load_puzzle(std::string name, int skill, chesspuzzle p);
-        error_e load_puzzle(std::string name, int skill, std::string filename, int rating);
+        error_e load_puzzle(std::string name, int skill, std::string filename, std::string keywords, int rating);
         error_e load_puzzle(std::string name, int skill, std::string contents);
         error_e add_player(color_e color, std::string name, int skill, chessplayertype_e ptype);
         error_e drop_player(color_e color);

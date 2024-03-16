@@ -76,7 +76,18 @@
 			"xstring": "cpp",
 			"xtr1common": "cpp",
 			"xtree": "cpp",
-			"xutility": "cpp"
+			"xutility": "cpp",
+			"any": "cpp",
+			"codecvt": "cpp",
+			"filesystem": "cpp",
+			"functional": "cpp",
+			"list": "cpp",
+			"numeric": "cpp",
+			"ranges": "cpp",
+			"span": "cpp",
+			"unordered_map": "cpp",
+			"valarray": "cpp",
+			"xhash": "cpp"
 		}
 	}
 }

@@ -674,7 +674,7 @@ namespace chess
             if (m0.en_passant)
                 capture_piece(m0.p0.y, m0.p1.x);
             if (m0.promote != p_none)
-                capture_piece(m0.p1.y, m0.p1.x);
+                m_cells[m0.p1.y][m0.p1.x] = m0.promote + piece.color;
             m_halfmove = 0; // resets
         }
         // Adjust bitmask, returns balance of kill cells

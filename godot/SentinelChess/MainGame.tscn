@@ -482,8 +482,8 @@ text = " Cancel "
 
 [node name="popPuzzle" type="Window" parent="."]
 title = "Load Puzzle"
-position = Vector2i(355, 412)
-size = Vector2i(750, 225)
+position = Vector2i(355, 396)
+size = Vector2i(750, 240)
 visible = false
 theme_override_fonts/title_font = ExtResource("3_7nhen")
 theme_override_font_sizes/title_font_size = 20
@@ -545,6 +545,20 @@ max_value = 2500.0
 step = 50.0
 value = 600.0
 rounded = true
+
+[node name="lblKeywords" type="Label" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+text = "Keywords (,)
+"
+horizontal_alignment = 2
+
+[node name="txtKeywords" type="TextEdit" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(425, 24)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_7nhen")
+theme_override_font_sizes/font_size = 18
 
 [node name="btnOK" type="Button" parent="popPuzzle"]
 anchors_preset = 7

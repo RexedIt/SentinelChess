@@ -29,7 +29,7 @@ private:
     String gamestatestr(ChessGameState state);
 
     int new_game(String title, const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black, const Ref<ChessClock> &clock);
-    int load_puzzle(const Ref<ChessPlayer> &player, const int rating);
+    int load_puzzle(const Ref<ChessPlayer> &player, String keywords, const int rating);
 
     int save_game(String filename);
     int load_game(String filename);

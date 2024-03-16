@@ -94,7 +94,7 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
     std::string name = "Human";
     int skill = 600;
     int rating = 700;
-    std::cout << "\r\nEnter Player Options: name, skill, puzzle rating\r\n"
+    std::cout << "\r\nEnter Player Options: name, skill, puzzle rating, keywords\r\n"
               << std::endl;
     std::cout << "Player: ";
     std::string cmd;
@@ -109,10 +109,24 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
     }
     if (args.size() > 2)
         rating = atoi(args[2].c_str());
-    error_e err = lobby.load_puzzle(name, skill, filename, rating);
+    std::string keywords = "";
+    for (int i = 3; i < args.size(); i++)
+    {
+        if (keywords != "")
+            keywords += ",";
+        keywords += args[i];
+    }
+    error_e err = lobby.load_puzzle(name, skill, filename, keywords, rating);
     if (err != e_none)
-        return print_error(e_loading);
+        return print_error(err);
     refresh_data(lobby);
+    std::cout << p_game->title() << std::endl;
+    int p = p_game->points();
+    std::cout << "Worth up to " << p << " points. ";
+    int n = p_game->hints();
+    if (n > 0)
+        std::cout << "You have " << n << " hints.";
+    std::cout << std::endl;
     return true;
 }
 

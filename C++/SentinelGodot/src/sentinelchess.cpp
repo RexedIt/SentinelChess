@@ -203,14 +203,15 @@ int SentinelChess::new_game(String title, const Ref<ChessPlayer> &white, const R
     return err;
 }
 
-int SentinelChess::load_puzzle(const Ref<ChessPlayer> &player, const int rating)
+int SentinelChess::load_puzzle(const Ref<ChessPlayer> &player, String keywords, const int rating)
 {
     if (!player.is_valid())
         return -1;
     std::string n = player->get_name().ascii().get_data();
+    std::string k = keywords.ascii().get_data();
     int s = player->get_skill();
-    std::string f = data_file("lichess_db_puzzle.csv");
-    int err = m_lobby.load_puzzle(n, s, f, rating);
+    std::string f = data_file("db_puzzles.csv");
+    int err = m_lobby.load_puzzle(n, s, f, k, rating);
     refresh_data();
     return err;
 }

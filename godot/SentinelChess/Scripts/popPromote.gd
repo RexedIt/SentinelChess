@@ -29,7 +29,7 @@ func _VisibilityChanged():
 		if _color == SentinelChess.White:
 			base += 'White'
 		else:
-			base = 'Black'
+			base += 'Black'
 		Queen.icon = load(base+'Queen.png')
 		Rook.icon = load(base+'Rook.png')
 		Bishop.icon = load(base+'Bishop.png')

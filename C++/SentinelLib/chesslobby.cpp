@@ -212,11 +212,11 @@ namespace chess
         return err;
     }
 
-    error_e chesslobby::load_puzzle(std::string name, int skill, std::string filename, int rating)
+    error_e chesslobby::load_puzzle(std::string name, int skill, std::string filename, std::string keywords, int rating)
     {
         // determine the human color
         chesspuzzle p;
-        error_e err = p.load_random(filename, rating);
+        error_e err = p.load_random(filename, keywords, rating);
         if (err != e_none)
             return err;
         return load_puzzle(name, skill, p);
