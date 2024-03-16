@@ -46,6 +46,7 @@ namespace LIPuzzleConverter
             bool help = false;
             int maxItems = 10000;
             bool openings = false;
+            bool count = false;
 
             for(int i = 0; i < args.Length; i++)
             {
@@ -54,7 +55,7 @@ namespace LIPuzzleConverter
                 if (uarg.StartsWith("/"))
                     uarg = "-" + uarg.Substring(1);
                 if (uarg.StartsWith("--"))
-                    uarg = uarg.Substring(2);
+                    uarg = uarg.Substring(1);
                 bool hasnext = i < args.Length - 1;
                 if (uarg == "-IN")
                 {
@@ -101,6 +102,10 @@ namespace LIPuzzleConverter
                 else if (uarg == "-OPENINGS")
                 {
                     openings = true;
+                }
+                else if (uarg == "-COUNT")
+                {
+                    count = true;
                 }
                 else if ((uarg == "-HELP") || (uarg == "-H") || (uarg == "?") || (uarg == "-?"))
                     help = true;
@@ -178,38 +183,31 @@ namespace LIPuzzleConverter
                             string move = s[2];
                             string opening = s[9];
                             int movh = move.GetHashCode();
-                            if (moves.Contains(movh))
+                            int boardh = board.GetHashCode();
+                            // Find pure duplicates
+                            if ((moves.Contains(movh)) && (boards.Contains(boardh)))
                                 includeit = false;
                             else
+                            {
                                 moves.Add(movh);
-                            if (opening == "")
-                            {
-                                int boardh = board.GetHashCode();
-                                if (boards.Contains(boardh))
-                                    includeit = false;
-                                else
-                                    boards.Add(boardh);
-                            }
-                            else
-                            {
-                                int openh = opening.GetHashCode();
-                                if (opens.Contains(openh))
-                                    includeit = false;
-                                else
-                                    opens.Add(openh);
+                                boards.Add(boardh);
                             }
                         }
                         if (!includeit)
                             continue;
-                        line = convertLine(s);
-                        if (lw++ >= maxItems)
-                            break;
+                        lw++;
+                        if (!count)
+                        {
+                            line = convertLine(s);
+                            if (lw >= maxItems)
+                                break;
+                        }
                         if (lw % 1000 == 0)
                             Console.Write(".");
                         of.WriteLine(line);
                     }
                 }
-                Console.WriteLine(lr.ToString() + " read, " + lw.ToString() + " written.");
+                Console.WriteLine("\r\n" + lr.ToString() + " read, " + lw.ToString() + " written.\r\n");
                 of.Close();
             }
             catch (Exception ex)

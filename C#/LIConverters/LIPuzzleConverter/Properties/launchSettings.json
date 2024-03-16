@@ -2,7 +2,7 @@
   "profiles": {
     "LIPuzzleConverter": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\Users\\Rex\\Downloads\\Lichess_db_puzzle.csv -maxItems 221920 -minpopularity 75 -out c:\\projects\\sentinelchess\\ChessData\\db_puzzles.csv"
+      "commandLineArgs": "C:\\Users\\Rex\\Downloads\\Lichess_db_puzzle.csv -maxItems 217745 -minpopularity 97 -out c:\\projects\\sentinelchess\\ChessData\\db_puzzles.csv"
     }
   }
 }

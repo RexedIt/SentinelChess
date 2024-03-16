@@ -861,10 +861,10 @@ volume_db = 6.0
 max_polyphony = 2
 
 [node name="pnlCaptured" type="Panel" parent="GameUI"]
-offset_left = 1425.0
-offset_top = 96.0
-offset_right = 1465.0
-offset_bottom = 1037.0
+offset_left = 1415.0
+offset_top = 105.0
+offset_right = 1475.0
+offset_bottom = 1005.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_aqyli")
 script = ExtResource("23_422qp")
 
