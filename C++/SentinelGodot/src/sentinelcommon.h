@@ -210,6 +210,8 @@ public:
     bool puzzle();
     int hints();
     int points();
+    int white_points();
+    int black_points();
     int turns();
     int playno();
 
@@ -224,6 +226,8 @@ private:
     bool m_puzzle;
     int m_hints;
     int m_points;
+    int m_w_points;
+    int m_b_points;
     int m_turns;
     int m_playno;
 

@@ -2,8 +2,8 @@ extends Panel
 
 @onready var PieceProto : Sprite2D = get_node('Piece')
 
-const piece_arr_size = 30
-const piece_delta = 30
+const piece_arr_size = 26	
+const piece_delta = 30	
 var piece_arr = []
 var bottom_color : SentinelChess.ChessColor = SentinelChess.White
 
@@ -15,7 +15,7 @@ func _ready():
 		var po = PieceProto.duplicate()
 		po.position.y = piece_delta*y
 		if (y % 2) == 1:
-			po.position.x = 40
+			po.position.x = 95
 		add_child(po)
 		piece_arr[y]=po
 

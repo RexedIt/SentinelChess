@@ -422,6 +422,8 @@ ChessMeta::ChessMeta()
     m_puzzle = false;
     m_hints = 0;
     m_points = 0;
+    m_w_points = 0;
+    m_b_points = 0;
     m_turns = 0;
     m_playno = 0;
 }
@@ -437,6 +439,8 @@ ChessMeta::ChessMeta(std::shared_ptr<chessgame> g, chesslobby &l)
         m_turns = g->playmax();
         m_playno = g->playno();
     }
+    m_w_points = l.win_points(c_white);
+    m_b_points = l.win_points(c_black);
     std::map<color_e, std::shared_ptr<chessplayer>> pl = l.players();
     if (pl.count(c_white))
     {
@@ -464,6 +468,8 @@ void ChessMeta::_bind_methods()
     ClassDB::bind_method(D_METHOD("puzzle"), &ChessMeta::puzzle);
     ClassDB::bind_method(D_METHOD("hints"), &ChessMeta::hints);
     ClassDB::bind_method(D_METHOD("points"), &ChessMeta::points);
+    ClassDB::bind_method(D_METHOD("white_points"), &ChessMeta::white_points);
+    ClassDB::bind_method(D_METHOD("black_points"), &ChessMeta::black_points);
     ClassDB::bind_method(D_METHOD("turns"), &ChessMeta::turns);
     ClassDB::bind_method(D_METHOD("playno"), &ChessMeta::playno);
 }
@@ -498,6 +504,16 @@ int ChessMeta::hints()
 int ChessMeta::points()
 {
     return m_points;
+}
+
+int ChessMeta::white_points()
+{
+    return m_w_points;
+}
+
+int ChessMeta::black_points()
+{
+    return m_b_points;
 }
 
 int ChessMeta::turns()

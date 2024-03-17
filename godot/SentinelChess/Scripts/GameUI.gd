@@ -2,7 +2,7 @@ extends CanvasLayer
 
 @onready var game_manager : SentinelChess = get_parent().get_node('SentinelChess')
 
-@onready var pnlPuzzle : Panel = get_node('pnlPuzzle')
+@onready var pnlScore : Panel = get_node('pnlScore')
 @onready var lblTitle : Label = get_node('lblTitle')
 @onready var pnlPlayerTop : Panel = get_node('pnlPlayerTop')
 @onready var pnlPlayerBottom : Panel = get_node('pnlPlayerBottom')
@@ -20,7 +20,7 @@ extends CanvasLayer
 @onready var voice : AudioStreamPlayer = get_node('voice')
 @onready var MoveSound = preload('res://Sound/SFX/Open_01.mp3')
 @onready var PromoteSound = preload('res://Sound/SFX/Collect_Point_01.mp3')
-@onready var PlayTexture : Texture2D = preload('res://Sprites/RetroWood/Play.jpg')
+@onready var PlayTexture : Texture2D = preload('res://Sprites/RetroWood/Play.png')
 @export var step : int
 
 const GameState = preload("res://Scripts/GameState.gd").GameState_
@@ -31,7 +31,8 @@ var meta : ChessMeta = null
 var puzzle : bool = false
 var hints : int = 0
 var points : int = 0
-
+var white_points : int = 0
+var black_points : int = 0
 var voice_queue = []
 var do_voice : bool = false
 var do_sfx : bool = false
@@ -82,8 +83,13 @@ func initialize(msg : String):
 	puzzle = meta.puzzle()
 	hints = meta.hints()
 	points = meta.points()
-	pnlPuzzle.visible = puzzle
-	pnlPuzzle.setvalues(points,hints,true)
+	white_points = meta.white_points()
+	black_points = meta.black_points()
+	pnlScore.visible = true
+	if puzzle:
+		pnlScore.setPuzzleValues(points,hints,true)
+	else:
+		pnlScore.setScoreValues(white_points,black_points);
 	btnHint.disabled = (not puzzle) or hints <= 0
 	btnRewind.disabled = puzzle
 	btnPause.disabled = puzzle
