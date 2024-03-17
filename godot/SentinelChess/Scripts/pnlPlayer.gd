@@ -1,12 +1,13 @@
 extends Panel
 
+@onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var sprType : Sprite2D = get_node('sprType')
 @onready var lblName : Label = get_node('lblName')
 @onready var lblSkill : Label = get_node('lblSkill')
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	sprType.texture = skin.sprite('SmallPieces.png')
 
 func refreshplayer(col : SentinelChess.ChessColor, player : ChessPlayer):
 	if player:

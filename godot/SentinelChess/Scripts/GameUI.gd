@@ -1,5 +1,6 @@
 extends CanvasLayer
 
+@onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var game_manager : SentinelChess = get_parent().get_node('SentinelChess')
 
 @onready var pnlScore : Panel = get_node('pnlScore')
@@ -10,21 +11,26 @@ extends CanvasLayer
 @onready var txtCmd : LineEdit = get_node('txtCmd')
 @onready var lblError : Label = get_node('lblError')
 @onready var lblCmd : Label = get_node('lblCmd')
+
+@onready var btnNew : Button = get_node('btnNew')
+@onready var btnNewPuzzle : Button = get_node('btnNewPuzzle')
+@onready var btnOpen : Button = get_node('btnOpen')
 @onready var btnSave : Button = get_node('btnSave')
 @onready var btnRewind : Button = get_node('btnRewind')
-@onready var btnAdvance : Button = get_node('btnAdvance')
-@onready var btnHint : Button = get_node('btnHint')
 @onready var btnPause : Button = get_node('btnPause')
+@onready var btnAdvance : Button = get_node('btnAdvance')
+@onready var btnHelp : Button = get_node('btnHelp')
+
 @onready var lblWhiteClock : Label = get_node('lblWhiteClock')
 @onready var lblBlackClock : Label = get_node('lblBlackClock')
 @onready var voice : AudioStreamPlayer = get_node('voice')
 @onready var MoveSound = preload('res://Sound/SFX/Open_01.mp3')
 @onready var PromoteSound = preload('res://Sound/SFX/Collect_Point_01.mp3')
-@onready var PlayTexture : Texture2D = preload('res://Sprites/RetroWood/Play.png')
 @export var step : int
 
 const GameState = preload("res://Scripts/GameState.gd").GameState_
 
+var PlayTexture : Texture2D;
 var is_idle : bool = false
 var PauseTexture : Texture2D
 var meta : ChessMeta = null
@@ -39,8 +45,18 @@ var do_sfx : bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	# do some skinning
+	btnNew.icon = skin.sprite('New.png')
+	btnNewPuzzle.icon = skin.sprite('NewPuzzle.png')
+	btnOpen.icon = skin.sprite('Open.png')
+	btnSave.icon = skin.sprite('Save.png')
+	btnRewind.icon = skin.sprite('Rewind.png')
+	btnPause.icon = skin.sprite('Pause.png')
+	btnAdvance.icon = skin.sprite('Advance.png')
+	btnHelp.icon = skin.sprite('Help.png')
 	txtCmd.grab_focus()
 	PauseTexture = btnPause.icon
+	PlayTexture = skin.sprite('Play.png')
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -90,7 +106,7 @@ func initialize(msg : String):
 		pnlScore.setPuzzleValues(points,hints,true)
 	else:
 		pnlScore.setScoreValues(white_points,black_points);
-	btnHint.disabled = (not puzzle) or hints <= 0
+	btnHelp.disabled = (not puzzle) or hints <= 0
 	btnRewind.disabled = puzzle
 	btnPause.disabled = puzzle
 	btnAdvance.disabled = puzzle
@@ -378,7 +394,7 @@ func gamestate(gs):
 		btnRewind.disabled = no_game or puzzle
 		btnPause.disabled = no_game or puzzle
 		btnAdvance.disabled = no_game or puzzle
-		btnHint.disabled = no_game or (not puzzle) or hints <= 0
+		btnHelp.disabled = no_game or (not puzzle) or hints <= 0
 		btnSave.disabled = no_game
 		do_voice = game_manager.has_local()
 		do_sfx = do_voice

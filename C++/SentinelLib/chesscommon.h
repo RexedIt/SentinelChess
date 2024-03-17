@@ -216,6 +216,8 @@ namespace chess
     uintmax_t get_file_size(std::string f);
     bool get_dir_exists(std::string dirname);
 
+    std::string string_replace(std::string s, char o, char n);
+    std::string fix_path(std::string f);
     std::string get_data_folder();
     bool set_data_folder(std::string f);
     std::string data_file(std::string f);

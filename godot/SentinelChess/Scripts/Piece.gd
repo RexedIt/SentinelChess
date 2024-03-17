@@ -4,6 +4,8 @@ extends Area2D
 var sprite : Sprite2D
 var board : Sprite2D
 
+@onready var skin : Node = get_node('/root/MainGame/Skin')
+
 var piececolor : SentinelChess.ChessColor = SentinelChess.ChessColor.cNone
 var piecetype : SentinelChess.ChessPiece = SentinelChess.ChessPiece.pNone
 var y_ind : int = -1
@@ -106,7 +108,7 @@ func refresh(pc,pt,r):
 				SpriteName += 'Queen'
 			SentinelChess.ChessPiece.King:
 				SpriteName += 'King'
-		sprite.texture = load('res://Sprites/RetroWood/' + SpriteName + '.png')
+		sprite.texture = skin.sprite(SpriteName + '.png')
 		
 func center() -> Vector2:
 	var v : Vector2

@@ -1,5 +1,6 @@
 extends Panel
 
+@onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var lblPoints1 : Label = get_node('lblPoints1')
 @onready var lblPoints2 : Label = get_node('lblPoints2')
 @onready var sprPuzzle : Sprite2D = get_node('sprPuzzle')
@@ -8,7 +9,7 @@ var _maxhints : int = 0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	sprPuzzle.texture = skin.sprite('PuzzlePiece.png')
 
 func setPuzzleValues(points : int, hints : int, first : bool):
 	if first:

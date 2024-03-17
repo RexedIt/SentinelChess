@@ -1,7 +1,8 @@
 extends Panel
 
+@onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var game_manager : SentinelChess = get_parent().get_node('SentinelChess')
-@onready var sequence : Sprite2D = get_node('sequence')
+@onready var background : Sprite2D = get_node('background')
 @onready var black : Sprite2D = get_node('black')
 @onready var white : Sprite2D = get_node('white')
 @onready var status : Label = get_node('status')
@@ -13,17 +14,15 @@ var elapsed : float = 0;
 var frame : int = 0;
 
 func _ready():
+	black.texture = skin.sprite('BlackKnight.png')
+	white.texture = skin.sprite('WhiteKnight.png')
 	music.finished.connect(suppress)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	if visible:
-		elapsed += delta;
-		frame = int(elapsed/0.4)
-		sequence.frame = frame % 16
-		if Input.is_anything_pressed():
-			suppress()
-
+	if (Input.is_anything_pressed()): 
+		suppress()
+	
 func suppress():
 	visible = false
 	frame = 0
@@ -32,24 +31,31 @@ func suppress():
 			
 func finish_game(g : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
 	var musictrack = null
+	var localw : bool = game_manager.is_local_active(w)
+	var puzzle : bool = game_manager.puzzle()
 	match w:
 		SentinelChess.ChessColor.Black:
-			sequence.texture = load('res://Sprites/RetroWood/BlackWin/SpriteSheet.jpg')
+			background.texture = skin.sprite('BlackWin.jpg')
 			white.visible = false
 			black.visible = true
 			winner.text = 'Black Wins!'
-			musictrack = preload('res://Sound/Music/USSR_Short.mp3')
 		SentinelChess.ChessColor.White:
-			sequence.texture = load('res://Sprites/RetroWood/WhiteWin/SpriteSheet.jpg')
+			background.texture = skin.sprite('WhiteWin.jpg')
 			white.visible = true
 			black.visible = false
 			winner.text = 'White Wins!'
-			musictrack = preload('res://Sound/Music/USA_Short.mp3')
 		SentinelChess.ChessColor.cNone:
-			sequence.texture = load('res://Sprites/RetroWood/Draw/SpriteSheet.jpg')
+			background.texture = skin.sprite('Draw.jpg')
 			white.visible = false
 			black.visible = false
 			winner.text = ''
+	if localw:
+		if puzzle:
+			musictrack = skin.music('PuzzleWin.mp3')
+		else:
+			musictrack = skin.music('Win.mp3')
+	else:
+		musictrack = skin.music('Loss.mp3')
 	if musictrack != null:
 		music.stream = musictrack
 		music.play()

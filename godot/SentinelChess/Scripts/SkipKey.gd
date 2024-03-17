@@ -3,6 +3,7 @@ extends Node2D
 @export var duration : float
 @export var loadscene : String
 
+
 var elapsed : float
 
 # Called when the node enters the scene tree for the first time.

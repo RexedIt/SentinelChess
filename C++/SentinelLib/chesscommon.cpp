@@ -456,18 +456,20 @@ namespace chess
 
     uintmax_t get_file_size(std::string filename)
     {
+        std::string fixedfile = fix_path(filename);
         struct stat stat_buf;
-        uintmax_t rc = stat(filename.c_str(), &stat_buf);
+        uintmax_t rc = stat(fixedfile.c_str(), &stat_buf);
         return rc == 0 ? stat_buf.st_size : -1;
     }
 
     bool get_dir_exists(std::string dirname)
     {
+        std::string fixeddir = fix_path(dirname);
         struct stat st;
-        return (stat(dirname.c_str(), &st) == 0);
+        return (stat(fixeddir.c_str(), &st) == 0);
     }
 
-    std::string data_folder;
+    std::string data_folder = "..\\ChessData\\";
 
     std::string get_data_folder()
     {
@@ -482,13 +484,39 @@ namespace chess
         return true;
     }
 
+    std::string string_replace(std::string s, char o, char n)
+    {
+        std::string ret = s;
+        std::replace(ret.begin(), ret.end(), o, n);
+        return ret;
+    }
+
+    inline char separator()
+    {
+#ifdef _WIN32
+        return '\\';
+#else
+        return '/';
+#endif
+    }
+
+    std::string fix_path(std::string f)
+    {
+#ifdef _WIN32
+        return string_replace(f, '/', '\\');
+#else
+        return string_replace(f, '\\', '/');
+#endif
+    }
+
     std::string data_file(std::string f)
     {
         if (data_folder == "")
             return f;
-        if (data_folder[data_folder.length() - 1] == '\\')
-            return data_folder + f;
-        return data_folder + "\\" + f;
+        char lc = data_folder[data_folder.length() - 1];
+        if ((lc == '\\') || (lc == '/'))
+            return fix_path(data_folder + f);
+        return fix_path(data_folder + "\\" + f);
     }
 
 }
