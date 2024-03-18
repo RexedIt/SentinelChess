@@ -16,6 +16,7 @@ var frame : int = 0;
 func _ready():
 	black.texture = skin.sprite('BlackKnight.png')
 	white.texture = skin.sprite('WhiteKnight.png')
+	music.volume_db = -15
 	music.finished.connect(suppress)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

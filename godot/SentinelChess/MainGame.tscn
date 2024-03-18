@@ -752,6 +752,7 @@ offset_top = 180.0
 offset_right = 118.0
 offset_bottom = 263.0
 icon = ExtResource("23_vurwe")
+flat = true
 
 [node name="btnNewPuzzle" type="Button" parent="GameUI"]
 offset_left = 32.0
@@ -759,6 +760,7 @@ offset_top = 265.0
 offset_right = 118.0
 offset_bottom = 348.0
 icon = ExtResource("24_s2205")
+flat = true
 
 [node name="btnOpen" type="Button" parent="GameUI"]
 offset_left = 32.0
@@ -766,6 +768,7 @@ offset_top = 350.0
 offset_right = 118.0
 offset_bottom = 433.0
 icon = ExtResource("25_iyhe2")
+flat = true
 
 [node name="btnSave" type="Button" parent="GameUI"]
 offset_left = 32.0
@@ -774,6 +777,7 @@ offset_right = 118.0
 offset_bottom = 518.0
 disabled = true
 icon = ExtResource("26_ayax4")
+flat = true
 
 [node name="btnRewind" type="Button" parent="GameUI"]
 offset_left = 32.0
@@ -782,6 +786,7 @@ offset_right = 118.0
 offset_bottom = 603.0
 disabled = true
 icon = ExtResource("27_jv8pw")
+flat = true
 
 [node name="btnPause" type="Button" parent="GameUI"]
 offset_left = 32.0
@@ -790,6 +795,7 @@ offset_right = 118.0
 offset_bottom = 688.0
 disabled = true
 icon = ExtResource("28_ywkm3")
+flat = true
 
 [node name="btnAdvance" type="Button" parent="GameUI"]
 offset_left = 32.0
@@ -798,6 +804,7 @@ offset_right = 118.0
 offset_bottom = 773.0
 disabled = true
 icon = ExtResource("29_6dddg")
+flat = true
 
 [node name="btnHelp" type="Button" parent="GameUI"]
 offset_left = 32.0
@@ -806,6 +813,7 @@ offset_right = 118.0
 offset_bottom = 858.0
 disabled = true
 icon = ExtResource("30_nm5rb")
+flat = true
 
 [node name="lblHistory" type="RichTextLabel" parent="GameUI"]
 offset_left = 1528.0

@@ -17,6 +17,9 @@ func _process(delta):
 func path() -> String:
 	return "res://Skins/RetroWood/"
 	
+func commonpath() -> String:
+	return "res://Skins/Common/"
+	
 func step() -> int:
 	return 16
 	
@@ -29,3 +32,11 @@ func sprite(filename):
 func music(filename):
 	return load(path() + 'Music/' + filename)
 	
+func sound(filename):
+	return load(path() + 'SFX/' + filename)
+	
+func voice(filename):
+	return load(path() + 'Voice/' + filename)
+	
+func commonsound(filename):
+	return load(commonpath() + 'SFX/' + filename)

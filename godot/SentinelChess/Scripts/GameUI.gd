@@ -24,8 +24,8 @@ extends CanvasLayer
 @onready var lblWhiteClock : Label = get_node('lblWhiteClock')
 @onready var lblBlackClock : Label = get_node('lblBlackClock')
 @onready var voice : AudioStreamPlayer = get_node('voice')
-@onready var MoveSound = preload('res://Sound/SFX/Open_01.mp3')
-@onready var PromoteSound = preload('res://Sound/SFX/Collect_Point_01.mp3')
+@onready var MoveSound
+@onready var PromoteSound
 @export var step : int
 
 const GameState = preload("res://Scripts/GameState.gd").GameState_
@@ -57,6 +57,8 @@ func _ready():
 	txtCmd.grab_focus()
 	PauseTexture = btnPause.icon
 	PlayTexture = skin.sprite('Play.png')
+	MoveSound = skin.commonsound('Slide.mp3')
+	PromoteSound = skin.sound('Promote.mp3')
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -442,8 +444,7 @@ func play_voice():
 		if !voice.playing:
 			if has_voice():
 				var s = pop_voice()
-				var r = 'res://Sound/Voice/' + s + '.wav'
-				voice.stream = load(r)
+				voice.stream = skin.voice(s + '.mp3')
 				voice.play()
 				
 func play_move_sfx():
