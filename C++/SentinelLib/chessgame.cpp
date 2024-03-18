@@ -120,8 +120,11 @@ namespace chess
             // Puzzle mode
             if (m.error == e_incorrect_move)
             {
-                m_win_color = other(col);
-                g = puzzle_solution_e;
+                if (m_hints <= 0)
+                {
+                    m_win_color = other(col);
+                    g = puzzle_solution_e;
+                }
             }
         }
         return g;
@@ -167,6 +170,17 @@ namespace chess
                     chessmove pm = moves[m_play_pos + 1];
                     if ((pm.p0 != m0.p0) || (pm.p1 != m0.p1))
                         m.error = e_incorrect_move;
+                }
+                if (m.error == e_incorrect_move)
+                {
+                    // Consume a hint
+                    if (m_hints > 0)
+                    {
+                        m_hints--;
+                        m_points /= 2;
+                        guard.unlock();
+                        return m.error;
+                    }
                 }
             }
             if (m.error == e_none)

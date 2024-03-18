@@ -15,14 +15,14 @@ func setPuzzleValues(points : int, hints : int, first : bool):
 	if first:
 		_maxhints = hints
 	sprPuzzle.visible = true
-	lblPoints1.text = 'Points: ' + str(points)
+	lblPoints1.text = str(points) + ' Points'
 	lblPoints2.visible = _maxhints > 0
-	lblPoints2.text = 'Hints: ' + str(_maxhints-hints) + ' / ' + str(_maxhints)
+	lblPoints2.text = str(_maxhints-hints) + ' / ' + str(_maxhints) + ' Hints'
 
 func setScoreValues(white : int, black : int):
 	sprPuzzle.visible = false
-	lblPoints1.text = str(white)
-	lblPoints2.text = str(black)
+	lblPoints1.text = str(white) + ' Points if win (white)'
+	lblPoints2.text = str(black) + ' Points if win (black)'
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):

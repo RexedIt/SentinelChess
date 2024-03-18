@@ -255,7 +255,17 @@ func handle_advance() -> bool:
 	#game_manager.refresh_turn(game_manager.get_board())
 	return true
 
+func refreshhints():
+	hints = game_manager.hints()
+	points = game_manager.win_points(SentinelChess.cNone)
+	btnHelp.disabled =(not puzzle) or hints <= 0
+	pnlScore.setPuzzleValues(points,hints,false)
+
 func handle_hint() -> bool:
+	var h : String = game_manager.hintstr()
+	append_history('*** HINT ***', 'darkgreen')
+	append_history(h, 'darkgreen')
+	refreshhints()
 	return true
 	
 func handle_pause():
@@ -309,6 +319,11 @@ func _on_txt_cmd_text_submitted(new_text):
 			handled = handle_play()
 		'I':
 			handled = handle_pause()
+		'H':
+			if hints <=0:
+				show_error('No Hint Available')
+			else:
+				handled = handle_hint()
 		# a move?
 		_:
 			handled = handle_move(cmd)
@@ -345,6 +360,13 @@ func handle_save(filename: String) -> bool:
 		return false
 	append_history('Save Game - ' + tosave)
 	return true
+	
+func incorrectmove():
+	refreshhints()
+	if hints > 0:
+		add_voice('IncorrectMoveHintUsed')
+	else:
+		add_voice('IncorrectMove')
 	
 func handle_move(cmd: String) -> bool:
 	var c : SentinelChess.ChessColor = game_manager.turn_color()

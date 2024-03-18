@@ -158,6 +158,9 @@ func user_move(c : ChessColor, m : ChessMove, a : bool):
 			promotemove = m
 			_gamestatereact(GameState.PIECESELECT)
 			return true
+		if errorstr(err).contains('Incorrect') and puzzle():
+			gameUI.incorrectmove()
+			return false
 		_on_error(err)
 		return false
 	if a:
@@ -170,6 +173,9 @@ func user_move(c : ChessColor, m : ChessMove, a : bool):
 func user_move_str( c : ChessColor, s : String, a : bool):
 	var err : int = move_s(c, s)
 	if err != 0:
+		if errorstr(err).contains('Incorrect') and puzzle():
+			gameUI.incorrectmove()
+			return false
 		_on_error(err)
 		return false
 	if a:
