@@ -1,5 +1,6 @@
 extends Panel
 
+@onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var game_manager : SentinelChess = get_parent().get_node('SentinelChess')
 @onready var Queen : Button = get_node('Queen')
 @onready var Rook : Button = get_node('Rook')
@@ -24,16 +25,16 @@ signal on_closed(_cancelled, _white, _black, _clock)
 
 func _VisibilityChanged():
 	if visible:
-		var base = 'res://Sprites/RetroWood/'
+		var base
 		_color = game_manager.turn_color()
 		if _color == SentinelChess.White:
-			base += 'White'
+			base = 'White'
 		else:
-			base += 'Black'
-		Queen.icon = load(base+'Queen.png')
-		Rook.icon = load(base+'Rook.png')
-		Bishop.icon = load(base+'Bishop.png')
-		Knight.icon = load(base + 'Knight.png')
+			base = 'Black'
+		Queen.icon = skin.sprite(base+'Queen.png')
+		Rook.icon = skin.sprite(base+'Rook.png')
+		Bishop.icon = skin.sprite(base+'Bishop.png')
+		Knight.icon = skin.sprite(base + 'Knight.png')
 	else:
 		on_closed.emit(_cancelled,_color,_piece)
 		pass

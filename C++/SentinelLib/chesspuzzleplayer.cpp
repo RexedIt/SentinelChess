@@ -58,8 +58,8 @@ namespace chess
 
     void chesspuzzleplayer::signal_on_state(game_state_e game_state, color_e win_color)
     {
-        if (game_state != play_e)
-            cancel_execution();
+        //if (game_state != play_e)
+        //    cancel_execution();
     }
 
     error_e chesspuzzleplayer::puzzle_move(chessboard &board, std::map<int16_t, chessmove> &moves, int16_t turn_no)

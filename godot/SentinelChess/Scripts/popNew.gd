@@ -27,10 +27,10 @@ func _ready():
 	btnOK.pressed.connect(_OnOK)
 	chkSame.toggled.connect(_OnSame)
 	optNone.toggled.connect(_OnType)
-	optSuddenDeath.toggled.connect(_OnType)
-	optIncrement.toggled.connect(_OnType)
-	optBronstein.toggled.connect(_OnType)
-	optSimple.toggled.connect(_OnType)
+	optSuddenDeath.toggled.connect(_OnType1)
+	optIncrement.toggled.connect(_OnType2)
+	optBronstein.toggled.connect(_OnType3)
+	optSimple.toggled.connect(_OnType4)
 			
 	visibility_changed.connect(_VisibilityChanged)
 	_white = ChessPlayer.new()
@@ -75,6 +75,15 @@ func _OnSame(ch):
 		AllowBlack.visible = true
 		AddBlack.visible = optIncrement.button_pressed or optBronstein.button_pressed or optSimple.button_pressed	
 
+func _OnType1(ch):
+	_OnType(ch)
+func _OnType2(ch):
+	_OnType(ch)
+func _OnType3(ch):
+	_OnType(ch)
+func _OnType4(ch):
+	_OnType(ch)
+	
 func _OnType(ch):
 	TVC.visible = !optNone.button_pressed
 	AllowWhite.visible = !optNone.button_pressed

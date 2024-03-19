@@ -99,7 +99,7 @@ texture = ExtResource("8_45ksi")
 
 [node name="popNew" type="Window" parent="."]
 title = "New Game Options"
-position = Vector2i(355, 257)
+position = Vector2i(355, 198)
 size = Vector2i(750, 625)
 visible = false
 popup_window = true

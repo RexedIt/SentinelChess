@@ -155,7 +155,10 @@ namespace chess
     {
         std::unique_lock<std::mutex> guard(m_mutex);
         if (m_state != play_e)
+        {
+            guard.unlock();
             return e_invalid_game_state;
+        }
         if (col == m_board.turn_color())
         {
             chessmove m;
@@ -191,6 +194,7 @@ namespace chess
                 push_new_turn(m);
             return m.error;
         }
+        guard.unlock();
         return e_out_of_turn;
     }
 

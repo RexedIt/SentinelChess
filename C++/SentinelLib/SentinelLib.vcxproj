@@ -156,6 +156,8 @@
     <ClCompile Include="chessmove.cpp" />
     <ClCompile Include="chesspiece.cpp" />
     <ClCompile Include="chessplayer.cpp" />
+    <ClCompile Include="chesspuzzle.cpp" />
+    <ClCompile Include="chesspuzzleplayer.cpp" />
     <ClCompile Include="chessturn.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +170,8 @@
     <ClInclude Include="chessmove.h" />
     <ClInclude Include="chesspiece.h" />
     <ClInclude Include="chessplayer.h" />
+    <ClInclude Include="chesspuzzle.h" />
+    <ClInclude Include="chesspuzzleplayer.h" />
     <ClInclude Include="chessturn.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

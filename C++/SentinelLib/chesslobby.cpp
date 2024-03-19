@@ -216,7 +216,12 @@ namespace chess
     {
         // determine the human color
         chesspuzzle p;
-        error_e err = p.load_random(filename, keywords, rating);
+        // specific?
+        error_e err = e_none;
+        if ((keywords.length()) && (keywords[0] == '!'))
+            err = p.load_specific(filename, keywords.substr(1));
+        else
+            err = p.load_random(filename, keywords, rating);
         if (err != e_none)
             return err;
         return load_puzzle(name, skill, p);
