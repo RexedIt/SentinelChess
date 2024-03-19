@@ -21,8 +21,8 @@ func setPuzzleValues(points : int, hints : int, first : bool):
 
 func setScoreValues(white : int, black : int):
 	sprPuzzle.visible = false
-	lblPoints1.text = str(white) + ' Points if win (white)'
-	lblPoints2.text = str(black) + ' Points if win (black)'
+	lblPoints1.text = str(white) + ' Points'
+	lblPoints2.text = str(black) + ' Points'
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):

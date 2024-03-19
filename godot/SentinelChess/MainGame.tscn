@@ -636,7 +636,7 @@ centered = false
 
 [node name="lblPoints1" type="Label" parent="GameUI/pnlScore"]
 layout_mode = 0
-offset_left = 186.0
+offset_left = 121.0
 offset_top = 16.0
 offset_right = 384.0
 offset_bottom = 39.0
@@ -648,7 +648,7 @@ vertical_alignment = 1
 
 [node name="lblPoints2" type="Label" parent="GameUI/pnlScore"]
 layout_mode = 0
-offset_left = 167.0
+offset_left = 120.0
 offset_top = 59.0
 offset_right = 383.0
 offset_bottom = 83.0
