@@ -725,18 +725,8 @@ namespace chess
 
     uint32_t chessboard::hash()
     {
-        if (m_hash != 0)
-            return m_hash;
-
-        for (int8_t y = 0; y < 8; y++)
-            for (int8_t x = 0; x < 8; x += 4)
-            {
-                m_hash += (m_hash << 1) + (m_hash << 4) + (m_hash << 7) + (m_hash << 8) + (m_hash << 24);
-                m_hash ^= (((uint32_t)m_cells[y][x] << 24) +
-                           ((uint32_t)m_cells[y][x + 1] << 16) +
-                           ((uint32_t)m_cells[y][x + 2] << 8) +
-                           ((uint32_t)m_cells[y][x + 3]));
-            }
+        if (m_hash == 0)
+            m_hash = chess::hash((unsigned char *)m_cells, sizeof(m_cells));
         return m_hash;
     }
 

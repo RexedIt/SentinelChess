@@ -190,6 +190,7 @@ namespace chess
 
     std::string coord_str(coord_s c);
     bool coord_int(std::string s, coord_s &c);
+    bool is_coord(std::string s);
     bool in_range(int8_t y, int8_t x);
     bool in_range(coord_s c);
 
@@ -208,6 +209,7 @@ namespace chess
 
     float get_rand();
 
+    std::string trim(std::string s);
     std::vector<std::string> split_string(std::string cmd, char div);
     void write_hex_uchar(std::ofstream &file1, unsigned char c);
     unsigned char read_hex_uchar(std::string line);
@@ -221,5 +223,6 @@ namespace chess
     std::string get_data_folder();
     bool set_data_folder(std::string f);
     std::string data_file(std::string f);
-
+    uint32_t hash(unsigned char *, size_t);
+    uint32_t hash(std::vector<chessmove>);
 }

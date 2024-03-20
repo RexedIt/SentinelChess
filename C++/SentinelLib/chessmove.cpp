@@ -130,16 +130,36 @@ namespace chess
         return p_none;
     }
 
+    bool is_coordinate_pair(std::string s)
+    {
+        size_t l = s.length();
+        if (l < 4)
+            return false;
+        if (l >= 5)
+            if (s[2] == '-')
+            {
+                if (is_coord(lowercase(s.substr(0, 2))))
+                    if (is_coord(lowercase(s.substr(3, 2))))
+                        return true;
+                return false;
+            }
+        // pure 4 digit move algebraic notation
+        if (((l == 4) || (l == 5)) && (s == lowercase(s)))
+        {
+            if (is_coord(lowercase(s.substr(0, 2))))
+                if (is_coord(lowercase(s.substr(2, 2))))
+                    return true;
+        }
+        return false;
+    }
+
     error_e str_move(std::string s, color_e col, chessboard &b, chessmove &m)
     {
         // Is it a coordinate move?
         size_t l = s.length();
         if (l < 2)
             return e_invalid_move;
-        if (l >= 5)
-            if (s[2] == '-')
-                return str_move(s, m);
-        if (((l == 4) || (l == 5)) && (s == lowercase(s)))
+        if (is_coordinate_pair(s))
             return str_move(s, m);
         std::vector<chessmove> poss;
         // Handle castlingit is vastly different

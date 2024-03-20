@@ -11,6 +11,7 @@
 #include "console.h"
 #include "chessplayer.h"
 #include "chesspiece.h"
+#include "chessopenings.h"
 
 using namespace chess;
 
@@ -389,6 +390,9 @@ int main(void)
                                      &on_turn,
                                      &on_state,
                                      &on_chat)); */
+
+    // chessopenings co;
+    // co.load_scid_eco(data_file("scid.eco"));
 
     std::shared_ptr<chessgamelistener_queue> p_listener(
         new chessgamelistener_queue(cl_user));

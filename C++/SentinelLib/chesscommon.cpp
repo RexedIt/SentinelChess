@@ -6,6 +6,7 @@
 #include "chesscommon.h"
 #include "chesspiece.h"
 #include "chessboard.h"
+#include "chessmove.h"
 
 namespace chess
 {
@@ -25,7 +26,7 @@ namespace chess
         case e_missing_move:
             return "Must include move";
         case e_invalid_move:
-            return "Invalid Move, should be in form XX-XX or PGN Move format.";
+            return "Invalid Move";
         case e_failed_move:
             return "Move generation failed";
         case e_missing_filename:
@@ -45,7 +46,7 @@ namespace chess
         case e_missing_coord:
             return "Must include coordinate";
         case e_invalid_coord:
-            return "Invalid Move, should be in form XX with first digit A-H, second 1-8";
+            return "Invalid Coordinate";
         case e_missing_piece:
             return "Must include piece";
         case e_missing_coord_piece:
@@ -335,9 +336,24 @@ namespace chess
         if (s.length() != 2)
             return false;
         s = lowercase(s);
-        c.x = (int8_t)(s[0] - 'a');
-        c.y = (int8_t)(s[1] - '1');
-        return true;
+        int8_t x = (int8_t)(s[0] - 'a');
+        int8_t y = (int8_t)(s[1] - '1');
+        if (in_range(y, x))
+        {
+            c.x = (int8_t)(s[0] - 'a');
+            c.y = (int8_t)(s[1] - '1');
+            return true;
+        }
+        return false;
+    }
+
+    bool is_coord(std::string s)
+    {
+        if (s.length() != 2)
+            return false;
+        int8_t x = (int8_t)(s[0] - 'a');
+        int8_t y = (int8_t)(s[1] - '1');
+        return in_range(y, x);
     }
 
     bool in_range(coord_s s)
@@ -431,9 +447,9 @@ namespace chess
     }
 
     // trim from both ends of string (right then left)
-    inline std::string trim(std::string s, const char *t = ws)
+    std::string trim(std::string s)
     {
-        return ltrim(rtrim(s, t), t);
+        return ltrim(rtrim(s));
     }
 
     std::vector<std::string> split_string(std::string cmd, char div)
@@ -517,6 +533,47 @@ namespace chess
         if ((lc == '\\') || (lc == '/'))
             return fix_path(data_folder + f);
         return fix_path(data_folder + "\\" + f);
+    }
+
+    uint32_t hash(unsigned char *b, size_t l)
+    {
+        uint32_t ret = 0;
+        uint32_t accv = 0;
+        int n = 0;
+        for (size_t i = 0; i < l; i++)
+        {
+            accv = (accv << 8) + b[i];
+            if (++n >= 4)
+            {
+                ret += (ret << 1) + (ret << 4) + (ret << 7) + (ret << 8) + (ret << 24);
+                ret ^= accv;
+                accv = 0;
+                n = 0;
+            }
+        }
+        if (n)
+        {
+            ret += (ret << 1) + (ret << 4) + (ret << 7) + (ret << 8) + (ret << 24);
+            ret ^= accv;
+        }
+        return ret;
+    }
+
+    uint32_t hash(std::vector<chessmove> moves)
+    {
+        // for moves we only want to hash the from/to elements of the move.
+        unsigned char buf[256];
+        if (moves.size() > 64)
+            return 0;
+        int p = 0;
+        for (size_t i = 0; i < moves.size(); i++)
+        {
+            buf[p++] = moves[i].p0.y;
+            buf[p++] = moves[i].p0.x;
+            buf[p++] = moves[i].p1.y;
+            buf[p++] = moves[i].p1.x;
+        }
+        return hash(buf, moves.size() * 4);
     }
 
 }
