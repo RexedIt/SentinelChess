@@ -9,15 +9,21 @@ var _maxhints : int = 0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	pass
+		
+func applyskin():
+	# applied heirarchically from game manager
 	sprPuzzle.texture = skin.sprite('PuzzlePiece.png')
-
+	lblPoints1.set_theme(skin.theme)
+	lblPoints2.set_theme(skin.theme)
+	
 func setPuzzleValues(points : int, hints : int, first : bool):
 	if first:
 		_maxhints = hints
 	sprPuzzle.visible = true
 	lblPoints1.text = str(points) + ' Points'
 	lblPoints2.visible = _maxhints > 0
-	lblPoints2.text = str(_maxhints-hints) + ' / ' + str(_maxhints) + ' Hints'
+	lblPoints2.text = str(_maxhints-hints) + '/' + str(_maxhints) + ' Hints'
 
 func setScoreValues(white : int, black : int):
 	sprPuzzle.visible = false

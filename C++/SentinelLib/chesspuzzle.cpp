@@ -159,8 +159,8 @@ namespace chess
                     sp -= mp;
                 }
                 // Avoids the edge case where we truncate the ID.
-                uintmax_t actualseek = sp - 16;
-                if (sp < 16)
+                uintmax_t actualseek = sp - 32;
+                if (sp < 32)
                     actualseek = 0;
                 pf.seekg(actualseek);
             }

@@ -1,10 +1,10 @@
-[gd_scene load_steps=45 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=47 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
-[ext_resource type="Texture2D" uid="uid://bufv6wjwmxvum" path="res://Skins/RetroWood/Sprites/Background.jpg" id="2_4tyao"]
 [ext_resource type="PackedScene" uid="uid://b3vb7tg7wpihs" path="res://Skins/Skin.tscn" id="2_rnrr5"]
 [ext_resource type="Script" path="res://Scripts/GameManager.gd" id="2_th60g"]
 [ext_resource type="FontFile" uid="uid://dqmfxq4vf5b8g" path="res://Fonts/PressStart2P-vaV7.ttf" id="3_7nhen"]
+[ext_resource type="Texture2D" uid="uid://bufv6wjwmxvum" path="res://Skins/RetroWood/Sprites/Background.jpg" id="4_oxxya"]
 [ext_resource type="Script" path="res://Scripts/Board.gd" id="5_8nr35"]
 [ext_resource type="Texture2D" uid="uid://bh65nhl2ddwer" path="res://Skins/RetroWood/Sprites/Board.png" id="5_a2ndy"]
 [ext_resource type="Script" path="res://Scripts/popNew.gd" id="5_bu5ts"]
@@ -20,6 +20,8 @@
 [ext_resource type="Script" path="res://Scripts/popPuzzle.gd" id="14_s72vn"]
 [ext_resource type="Script" path="res://Scripts/pnlPlayer.gd" id="17_di116"]
 [ext_resource type="Script" path="res://Scripts/pnlScore.gd" id="18_m2w67"]
+[ext_resource type="Script" path="res://Scripts/popSettings.gd" id="18_vfrru"]
+[ext_resource type="ButtonGroup" uid="uid://dimdhq82k5jrx" path="res://SkinSelection.tres" id="19_608yc"]
 [ext_resource type="Texture2D" uid="uid://dttgcrag5dcgu" path="res://Skins/RetroWood/Sprites/PuzzlePiece.png" id="20_bw7a2"]
 [ext_resource type="Script" path="res://Scripts/popEnd.gd" id="23_6dbbk"]
 [ext_resource type="Script" path="res://Scripts/pnlCaptured.gd" id="23_422qp"]
@@ -36,23 +38,18 @@
 [ext_resource type="Texture2D" uid="uid://7fgvufhrp72y" path="res://Skins/RetroWood/Sprites/Advance.png" id="29_6dddg"]
 [ext_resource type="Texture2D" uid="uid://b1olcgy66sy6s" path="res://Skins/RetroWood/Sprites/Help.png" id="30_nm5rb"]
 [ext_resource type="Texture2D" uid="uid://du707gome4ovn" path="res://Skins/RetroWood/Sprites/SmallPieces.png" id="32_ho85t"]
+[ext_resource type="Texture2D" uid="uid://bq02l5rbsofim" path="res://Skins/RetroWood/Sprites/Gear.png" id="33_a1gye"]
 [ext_resource type="Texture2D" uid="uid://dxfliisa8rgvg" path="res://Skins/RetroWood/Sprites/WhiteWin.jpg" id="34_gycr6"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_55xmw"]
 size = Vector2(122.5, 123)
 
-[sub_resource type="FontVariation" id="FontVariation_36fh0"]
-base_font = ExtResource("3_7nhen")
-spacing_top = 3
-spacing_bottom = 3
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ck3d1"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3n8gr"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1epvs"]
-
-[sub_resource type="FontVariation" id="FontVariation_h0o2n"]
-base_font = ExtResource("3_7nhen")
-spacing_bottom = 10
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_aqyli"]
 
@@ -67,7 +64,7 @@ script = ExtResource("1_i2www")
 script = ExtResource("2_th60g")
 
 [node name="Background" type="Sprite2D" parent="."]
-texture = ExtResource("2_4tyao")
+texture = ExtResource("4_oxxya")
 centered = false
 metadata/_edit_lock_ = true
 
@@ -99,19 +96,18 @@ texture = ExtResource("8_45ksi")
 
 [node name="popNew" type="Window" parent="."]
 title = "New Game Options"
-position = Vector2i(355, 198)
-size = Vector2i(750, 625)
+position = Vector2i(585, 231)
+size = Vector2i(750, 640)
 visible = false
 popup_window = true
-theme_override_fonts/title_font = ExtResource("3_7nhen")
-theme_override_font_sizes/title_font_size = 24
+theme_type_variation = &"LargeFont"
 script = ExtResource("5_bu5ts")
 
 [node name="MC" type="MarginContainer" parent="popNew"]
-offset_left = 24.0
-offset_top = 24.0
-offset_right = 724.0
-offset_bottom = 574.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 1236.0
+offset_bottom = 564.0
 
 [node name="VC" type="VBoxContainer" parent="popNew/MC"]
 layout_mode = 2
@@ -122,24 +118,20 @@ layout_mode = 2
 [node name="lblTitle" type="Label" parent="popNew/MC/VC/HC"]
 custom_minimum_size = Vector2(125, 0)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 20
 text = "Title"
 
 [node name="txtTitle" type="TextEdit" parent="popNew/MC/VC/HC"]
 custom_minimum_size = Vector2(565, 24)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
 
 [node name="SeparatorTitle" type="Label" parent="popNew/MC/VC"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-text = "--------------------------------------------
+text = "____________________________________________________________________________
 "
-vertical_alignment = 1
+horizontal_alignment = 1
+clip_text = true
 
 [node name="WhitePlayer" type="GridContainer" parent="popNew/MC/VC"]
 layout_mode = 2
@@ -149,21 +141,16 @@ columns = 2
 
 [node name="lblWhite" type="Label" parent="popNew/MC/VC/WhitePlayer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 20
 text = "White
 "
 
 [node name="txtName" type="TextEdit" parent="popNew/MC/VC/WhitePlayer"]
 custom_minimum_size = Vector2(425, 24)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
 
 [node name="lblSkill" type="Label" parent="popNew/MC/VC/WhitePlayer"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Skill (0-2500)
 "
 horizontal_alignment = 2
@@ -178,7 +165,6 @@ rounded = true
 
 [node name="lblPlayerType" type="Label" parent="popNew/MC/VC/WhitePlayer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Player Type
 "
 horizontal_alignment = 2
@@ -190,7 +176,6 @@ alignment = 1
 
 [node name="optHuman" type="CheckBox" parent="popNew/MC/VC/WhitePlayer/HC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_pressed = true
 button_group = ExtResource("10_8y1dj")
 text = "Human"
@@ -198,7 +183,6 @@ alignment = 2
 
 [node name="optComputer" type="CheckBox" parent="popNew/MC/VC/WhitePlayer/HC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("10_8y1dj")
 text = "Computer
 "
@@ -207,10 +191,9 @@ text = "Computer
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-text = "--------------------------------------------
-"
-vertical_alignment = 1
+text = "____________________________________________________________________________"
+horizontal_alignment = 1
+clip_text = true
 
 [node name="BlackPlayer" type="GridContainer" parent="popNew/MC/VC"]
 layout_mode = 2
@@ -221,8 +204,6 @@ columns = 2
 [node name="lblBlack" type="Label" parent="popNew/MC/VC/BlackPlayer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 20
 text = "Black
 "
 vertical_alignment = 2
@@ -230,13 +211,10 @@ vertical_alignment = 2
 [node name="txtName" type="TextEdit" parent="popNew/MC/VC/BlackPlayer"]
 custom_minimum_size = Vector2(425, 24)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
 
 [node name="lblSkill" type="Label" parent="popNew/MC/VC/BlackPlayer"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Skill (0-2500)
 "
 horizontal_alignment = 2
@@ -251,7 +229,6 @@ rounded = true
 
 [node name="lblPlayerType" type="Label" parent="popNew/MC/VC/BlackPlayer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Player Type
 "
 horizontal_alignment = 2
@@ -263,14 +240,12 @@ alignment = 1
 
 [node name="optHuman" type="CheckBox" parent="popNew/MC/VC/BlackPlayer/HC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("11_ikrfp")
 text = "Human"
 alignment = 2
 
 [node name="optComputer" type="CheckBox" parent="popNew/MC/VC/BlackPlayer/HC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_pressed = true
 button_group = ExtResource("11_ikrfp")
 text = "Computer
@@ -280,9 +255,8 @@ text = "Computer
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-text = "--------------------------------------------"
-vertical_alignment = 1
+text = "____________________________________________________________________________"
+horizontal_alignment = 1
 
 [node name="Clock" type="GridContainer" parent="popNew/MC/VC"]
 layout_mode = 2
@@ -299,43 +273,36 @@ layout_mode = 2
 [node name="Label" type="Label" parent="popNew/MC/VC/Clock/HC/VC"]
 custom_minimum_size = Vector2(260, 28)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Clock Type"
 
 [node name="optNone" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_pressed = true
 button_group = ExtResource("11_vfgdq")
 text = "None"
 
 [node name="optSuddenDeath" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("11_vfgdq")
 text = "Sudden Death
 "
 
 [node name="optIncrement" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("11_vfgdq")
 text = "Increment
 "
 
 [node name="optBronstein" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("11_vfgdq")
 text = "Bronstein
 "
 
 [node name="optSimple" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("11_vfgdq")
 text = "Simple
-
 "
 
 [node name="TVC" type="VBoxContainer" parent="popNew/MC/VC/Clock/HC"]
@@ -345,7 +312,6 @@ layout_mode = 2
 [node name="chkSame" type="CheckBox" parent="popNew/MC/VC/Clock/HC/TVC"]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Separate Black/White Time"
 
 [node name="AllowWhite" type="HBoxContainer" parent="popNew/MC/VC/Clock/HC/TVC"]
@@ -356,7 +322,6 @@ mult = 60000.0
 
 [node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AllowWhite"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Allow (m)"
 
 [node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AllowWhite"]
@@ -412,7 +377,6 @@ mult = 1000.0
 
 [node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AddWhite"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Add (s)  "
 
 [node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AddWhite"]
@@ -440,7 +404,6 @@ mult = 1000.0
 [node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AddBlack"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Add (s)  "
 
 [node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AddBlack"]
@@ -471,7 +434,6 @@ offset_right = -30.0004
 offset_bottom = -9.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "OK"
 
 [node name="btnCancel" type="Button" parent="popNew"]
@@ -486,16 +448,13 @@ offset_right = -200.0
 offset_bottom = -9.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = " Cancel "
 
 [node name="popPuzzle" type="Window" parent="."]
 title = "Load Puzzle"
-position = Vector2i(355, 396)
+position = Vector2i(585, 429)
 size = Vector2i(750, 240)
 visible = false
-theme_override_fonts/title_font = ExtResource("3_7nhen")
-theme_override_font_sizes/title_font_size = 20
 script = ExtResource("14_s72vn")
 
 [node name="MC" type="MarginContainer" parent="popPuzzle"]
@@ -512,21 +471,16 @@ columns = 2
 
 [node name="lblName" type="Label" parent="popPuzzle/MC/Player"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 20
 text = "Name
 "
 
 [node name="txtName" type="TextEdit" parent="popPuzzle/MC/Player"]
 custom_minimum_size = Vector2(425, 24)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
 
 [node name="lblSkill" type="Label" parent="popPuzzle/MC/Player"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Skill (0-2500)
 "
 horizontal_alignment = 2
@@ -542,7 +496,6 @@ rounded = true
 [node name="lblRating" type="Label" parent="popPuzzle/MC/Player"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Rating (0-2500)
 "
 horizontal_alignment = 2
@@ -558,7 +511,6 @@ rounded = true
 [node name="lblKeywords" type="Label" parent="popPuzzle/MC/Player"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Keywords (,)
 "
 horizontal_alignment = 2
@@ -566,8 +518,6 @@ horizontal_alignment = 2
 [node name="txtKeywords" type="TextEdit" parent="popPuzzle/MC/Player"]
 custom_minimum_size = Vector2(425, 24)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
 
 [node name="btnOK" type="Button" parent="popPuzzle"]
 anchors_preset = 7
@@ -581,7 +531,6 @@ offset_right = -30.0004
 offset_bottom = -9.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "OK"
 
 [node name="btnCancel" type="Button" parent="popPuzzle"]
@@ -596,7 +545,6 @@ offset_right = -200.0
 offset_bottom = -9.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = " Cancel "
 
 [node name="popLoad" type="FileDialog" parent="."]
@@ -617,45 +565,148 @@ access = 2
 filters = PackedStringArray("*.chs ; Sentinel Chess Files")
 script = ExtResource("11_dt7qr")
 
+[node name="popSettings" type="Window" parent="."]
+title = "Settings"
+position = Vector2i(590, 325)
+size = Vector2i(750, 325)
+visible = false
+script = ExtResource("18_vfrru")
+
+[node name="MC" type="MarginContainer" parent="popSettings"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 728.0
+offset_bottom = 360.0
+
+[node name="VC" type="VBoxContainer" parent="popSettings/MC"]
+layout_mode = 2
+
+[node name="HC" type="HBoxContainer" parent="popSettings/MC/VC"]
+layout_mode = 2
+
+[node name="lblSkin" type="Label" parent="popSettings/MC/VC/HC"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "Skin"
+
+[node name="optRetro" type="CheckBox" parent="popSettings/MC/VC/HC"]
+layout_mode = 2
+button_group = ExtResource("19_608yc")
+text = "Retro 80s"
+
+[node name="optPhoto" type="CheckBox" parent="popSettings/MC/VC/HC"]
+layout_mode = 2
+button_group = ExtResource("19_608yc")
+text = "Photo Board
+"
+
+[node name="optChessCom" type="CheckBox" parent="popSettings/MC/VC/HC"]
+layout_mode = 2
+button_group = ExtResource("19_608yc")
+text = "Illustrative"
+
+[node name="VSpacer" type="Label" parent="popSettings/MC/VC"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+
+[node name="lblVoice" type="Label" parent="popSettings/MC/VC"]
+layout_mode = 2
+text = "Voice Volume
+"
+
+[node name="sldVoice" type="HSlider" parent="popSettings/MC/VC"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_vertical = 1
+value = 50.0
+
+[node name="lblMusic" type="Label" parent="popSettings/MC/VC"]
+layout_mode = 2
+text = "Music Volume
+"
+
+[node name="sldMusic" type="HSlider" parent="popSettings/MC/VC"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+value = 50.0
+
+[node name="lblSfx" type="Label" parent="popSettings/MC/VC"]
+layout_mode = 2
+text = "SFX Volume
+"
+
+[node name="sldSfx" type="HSlider" parent="popSettings/MC/VC"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+value = 50.0
+
+[node name="btnOK" type="Button" parent="popSettings"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -40.0
+offset_right = -30.0004
+offset_bottom = -9.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "OK"
+
+[node name="btnCancel" type="Button" parent="popSettings"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -290.0
+offset_top = -40.0
+offset_right = -200.0
+offset_bottom = -9.0
+grow_horizontal = 0
+grow_vertical = 0
+text = " Cancel "
+
 [node name="GameUI" type="CanvasLayer" parent="."]
 script = ExtResource("10_0mwoa")
 step = 16
 
 [node name="pnlScore" type="Panel" parent="GameUI"]
-visible = false
 offset_left = 16.0
 offset_top = 968.0
-offset_right = 145.0
-offset_bottom = 1065.0
+offset_right = 419.0
+offset_bottom = 1071.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ck3d1")
 script = ExtResource("18_m2w67")
 
 [node name="sprPuzzle" type="Sprite2D" parent="GameUI/pnlScore"]
-position = Vector2(8, 0)
+texture_filter = 1
+position = Vector2(5, 8)
 texture = ExtResource("20_bw7a2")
 centered = false
 
 [node name="lblPoints1" type="Label" parent="GameUI/pnlScore"]
 layout_mode = 0
-offset_left = 121.0
+offset_left = 136.0
 offset_top = 16.0
-offset_right = 384.0
-offset_bottom = 39.0
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
+offset_right = 400.0
+offset_bottom = 43.0
+theme_type_variation = &"LargeFont"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "2400 Points"
 horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="lblPoints2" type="Label" parent="GameUI/pnlScore"]
 layout_mode = 0
-offset_left = 120.0
+offset_left = 113.0
 offset_top = 59.0
-offset_right = 383.0
-offset_bottom = 83.0
-theme_override_colors/font_color = Color(0.513726, 0.513726, 0.513726, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
-text = "1 of 2 Hints"
+offset_right = 401.0
+offset_bottom = 86.0
+theme_type_variation = &"LargeFont"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "1/2 Hints"
 horizontal_alignment = 2
 vertical_alignment = 1
 
@@ -664,9 +715,8 @@ offset_left = 1516.0
 offset_top = 10.0
 offset_right = 1903.0
 offset_bottom = 169.0
+theme_type_variation = &"LargeFont"
 theme_override_colors/font_color = Color(0.890196, 0.890196, 0.890196, 1)
-theme_override_fonts/font = SubResource("FontVariation_36fh0")
-theme_override_font_sizes/font_size = 18
 text = "No Game"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -694,8 +744,6 @@ offset_left = 44.0
 offset_top = 8.0
 offset_right = 274.0
 offset_bottom = 32.0
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
 vertical_alignment = 1
 
 [node name="lblSkill" type="Label" parent="GameUI/pnlPlayerTop"]
@@ -704,8 +752,6 @@ offset_left = 270.0
 offset_top = 8.0
 offset_right = 367.0
 offset_bottom = 33.0
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
 horizontal_alignment = 2
 vertical_alignment = 1
 
@@ -731,8 +777,6 @@ offset_left = 44.0
 offset_top = 8.0
 offset_right = 274.0
 offset_bottom = 32.0
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
 vertical_alignment = 1
 
 [node name="lblSkill" type="Label" parent="GameUI/pnlPlayerBottom"]
@@ -741,8 +785,6 @@ offset_left = 270.0
 offset_top = 8.0
 offset_right = 367.0
 offset_bottom = 33.0
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
 horizontal_alignment = 2
 vertical_alignment = 1
 
@@ -820,8 +862,7 @@ offset_left = 1528.0
 offset_top = 271.0
 offset_right = 1897.0
 offset_bottom = 861.0
-theme_override_fonts/normal_font = SubResource("FontVariation_h0o2n")
-theme_override_font_sizes/normal_font_size = 16
+theme_override_constants/line_separation = 8
 scroll_following = true
 
 [node name="lblCmd" type="Label" parent="GameUI"]
@@ -829,8 +870,6 @@ offset_left = 1539.0
 offset_top = 932.0
 offset_right = 1627.0
 offset_bottom = 954.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
 theme_override_font_sizes/font_size = 20
 text = "CMD>"
 
@@ -841,41 +880,39 @@ offset_right = 1894.0
 offset_bottom = 961.0
 focus_neighbor_top = NodePath("../btnNew")
 theme_override_colors/font_color = Color(0.754947, 0.837007, 1, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 20
 
 [node name="lblError" type="Label" parent="GameUI"]
 offset_left = 1529.0
 offset_top = 862.0
 offset_right = 1899.0
 offset_bottom = 911.0
-theme_override_colors/font_color = Color(1, 0, 0, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.8, 0, 0, 1)
 horizontal_alignment = 1
 vertical_alignment = 2
 autowrap_mode = 3
 
 [node name="lblWhiteClock" type="Label" parent="GameUI"]
-offset_left = 1688.0
-offset_top = 992.0
-offset_right = 1895.0
-offset_bottom = 1026.0
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 22
+visible = false
+offset_left = 1609.0
+offset_top = 976.0
+offset_right = 1897.0
+offset_bottom = 1023.0
+theme_type_variation = &"HugeFont"
 text = "0:00:00.0
 "
+horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="lblBlackClock" type="Label" parent="GameUI"]
-offset_left = 1689.0
-offset_top = 1028.0
-offset_right = 1889.0
-offset_bottom = 1062.0
-theme_override_colors/font_color = Color(0.407843, 0.407843, 0.407843, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 22
+visible = false
+offset_left = 1609.0
+offset_top = 1026.0
+offset_right = 1897.0
+offset_bottom = 1073.0
+theme_type_variation = &"HugeFont"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = "0:00:00.0"
+horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="voice" type="AudioStreamPlayer" parent="GameUI"]
@@ -883,9 +920,9 @@ volume_db = 6.0
 max_polyphony = 2
 
 [node name="pnlCaptured" type="Panel" parent="GameUI"]
-offset_left = 254.0
+offset_left = 263.0
 offset_top = 150.0
-offset_right = 414.0
+offset_right = 407.0
 offset_bottom = 930.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_aqyli")
 script = ExtResource("23_422qp")
@@ -897,6 +934,14 @@ texture = ExtResource("32_ho85t")
 region_enabled = true
 region_rect = Rect2(0, 0, 40, 40)
 script = ExtResource("25_4lao4")
+
+[node name="btnSettings" type="Button" parent="GameUI"]
+offset_left = 1865.0
+offset_right = 1937.0
+offset_bottom = 72.0
+scale = Vector2(0.75, 0.75)
+icon = ExtResource("33_a1gye")
+flat = true
 
 [node name="popEnd" type="Panel" parent="."]
 visible = false
@@ -913,11 +958,11 @@ texture = ExtResource("34_gycr6")
 
 [node name="black" type="Sprite2D" parent="popEnd"]
 visible = false
-position = Vector2(103, 437)
+position = Vector2(103, 420)
 texture = ExtResource("25_3rvpk")
 
 [node name="white" type="Sprite2D" parent="popEnd"]
-position = Vector2(103, 437)
+position = Vector2(103, 420)
 texture = ExtResource("26_8s3l2")
 
 [node name="status" type="Label" parent="popEnd"]
@@ -926,10 +971,9 @@ offset_left = 214.0
 offset_top = 37.0
 offset_right = 594.0
 offset_bottom = 75.0
+theme_type_variation = &"HugeFont"
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 25
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 38
+theme_override_constants/outline_size = 12
 text = "Checkmate"
 horizontal_alignment = 1
 
@@ -939,10 +983,9 @@ offset_left = 238.0
 offset_top = 432.0
 offset_right = 618.0
 offset_bottom = 470.0
+theme_type_variation = &"HugeFont"
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 25
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 38
+theme_override_constants/outline_size = 12
 text = "White Wins"
 horizontal_alignment = 1
 
@@ -951,20 +994,19 @@ volume_db = 3.0
 
 [node name="popPromote" type="Panel" parent="."]
 visible = false
-offset_left = 400.0
-offset_top = 445.0
-offset_right = 1105.0
-offset_bottom = 668.0
+offset_left = 610.0
+offset_top = 430.0
+offset_right = 1315.0
+offset_bottom = 653.0
 script = ExtResource("27_e8o3p")
 
 [node name="Label" type="Label" parent="popPromote"]
 layout_mode = 0
 offset_left = 4.0
 offset_top = 10.0
-offset_right = 628.0
-offset_bottom = 33.0
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 16
+offset_right = 682.0
+offset_bottom = 37.0
+theme_type_variation = &"LargeFont"
 text = "Choose a piece to promote your Pawn to:"
 
 [node name="Cancel" type="Button" parent="popPromote"]
@@ -973,7 +1015,6 @@ offset_left = 229.0
 offset_top = 181.0
 offset_right = 493.0
 offset_bottom = 212.0
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Cancel this Move
 "
 
@@ -1018,6 +1059,7 @@ offset_bottom = 168.0
 [connection signal="pressed" from="GameUI/btnAdvance" to="GameUI" method="_on_btn_advance_pressed"]
 [connection signal="pressed" from="GameUI/btnHelp" to="GameUI" method="_on_btn_hint_pressed"]
 [connection signal="text_submitted" from="GameUI/txtCmd" to="GameUI" method="_on_txt_cmd_text_submitted"]
+[connection signal="pressed" from="GameUI/btnSettings" to="GameUI" method="_on_btn_settings_pressed"]
 [connection signal="pressed" from="popPromote/Cancel" to="popPromote" method="_on_cancel_pressed"]
 [connection signal="pressed" from="popPromote/Queen" to="popPromote" method="_on_queen_pressed"]
 [connection signal="pressed" from="popPromote/Rook" to="popPromote" method="_on_rook_pressed"]

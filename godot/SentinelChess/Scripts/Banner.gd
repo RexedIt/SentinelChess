@@ -20,7 +20,8 @@ func _ready():
 	BannerLeft.step = skin.step()
 	BannerText.texture = skin.sprite('BannerText.png')
 	BannerText.step = skin.step()
-	set_process_input(true) 
+	set_process_input(true)
+	visible = true
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):

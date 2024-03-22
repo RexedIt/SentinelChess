@@ -393,6 +393,8 @@ int main(void)
 
     // chessopenings co;
     // co.load_scid_eco(data_file("scid.eco"));
+    // co.save_binary(data_file("scid.bin"));
+    // co.load_binary(data_file("scid.bin"));
 
     std::shared_ptr<chessgamelistener_queue> p_listener(
         new chessgamelistener_queue(cl_user));

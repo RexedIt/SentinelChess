@@ -1,6 +1,8 @@
 extends SentinelChess
 
 # siblings
+@onready var skin : Node = get_node('/root/MainGame/Skin')
+@onready var Background : Sprite2D = get_parent().get_node("Background")
 @onready var popNew : Window = get_parent().get_node("popNew")
 @onready var popPuzzle : Window = get_parent().get_node("popPuzzle")
 @onready var popLoad : FileDialog = get_parent().get_node("popLoad")
@@ -10,6 +12,7 @@ extends SentinelChess
 @onready var popEnd : Panel = get_parent().get_node("popEnd")
 @onready var popPromote : Panel = get_parent().get_node("popPromote")
 @onready var pnlCaptured : Panel = get_parent().get_node("GameUI/pnlCaptured")
+@onready var popSettings : Window = get_parent().get_node("popSettings")
 
 const GameState = preload("res://Scripts/GameState.gd").GameState_
 
@@ -27,7 +30,22 @@ func _ready():
 	popLoad.on_closed.connect(_on_closed_load)
 	popSave.on_closed.connect(_on_closed_save)
 	popPromote.on_closed.connect(_on_closed_promote)
+	popSettings.on_closed.connect(_on_closed_settings)
+	applyskin()
 	_gamestatereact(GameState.INIT)
+
+func applyskin():
+	popNew.set_theme(skin.theme)
+	popPuzzle.set_theme(skin.theme)
+	popLoad.set_theme(skin.theme)
+	popSave.set_theme(skin.theme)
+	popPromote.set_theme(skin.theme)
+	popEnd.set_theme(skin.theme)
+	popEnd.applyskin()
+	popSettings.set_theme(skin.theme)
+	Background.texture = skin.sprite('Background.jpg')
+	board.applyskin()
+	gameUI.applyskin()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -265,7 +283,12 @@ func _on_closed_promote(_cancelled, _color, _piece):
 	if !_cancelled:
 		promotemove.set_promote(_piece)
 		user_move(_color,promotemove,false)
-		
+
+func _on_closed_settings(_cancelled, _skin, _voice, _music, _sfx):
+	if !_cancelled:
+		skin.applysettings(_skin,_voice,_music,_sfx)
+		applyskin()
+			
 func _on_new_game():
 	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE,GameState.END]
 	if list.has(gamestate):
@@ -283,6 +306,9 @@ func _on_load_puzzle():
 	if list.has(gamestate):
 		prepopgamestate = gamestate
 		_gamestatereact(GameState.PUZZLE)
+
+func _on_settings():
+	popSettings.visible = true
 	
 func _on_save_game():
 	var list = [GameState.INIT,GameState.PLAY,GameState.IDLE,GameState.USERMOVE,GameState.END]
@@ -306,7 +332,7 @@ func _draw_move(n, m, b, c):
 	pnlCaptured.refreshpieces(b)
 	
 func _on_turn(n, b, c):
-	if is_local_active(c):
+	if is_local_active(c) and gamestate != GameState.END:
 		refresh_board(c, b)
 	else:
 		refresh_board(preferred_board_color(), b)

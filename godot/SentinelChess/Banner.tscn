@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://Scripts/AlphaTween.gd" id="6_otv8g"]
 
 [node name="Banner" type="Node2D"]
+visible = false
 script = ExtResource("1_pfmq6")
 duration = 5.0
 loadscene = "res://MainGame.tscn"

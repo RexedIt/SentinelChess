@@ -403,7 +403,7 @@ namespace chess
         // the clock to default settings
         // maybe something like
         // m_clock.new();
-        m_init_board = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        m_init_board = c_open_board;
         m_board.load_xfen(m_init_board);
         m_turn.clear();
         m_play_pos = -1;
@@ -442,7 +442,7 @@ namespace chess
                 m_turn.push_back(t);
             }
 
-            JSON_LOAD(jsonf, "init_board", m_init_board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+            JSON_LOAD(jsonf, "init_board", m_init_board, c_open_board);
             JSON_LOAD(jsonf, "puzzle", m_puzzle, false);
             JSON_LOAD(jsonf, "hints", m_hints, 0);
             JSON_LOAD(jsonf, "title", m_title, "");

@@ -1,0 +1,12 @@
+[gd_resource type="Theme" load_steps=2 format=3 uid="uid://c2pf74m30fcnl"]
+
+[ext_resource type="FontFile" uid="uid://dqmfxq4vf5b8g" path="res://Fonts/PressStart2P-vaV7.ttf" id="1_sq6rr"]
+
+[resource]
+default_font = ExtResource("1_sq6rr")
+default_font_size = 16
+Font/fonts/Font = ExtResource("1_sq6rr")
+HugeFont/base_type = &"Label"
+HugeFont/font_sizes/font_size = 32
+LargeFont/base_type = &"Label"
+LargeFont/font_sizes/font_size = 24

@@ -12,13 +12,22 @@ extends Panel
 # Called when the node enters the scene tree for the first time.
 var elapsed : float = 0;
 var frame : int = 0;
+var loaded : bool = false
+var skinned : bool = false
 
 func _ready():
-	black.texture = skin.sprite('BlackKnight.png')
-	white.texture = skin.sprite('WhiteKnight.png')
 	music.volume_db = -15
 	music.finished.connect(suppress)
-
+	loaded = true
+	if not skinned:
+		applyskin()
+	
+func applyskin():
+	if loaded:
+		black.texture = skin.sprite('BlackKnight.png')
+		white.texture = skin.sprite('WhiteKnight.png')
+		skinned = true
+	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	if (Input.is_anything_pressed()): 

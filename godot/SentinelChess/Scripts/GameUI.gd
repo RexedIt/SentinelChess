@@ -7,6 +7,7 @@ extends CanvasLayer
 @onready var lblTitle : Label = get_node('lblTitle')
 @onready var pnlPlayerTop : Panel = get_node('pnlPlayerTop')
 @onready var pnlPlayerBottom : Panel = get_node('pnlPlayerBottom')
+@onready var pnlCaptured : Panel = get_node('pnlCaptured')
 @onready var lblHistory : RichTextLabel = get_node('lblHistory')
 @onready var txtCmd : LineEdit = get_node('txtCmd')
 @onready var lblError : Label = get_node('lblError')
@@ -20,7 +21,7 @@ extends CanvasLayer
 @onready var btnPause : Button = get_node('btnPause')
 @onready var btnAdvance : Button = get_node('btnAdvance')
 @onready var btnHelp : Button = get_node('btnHelp')
-
+@onready var btnSettings : Button = get_node('btnSettings')
 @onready var lblWhiteClock : Label = get_node('lblWhiteClock')
 @onready var lblBlackClock : Label = get_node('lblBlackClock')
 @onready var voice : AudioStreamPlayer = get_node('voice')
@@ -42,10 +43,21 @@ var black_points : int = 0
 var voice_queue = []
 var do_voice : bool = false
 var do_sfx : bool = false
+var loaded: bool = false
+var skinned: bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# do some skinning
+	loaded = true	
+	if not skinned:
+		applyskin()
+	txtCmd.grab_focus()
+		
+func applyskin():
+	# applied heirarchically from game manager
+	if not loaded:
+		return
 	btnNew.icon = skin.sprite('New.png')
 	btnNewPuzzle.icon = skin.sprite('NewPuzzle.png')
 	btnOpen.icon = skin.sprite('Open.png')
@@ -54,12 +66,24 @@ func _ready():
 	btnPause.icon = skin.sprite('Pause.png')
 	btnAdvance.icon = skin.sprite('Advance.png')
 	btnHelp.icon = skin.sprite('Help.png')
-	txtCmd.grab_focus()
+	btnSettings.icon = skin.sprite('Gear.png')
 	PauseTexture = btnPause.icon
 	PlayTexture = skin.sprite('Play.png')
 	MoveSound = skin.commonsound('Slide.mp3')
 	PromoteSound = skin.sound('Promote.mp3')
-
+	lblWhiteClock.set_theme(skin.theme)
+	lblBlackClock.set_theme(skin.theme)
+	lblTitle.set_theme(skin.theme)
+	lblHistory.set_theme(skin.theme)
+	lblCmd.set_theme(skin.theme)
+	txtCmd.set_theme(skin.theme)
+	pnlScore.applyskin()
+	pnlPlayerTop.applyskin()
+	pnlPlayerBottom.applyskin()
+	pnlCaptured.applyskin()
+	
+	skinned = true
+	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
@@ -218,6 +242,9 @@ func _on_btn_puzzle_pressed():
 
 func _on_btn_hint_pressed():
 	handle_hint()
+
+func _on_btn_settings_pressed():
+	game_manager._on_settings()
 
 func handle_goto(turn_no: int) -> bool:
 	if puzzle:
@@ -478,4 +505,3 @@ func play_promote_sfx():
 	if do_sfx:
 		voice.stream = PromoteSound
 		voice.play()
-

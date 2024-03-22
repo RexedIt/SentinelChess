@@ -12,5 +12,5 @@ enum GameState_ {
 		COMPUTERMOVE,
 		ANIMATEMOVE,
 		PIECESELECT,
-		END		
+		END	
 }

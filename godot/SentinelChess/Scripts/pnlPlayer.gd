@@ -7,7 +7,13 @@ extends Panel
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	pass
+		
+func applyskin():
+	# applied heirarchically from game manager
 	sprType.texture = skin.sprite('SmallPieces.png')
+	lblName.set_theme(skin.theme)
+	lblSkill.set_theme(skin.theme)
 
 func refreshplayer(col : SentinelChess.ChessColor, player : ChessPlayer):
 	if player:

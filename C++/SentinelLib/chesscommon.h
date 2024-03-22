@@ -63,6 +63,8 @@ namespace chess
 
     std::string errorstr(error_e num);
 
+    extern const char *c_open_board;
+
     typedef struct coord_s
     {
         coord_s() { ; }
