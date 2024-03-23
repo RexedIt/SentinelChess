@@ -1,16 +1,16 @@
 extends Node
 
 var config = ConfigFile.new()
-var skinname : String = 'RetroWood'
+var skinname : String = 'ChessCom'
 var voicelvl : int = 50
 var musiclvl : int = 50
 var sfxlvl : int = 50
-var themepath : String = 'res://Skins/RetroWood/theme.tres'
+var themepath : String = 'res://Skins/ChessCom/theme.tres'
 var theme : Theme
 
 # Called when the node enters the scene tree for the first time.
 func _init():
-	config.set_value('Skin', 'name', 'RetroWood')
+	config.set_value('Skin', 'name', 'ChessCom')
 	config.set_value('Audio', 'voice', 50)	
 	config.set_value('Audio', 'music', 50)
 	config.set_value('Audio', 'sfx', 50)

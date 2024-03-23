@@ -201,6 +201,9 @@ namespace chess
     color_e str_color(std::string col);
     std::string piece_str(piece_e p);
     piece_e str_piece(std::string p);
+    std::string clock_type_str(chessclock_e ct);
+    chessclock_e str_clock_type(std::string ct);
+
     char abbr_char(piece_e p, color_e c = c_white);
     piece_e char_abbr(char c);
     std::string game_state_str(game_state_e g);

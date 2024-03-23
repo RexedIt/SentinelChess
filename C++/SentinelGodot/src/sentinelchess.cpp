@@ -197,6 +197,8 @@ int SentinelChess::new_game(String title, const Ref<ChessPlayer> &white, const R
     chessclock_s sclock;
     if (clock.is_valid())
         sclock = clock->get();
+    sclock.remainms[0] = sclock.allowedms[0];
+    sclock.remainms[1] = sclock.allowedms[1];
 
     err = m_lobby.new_game(title.ascii().get_data(), sclock);
     refresh_data();

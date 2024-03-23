@@ -1,9 +1,8 @@
-[gd_scene load_steps=47 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=46 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="PackedScene" uid="uid://b3vb7tg7wpihs" path="res://Skins/Skin.tscn" id="2_rnrr5"]
 [ext_resource type="Script" path="res://Scripts/GameManager.gd" id="2_th60g"]
-[ext_resource type="FontFile" uid="uid://dqmfxq4vf5b8g" path="res://Fonts/PressStart2P-vaV7.ttf" id="3_7nhen"]
 [ext_resource type="Texture2D" uid="uid://bufv6wjwmxvum" path="res://Skins/RetroWood/Sprites/Background.jpg" id="4_oxxya"]
 [ext_resource type="Script" path="res://Scripts/Board.gd" id="5_8nr35"]
 [ext_resource type="Texture2D" uid="uid://bh65nhl2ddwer" path="res://Skins/RetroWood/Sprites/Board.png" id="5_a2ndy"]
@@ -349,7 +348,6 @@ mult = 60000.0
 [node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AllowBlack"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Allow (m)"
 
 [node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AllowBlack"]
@@ -688,9 +686,9 @@ centered = false
 
 [node name="lblPoints1" type="Label" parent="GameUI/pnlScore"]
 layout_mode = 0
-offset_left = 136.0
+offset_left = 132.0
 offset_top = 16.0
-offset_right = 400.0
+offset_right = 396.0
 offset_bottom = 43.0
 theme_type_variation = &"LargeFont"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
@@ -700,9 +698,9 @@ vertical_alignment = 1
 
 [node name="lblPoints2" type="Label" parent="GameUI/pnlScore"]
 layout_mode = 0
-offset_left = 113.0
+offset_left = 109.0
 offset_top = 59.0
-offset_right = 401.0
+offset_right = 397.0
 offset_bottom = 86.0
 theme_type_variation = &"LargeFont"
 theme_override_colors/font_color = Color(0, 0, 0, 1)

@@ -43,8 +43,8 @@ func readsettings():
 		_skin = "RetroWood"
 	if optPhoto.button_pressed:
 		_skin = "PhotoBoard"
-	#if optChessCom.pressed:
-	#	_skin = "ChessCom"
+	if optChessCom.button_pressed:
+		_skin = "ChessCom"
 	_voice = sldVoice.value
 	_music = sldMusic.value
 	_sfx = sldSfx.value

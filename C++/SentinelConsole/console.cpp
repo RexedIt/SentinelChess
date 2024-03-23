@@ -108,7 +108,7 @@ void time_to_console(int32_t wt, int32_t bt)
 {
     if ((wt <= 0) && (bt <= 0))
         return;
-    std::cout << "White:" << time_str(wt) << " Black: " << time_str(wt) << std::endl;
+    std::cout << "White:" << time_str(wt) << " Black: " << time_str(bt) << std::endl;
 }
 
 stopwatch::stopwatch()

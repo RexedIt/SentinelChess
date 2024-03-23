@@ -103,7 +103,7 @@ namespace chess
     chessclock_s::chessclock_s()
     {
         ctype = cc_none;
-        for (int i = 0; i < 0; i++)
+        for (int i = 0; i < 2; i++)
         {
             allowedms[i] = 0;
             remainms[i] = 0;
@@ -114,7 +114,7 @@ namespace chess
     chessclock_s::chessclock_s(const chessclock_s &c)
     {
         ctype = c.ctype;
-        for (int i = 0; i < 0; i++)
+        for (int i = 0; i < 2; i++)
         {
             allowedms[i] = c.allowedms[i];
             remainms[i] = c.remainms[i];
@@ -125,7 +125,7 @@ namespace chess
     void chessclock_s::operator=(const chessclock_s &c)
     {
         ctype = c.ctype;
-        for (int i = 0; i < 0; i++)
+        for (int i = 0; i < 2; i++)
         {
             allowedms[i] = c.allowedms[i];
             remainms[i] = c.remainms[i];
@@ -137,7 +137,7 @@ namespace chess
     {
         if (ctype != c.ctype)
             return false;
-        for (int i = 0; i < 0; i++)
+        for (int i = 0; i < 2; i++)
         {
             if (allowedms[i] != c.allowedms[i])
                 return false;
@@ -152,6 +152,38 @@ namespace chess
     int color_idx(color_e c)
     {
         return (c == c_white) ? 0 : 1;
+    }
+
+    std::string clock_type_str(chessclock_e ct)
+    {
+        switch (ct)
+        {
+        case cc_suddendeath:
+            return "Sudden Death";
+        case cc_increment:
+            return "Increment";
+        case cc_bronstein_delay:
+            return "Bronstein Delay";
+        case cc_simple_delay:
+            return "Simple Delay";
+        default:
+            return "None";
+        }
+    }
+
+    chessclock_e str_clock_type(std::string ct)
+    {
+        chessclock_e ret = cc_none;
+        std::string ctu = uppercase(ct);
+        if (ctu == "SUDDEN DEATH")
+            ret = cc_suddendeath;
+        else if (ctu == "INCREMENT")
+            ret = cc_increment;
+        else if (ctu == "BRONSTEIN DELAY")
+            ret = cc_bronstein_delay;
+        else if (ctu == "SIMPLE DELAY")
+            ret = cc_simple_delay;
+        return ret;
     }
 
     std::string color_str(color_e col)
@@ -391,7 +423,7 @@ namespace chess
         int32_t tenths = (t % 100) / 10;
         int32_t seconds = (t / 1000) % 60;
         int32_t minutes = (t / 60000) % 60;
-        int32_t hours = (t / 360000);
+        int32_t hours = (t / 3600000);
         sprintf_s(tbuf, 32, "%d:%2.2d:%2.2d.%d", hours, minutes, seconds, tenths);
         std::string ret(tbuf);
         return ret;

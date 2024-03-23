@@ -1,5 +1,6 @@
 #include "chessgame.h"
 #include "chesscomputer.h"
+#include "chessclock.h"
 
 namespace chess
 {
@@ -12,6 +13,11 @@ namespace chess
         m_puzzle = false;
         m_hints = 0;
         m_points = 0;
+    }
+
+    chessgame::~chessgame()
+    {
+        remove_clock();
     }
 
     chessboard chessgame::board()
@@ -132,13 +138,10 @@ namespace chess
 
     void chessgame::clock_remaining(color_e col, int32_t &wt, int32_t &bt)
     {
-        // *** NATHANAEL ***
-        // This can be the event that gets called 'on turn' that would cause you
-        // to return the current remaining times as well as internally call
-        // your method to start counting in behalf of the player designated
-        // as color_e col (c_white or c_black)
         wt = 0;
         bt = 0;
+        if (mp_clock)
+            mp_clock->time_remaining(wt, bt);
     }
 
     error_e chessgame::forfeit(color_e col)
@@ -394,20 +397,12 @@ namespace chess
     error_e chessgame::new_game(std::string title, const chessclock_s &clock)
     {
         m_win_color = c_none;
-        // *** NATHANAEL ***
-        // Your class could take clock and use it for it's
-        // data storage and read and write a chessclock_s
-        // in the load and save functions.
-        // I recommend you act sort of like
-        // the board, and just have a method to reset
-        // the clock to default settings
-        // maybe something like
-        // m_clock.new();
         m_init_board = c_open_board;
         m_board.load_xfen(m_init_board);
         m_turn.clear();
         m_play_pos = -1;
         m_title = title;
+        add_clock(clock);
         refresh_board_positions();
         set_state(play_e, true);
         signal_on_turn();
@@ -420,16 +415,10 @@ namespace chess
         {
             if (jsonf.is_null())
                 return e_loading;
-            // *** NATHANAEL ***
-            // Read in to your class would be done here, for load game.
-            // I recommend using something like my chessclock_s structure (common.h)
-            // at any rate, your function signature might look like
-            // if (m_clock.load(jsonf) != e_none)
-            //     return e_loading;
-            // note you would immediately begin functioning your clock
-            // as per the settings loaded.
             m_state = str_game_state(jsonf["state"]);
             m_win_color = str_color(jsonf["win_color"]);
+
+            add_clock(chessclock::load(jsonf["Clock"], this));
 
             auto turns = jsonf["turns"];
             m_turn.clear();
@@ -507,6 +496,7 @@ namespace chess
             turns.push_back(t);
         }
 
+        mp_clock = nullptr;
         m_init_board = p.fen;
         m_turn = turns;
         m_play_pos = -1;
@@ -524,17 +514,6 @@ namespace chess
     {
         try
         {
-            // *** NATHANAEL ***
-            // Here is where your class would write settings to a save
-            // game file, this would be consistent with that of
-            // the load function in terms of content strategy.  I recommend
-            // utilizing chessclock_s structure but within your class
-            // this code might look like
-            // auto clock = json::object();
-            // if (m_clock.save(os) != e_none)
-            //     return e_saving;
-            // jsonf["clock"] = clock;
-            //
             jsonf["state"] = game_state_str(m_state);
             jsonf["win_color"] = color_str(win_color());
 
@@ -548,6 +527,13 @@ namespace chess
                 turns.push_back(turn);
             }
             jsonf["turns"] = turns;
+
+            if (mp_clock)
+            {
+                auto clock = json::object();
+                mp_clock->save(clock);
+                jsonf["Clock"] = clock;
+            }
 
             jsonf["init_board"] = m_init_board;
             jsonf["puzzle"] = m_puzzle;
@@ -577,10 +563,8 @@ namespace chess
             return ret;
         m_board.copy(b);
         m_win_color = c_none;
-        // *** NATHANAEL ***
-        // in the case of an XFEN paste, we should
-        // remove the clock I think since the
-        // game state is indeterminate.
+        if (mp_clock)
+            mp_clock->clear();
         m_turn.clear();
         m_play_pos = -1;
         refresh_board_positions();
@@ -594,6 +578,27 @@ namespace chess
     std::string chessgame::save_xfen()
     {
         return m_board.save_xfen();
+    }
+
+    void chessgame::add_clock(const chessclock_s &clock)
+    {
+        std::shared_ptr<chessclock> p_clock(new chessclock(clock, this));
+        add_clock(p_clock);
+    }
+
+    void chessgame::add_clock(std::shared_ptr<chessclock> p_clock)
+    {
+        remove_clock();
+        mp_clock = p_clock;
+        if (mp_clock)
+            listen(mp_clock);
+    }
+
+    void chessgame::remove_clock()
+    {
+        if (mp_clock)
+            unlisten(mp_clock->id());
+        mp_clock = nullptr;
     }
 
     error_e chessgame::listen(std::shared_ptr<chessgamelistener> plistener)
@@ -616,16 +621,6 @@ namespace chess
 
     error_e chessgame::end_game(game_state_e end_state, color_e win_color)
     {
-        // *** NATHANAEL ***
-        // You are going to need to be able to call this function
-        // with a time_up_e value for end_state, and declare the winner.
-        // It is a bit of a conundrum with how to get the reference
-        // to the game object for the clock.  I suppose it would be
-        // OK to use a traditional pointer with a set_game function
-        // Alternatively we could do all of this up above at the lobby level
-        // where a shared pointer to the game exists.  A third option
-        // that might be cleanest, is to give the clock a pointer to
-        // this function as a callback.
         std::unique_lock<std::mutex> guard(m_mutex);
         m_win_color = win_color;
         set_state(end_state);
@@ -741,10 +736,6 @@ namespace chess
     {
         for (const auto &kv : mp_listeners)
             kv.second->signal_on_state(m_state, m_win_color);
-        // *** NATHANAEL ***
-        // See above, you will need to react to this event.  later
-        // we will add a pause or resume event but for now it's just
-        // this
     }
 
     void chessgame::signal_chat(std::string msg, color_e c)

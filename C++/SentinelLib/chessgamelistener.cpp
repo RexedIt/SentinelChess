@@ -7,6 +7,11 @@ namespace chess
 
     chessevent::chessevent(const chessevent &e)
     {
+        copy(e);
+    }
+
+    void chessevent::copy(const chessevent &e)
+    {
         etype = e.etype;
         check = e.check;
         color = e.color;
@@ -21,6 +26,11 @@ namespace chess
         msg = e.msg;
         wt = e.wt;
         bt = e.bt;
+    }
+
+    void chessevent::operator=(const chessevent &e)
+    {
+        copy(e);
     }
 
     chessgamelistener::chessgamelistener(chessgamelistenertype listenertype)

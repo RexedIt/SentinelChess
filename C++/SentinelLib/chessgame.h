@@ -5,7 +5,6 @@
 #include "chessgamelistener.h"
 #include "chessturn.h"
 #include "chesspuzzle.h"
-
 #include <fstream>
 #include <mutex>
 #include <map>
@@ -17,16 +16,19 @@ namespace chess
 {
 
     class chessgamelistener;
+    class chessclock;
 
     class chessgame
     {
     public:
         chessgame();
+        ~chessgame();
 
         friend class chessplayer;
         friend class chesscomputer;
         friend class chessgamelistener;
         friend class chesslobby;
+        friend class chessclock;
 
         // Getters for players note these
         // are accessible in the event as well
@@ -109,6 +111,10 @@ namespace chess
         void signal_on_state();
         void signal_chat(std::string, color_e);
 
+        void add_clock(const chessclock_s &);
+        void add_clock(std::shared_ptr<chessclock>);
+        void remove_clock();
+
         game_state_e m_state;
         std::vector<chessturn> m_turn;
         int m_play_pos;
@@ -124,6 +130,7 @@ namespace chess
 
         std::mutex m_mutex;
         std::map<int, std::shared_ptr<chessgamelistener>> mp_listeners;
+        std::shared_ptr<chessclock> mp_clock;
 
         // Draw Indicators - Fivefold Repetition
         std::map<uint32_t, int> m_board_positions;

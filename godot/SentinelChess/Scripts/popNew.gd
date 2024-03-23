@@ -10,7 +10,7 @@ var _clock : ChessClock
 @onready var btnCancel : Button = get_node("btnCancel")
 @onready var btnOK : Button = get_node("btnOK")
 @onready var optNone : CheckBox = get_node("MC/VC/Clock/HC/VC/optNone")
-@onready var optSuddenDeath : CheckBox = get_node("MC/VC/Clock/HC/VC/optNone")
+@onready var optSuddenDeath : CheckBox = get_node("MC/VC/Clock/HC/VC/optSuddenDeath")
 @onready var optIncrement : CheckBox = get_node("MC/VC/Clock/HC/VC/optIncrement")
 @onready var optBronstein : CheckBox = get_node("MC/VC/Clock/HC/VC/optBronstein")
 @onready var optSimple : CheckBox = get_node("MC/VC/Clock/HC/VC/optSimple")

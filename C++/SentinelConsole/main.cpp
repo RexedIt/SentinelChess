@@ -249,6 +249,8 @@ chessclock_s get_clock_options()
         ret.addms[0] = get_ms_value("White bonus/delay", "Seconds", 1000.0, 10.0);
         ret.addms[1] = get_ms_value("Black bonus/delay", "Seconds", 1000.0, 10.0);
     }
+    ret.remainms[0] = ret.allowedms[0];
+    ret.remainms[1] = ret.allowedms[1];
     return ret;
 }
 

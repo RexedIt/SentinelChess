@@ -136,6 +136,8 @@ func initialize(msg : String):
 	btnRewind.disabled = puzzle
 	btnPause.disabled = puzzle
 	btnAdvance.disabled = puzzle
+	lblWhiteClock.visible = false
+	lblBlackClock.visible = false
 	clear_history()
 	append_history(msg)
 	#update_players(tc)
@@ -414,8 +416,10 @@ func time_str(t : int) -> String:
 		return ""
 	
 func clock_turn(col : SentinelChess.ChessColor, wt : int, bt : int):
+	lblWhiteClock.visible = wt > 0
+	lblBlackClock.visible = bt > 0
 	lblWhiteClock.text = time_str(wt)
-	lblBlackClock.text = time_str(wt)
+	lblBlackClock.text = time_str(bt)
 	countcol = col
 	if col == SentinelChess.White:
 		countdown = float(wt) / 1000.0
@@ -452,6 +456,7 @@ func gamestate(gs):
 		
 func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
 	append_history(game_manager.gamestatestr(s))
+	countdown = -1.0
 	match s:
 		SentinelChess.CheckMate:
 			add_voice('CheckMate')
