@@ -61,6 +61,10 @@ namespace chess
         bt = 0;
         if (m_clock.ctype != cc_none)
         {
+            // *** NATHANAEL ***
+            // The function current_elapsed_nolock could
+            // account for paused state (contain change for pausing)
+            // in one place other than the intervention when the play and pause are executed
             int32_t cur_elapsed = current_elapsed_nolock();
             wt = m_clock.remainms[color_idx(c_white)];
             bt = m_clock.remainms[color_idx(c_black)];
@@ -116,6 +120,13 @@ namespace chess
     {
         if (game_state > play_e)
         {
+            // *** NATHANAEL ***
+            // There are conditions where the game is in idle mode at
+            // the end and a user can back up and play.  This presents
+            // a complex situation where we would need to query the game
+            // to find out the current time remaining figures from the
+            // turn object and resume play.  My vote is to just
+            // kill the clock prior to this becoming a possibility
             if (!m_ending)
                 cancel_execution();
         }
@@ -213,6 +224,9 @@ namespace chess
 
     int32_t chessclock::current_elapsed_nolock()
     {
+        // *** NATHANAEL ***
+        // If we have been paused, this is where that might be taken into account
+        // when asking while not active (time freezes).
         std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
         std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_current_tp);
         return (int32_t)ms.count();
