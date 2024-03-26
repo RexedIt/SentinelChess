@@ -23,12 +23,13 @@ namespace chess
         chesslobby(std::shared_ptr<chessgamelistener> p_listener = NULL);
         ~chesslobby();
 
-        error_e new_game(const chessclock_s &clock);
-        error_e new_game(color_e user_color, std::string name, int skill, chessplayertype_e ptype, const chessclock_s &clock);
+        error_e new_game(std::string title, const chessclock_s &clock);
+        error_e new_game(std::string title, color_e user_color, std::string name, int skill, chessplayertype_e ptype, const chessclock_s &clock);
         error_e load_game(std::string filename);
         error_e save_game(std::string filename);
-        error_e load_puzzle(chesspuzzle puzzle);
-        error_e load_puzzle(std::string filename, int rating);
+        error_e load_puzzle(std::string name, int skill, chesspuzzle p);
+        error_e load_puzzle(std::string name, int skill, std::string filename, std::string keywords, int rating);
+        error_e load_puzzle(std::string name, int skill, std::string contents);
         error_e add_player(color_e color, std::string name, int skill, chessplayertype_e ptype);
         error_e drop_player(color_e color);
         error_e clear_players();
@@ -43,6 +44,8 @@ namespace chess
         bool is_local(color_e col);
         bool is_local_turn();
         bool is_local_active(color_e col);
+        int win_points(color_e col);
+
         std::string player_name(color_e col);
         std::map<color_e, std::string> player_names();
 
@@ -55,7 +58,7 @@ namespace chess
 
         void attach_to_game();
         void detach_from_game();
-
+        int player_points();
         void backup();
         error_e restore(error_e err = e_none);
 

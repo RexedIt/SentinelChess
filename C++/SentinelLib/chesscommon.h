@@ -56,10 +56,14 @@ namespace chess
         e_invalid_move_needs_promote,
         e_invalid_listener,
         e_listener_already_registered,
-        e_listener_not_found
+        e_listener_not_found,
+        e_none_found,
+        e_incorrect_move
     } error_e;
 
     std::string errorstr(error_e num);
+
+    extern const char *c_open_board;
 
     typedef struct coord_s
     {
@@ -72,6 +76,10 @@ namespace chess
         bool operator==(const coord_s &c1)
         {
             return (c1.y == y && c1.x == x);
+        }
+        bool operator!=(const coord_s &c1)
+        {
+            return (c1.y != y || c1.x != x);
         }
         coord_s operator+(const coord_s &c1)
         {
@@ -155,10 +163,11 @@ namespace chess
         terminate_e = 3,
         forfeit_e = 4,
         time_up_e = 5,
-        draw_stalemate_e = 6,
-        draw_fivefold_e = 7,
-        draw_fiftymove_e = 8,
-        draw_insuff_material_e = 9,
+        puzzle_solution_e = 6,
+        draw_stalemate_e = 7,
+        draw_fivefold_e = 8,
+        draw_fiftymove_e = 9,
+        draw_insuff_material_e = 10,
     } game_state_e;
 
     typedef enum chessplayertype_e
@@ -183,6 +192,7 @@ namespace chess
 
     std::string coord_str(coord_s c);
     bool coord_int(std::string s, coord_s &c);
+    bool is_coord(std::string s);
     bool in_range(int8_t y, int8_t x);
     bool in_range(coord_s c);
 
@@ -191,6 +201,9 @@ namespace chess
     color_e str_color(std::string col);
     std::string piece_str(piece_e p);
     piece_e str_piece(std::string p);
+    std::string clock_type_str(chessclock_e ct);
+    chessclock_e str_clock_type(std::string ct);
+
     char abbr_char(piece_e p, color_e c = c_white);
     piece_e char_abbr(char c);
     std::string game_state_str(game_state_e g);
@@ -201,11 +214,20 @@ namespace chess
 
     float get_rand();
 
+    std::string trim(std::string s);
     std::vector<std::string> split_string(std::string cmd, char div);
     void write_hex_uchar(std::ofstream &file1, unsigned char c);
     unsigned char read_hex_uchar(std::string line);
     std::string uppercase(std::string l);
     std::string lowercase(std::string u);
     uintmax_t get_file_size(std::string f);
+    bool get_dir_exists(std::string dirname);
 
+    std::string string_replace(std::string s, char o, char n);
+    std::string fix_path(std::string f);
+    std::string get_data_folder();
+    bool set_data_folder(std::string f);
+    std::string data_file(std::string f);
+    uint32_t hash(unsigned char *, size_t);
+    uint32_t hash(std::vector<chessmove>);
 }

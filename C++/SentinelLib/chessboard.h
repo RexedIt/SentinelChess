@@ -53,7 +53,6 @@ namespace chess
         error_e load(json &o);
         error_e save(json &o);
 
-        void new_board();
         std::string save_xfen();
         error_e load_xfen(std::string, bool recalc_captured = true);
 
@@ -107,11 +106,6 @@ namespace chess
         int m_fullmove;
 
     private:
-        // Initialization
-        void set_kings_row(int8_t y, color_e col);
-        void set_pawns_row(int8_t y, color_e col);
-        void set_empty_rows();
-
         // Special
         bool find_check(color_e col);
 

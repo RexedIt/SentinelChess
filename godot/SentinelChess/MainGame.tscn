@@ -1,75 +1,88 @@
-[gd_scene load_steps=35 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=46 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
-[ext_resource type="Texture2D" uid="uid://cmt346skrywcp" path="res://Sprites/RetroWood/RetroWoodBackground.jpg" id="2_4tyao"]
+[ext_resource type="PackedScene" uid="uid://b3vb7tg7wpihs" path="res://Skins/Skin.tscn" id="2_rnrr5"]
 [ext_resource type="Script" path="res://Scripts/GameManager.gd" id="2_th60g"]
-[ext_resource type="Texture2D" uid="uid://b87etyr6ks3a8" path="res://Sprites/RetroWood/Board.png" id="3_2gi3p"]
-[ext_resource type="FontFile" uid="uid://dqmfxq4vf5b8g" path="res://Fonts/PressStart2P-vaV7.ttf" id="3_7nhen"]
+[ext_resource type="Texture2D" uid="uid://bufv6wjwmxvum" path="res://Skins/RetroWood/Sprites/Background.jpg" id="4_oxxya"]
 [ext_resource type="Script" path="res://Scripts/Board.gd" id="5_8nr35"]
+[ext_resource type="Texture2D" uid="uid://bh65nhl2ddwer" path="res://Skins/RetroWood/Sprites/Board.png" id="5_a2ndy"]
 [ext_resource type="Script" path="res://Scripts/popNew.gd" id="5_bu5ts"]
 [ext_resource type="Script" path="res://Scripts/Piece.gd" id="6_d12bf"]
-[ext_resource type="Texture2D" uid="uid://b7222hiqlxfpp" path="res://Sprites/RetroWood/Hilight.png" id="7_kjeiy"]
+[ext_resource type="Texture2D" uid="uid://baar561vrx208" path="res://Skins/Common/Sprites/Hilight.png" id="8_45ksi"]
 [ext_resource type="Script" path="res://Scripts/GameUI.gd" id="10_0mwoa"]
 [ext_resource type="ButtonGroup" uid="uid://egpcffpdie8w" path="res://WhitePlayerType.tres" id="10_8y1dj"]
 [ext_resource type="Script" path="res://Scripts/popLoad.gd" id="10_we7ge"]
 [ext_resource type="Script" path="res://Scripts/popSave.gd" id="11_dt7qr"]
-[ext_resource type="Texture2D" uid="uid://dgtgd7nmuptr6" path="res://Sprites/RetroWood/New.jpg" id="11_ehsup"]
 [ext_resource type="ButtonGroup" uid="uid://ddxnnfxmo2csx" path="res://BlackPlayerType.tres" id="11_ikrfp"]
 [ext_resource type="ButtonGroup" uid="uid://3jisntyevh10" path="res://ClockType.tres" id="11_vfgdq"]
-[ext_resource type="Texture2D" uid="uid://dt35fbefu60ls" path="res://Sprites/RetroWood/Open.jpg" id="12_5o0s6"]
 [ext_resource type="Script" path="res://Scripts/TimeSlider.gd" id="12_jf3ul"]
-[ext_resource type="Texture2D" uid="uid://cphjjv5ttc3a3" path="res://Sprites/RetroWood/Save.jpg" id="15_pwrnu"]
-[ext_resource type="Texture2D" uid="uid://baiu161gnvfj0" path="res://Sprites/RetroWood/Pause.jpg" id="16_arl5w"]
-[ext_resource type="Texture2D" uid="uid://bxdtqof8robqc" path="res://Sprites/RetroWood/Rewind.jpg" id="17_fpd0j"]
-[ext_resource type="Texture2D" uid="uid://c7y0jxfkladhf" path="res://Sprites/RetroWood/Advance.jpg" id="21_12fke"]
+[ext_resource type="Script" path="res://Scripts/popPuzzle.gd" id="14_s72vn"]
+[ext_resource type="Script" path="res://Scripts/pnlPlayer.gd" id="17_di116"]
+[ext_resource type="Script" path="res://Scripts/pnlScore.gd" id="18_m2w67"]
+[ext_resource type="Script" path="res://Scripts/popSettings.gd" id="18_vfrru"]
+[ext_resource type="ButtonGroup" uid="uid://dimdhq82k5jrx" path="res://SkinSelection.tres" id="19_608yc"]
+[ext_resource type="Texture2D" uid="uid://dttgcrag5dcgu" path="res://Skins/RetroWood/Sprites/PuzzlePiece.png" id="20_bw7a2"]
 [ext_resource type="Script" path="res://Scripts/popEnd.gd" id="23_6dbbk"]
 [ext_resource type="Script" path="res://Scripts/pnlCaptured.gd" id="23_422qp"]
-[ext_resource type="Texture2D" uid="uid://dt77ag57cndut" path="res://Sprites/RetroWood/SmallPieces.png" id="23_e8kc2"]
-[ext_resource type="Texture2D" uid="uid://6golc5qbayib" path="res://Sprites/RetroWood/WhiteWin/SpriteSheet.jpg" id="23_urpj6"]
-[ext_resource type="Texture2D" uid="uid://dhsklfuox63dt" path="res://Sprites/RetroWood/BlackKnight.png" id="25_3rvpk"]
+[ext_resource type="Texture2D" uid="uid://ddqedxw1xs1er" path="res://Skins/RetroWood/Sprites/New.png" id="23_vurwe"]
+[ext_resource type="Texture2D" uid="uid://dtng6uy3b4ps2" path="res://Skins/RetroWood/Sprites/NewPuzzle.png" id="24_s2205"]
+[ext_resource type="Texture2D" uid="uid://cogvv8etjreva" path="res://Skins/RetroWood/Sprites/BlackKnight.png" id="25_3rvpk"]
 [ext_resource type="Script" path="res://Scripts/CapturedPiece.gd" id="25_4lao4"]
-[ext_resource type="Texture2D" uid="uid://c3cvktim2fl81" path="res://Sprites/RetroWood/WhiteKnight.png" id="26_8s3l2"]
+[ext_resource type="Texture2D" uid="uid://cw5mxy1xrx63b" path="res://Skins/RetroWood/Sprites/Open.png" id="25_iyhe2"]
+[ext_resource type="Texture2D" uid="uid://2tyxk5u26fx6" path="res://Skins/RetroWood/Sprites/WhiteKnight.png" id="26_8s3l2"]
+[ext_resource type="Texture2D" uid="uid://vq1q11npiu6s" path="res://Skins/RetroWood/Sprites/Save.png" id="26_ayax4"]
 [ext_resource type="Script" path="res://Scripts/popPromote.gd" id="27_e8o3p"]
+[ext_resource type="Texture2D" uid="uid://ccf8ty052kus7" path="res://Skins/RetroWood/Sprites/Rewind.png" id="27_jv8pw"]
+[ext_resource type="Texture2D" uid="uid://4j8ue2gagp0f" path="res://Skins/RetroWood/Sprites/Pause.png" id="28_ywkm3"]
+[ext_resource type="Texture2D" uid="uid://7fgvufhrp72y" path="res://Skins/RetroWood/Sprites/Advance.png" id="29_6dddg"]
+[ext_resource type="Texture2D" uid="uid://b1olcgy66sy6s" path="res://Skins/RetroWood/Sprites/Help.png" id="30_nm5rb"]
+[ext_resource type="Texture2D" uid="uid://du707gome4ovn" path="res://Skins/RetroWood/Sprites/SmallPieces.png" id="32_ho85t"]
+[ext_resource type="Texture2D" uid="uid://bq02l5rbsofim" path="res://Skins/RetroWood/Sprites/Gear.png" id="33_a1gye"]
+[ext_resource type="Texture2D" uid="uid://dxfliisa8rgvg" path="res://Skins/RetroWood/Sprites/WhiteWin.jpg" id="34_gycr6"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_55xmw"]
-size = Vector2(137, 96)
+size = Vector2(122.5, 123)
 
-[sub_resource type="FontVariation" id="FontVariation_h0o2n"]
-base_font = ExtResource("3_7nhen")
-spacing_bottom = 10
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ck3d1"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3n8gr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1epvs"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_aqyli"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_nno4e"]
 
-[node name="Node2D" type="Node2D"]
+[node name="MainGame" type="Node2D"]
 script = ExtResource("1_i2www")
+
+[node name="Skin" parent="." instance=ExtResource("2_rnrr5")]
 
 [node name="SentinelChess" type="SentinelChess" parent="."]
 script = ExtResource("2_th60g")
-gamestate = null
-statewait = null
 
-[node name="RetroWoodBackground" type="Sprite2D" parent="."]
-texture = ExtResource("2_4tyao")
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("4_oxxya")
 centered = false
 metadata/_edit_lock_ = true
 
 [node name="Board" type="Sprite2D" parent="."]
-position = Vector2(720, 558)
-texture = ExtResource("3_2gi3p")
+position = Vector2(960, 540)
+texture = ExtResource("5_a2ndy")
 script = ExtResource("5_8nr35")
-board_x0 = -557
-board_y0 = 384
+board_x0 = -438
+board_y0 = 438
+board_dx = 125
+board_dy = 125
 metadata/_edit_lock_ = true
 
 [node name="Piece" type="Area2D" parent="Board"]
-position = Vector2(-557, 384)
+position = Vector2(-438, 438)
 script = ExtResource("6_d12bf")
 step = 8
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Board/Piece"]
-position = Vector2(-3.5, 1)
 shape = SubResource("RectangleShape2D_55xmw")
 
 [node name="Sprite" type="Sprite2D" parent="Board/Piece"]
@@ -77,27 +90,47 @@ shape = SubResource("RectangleShape2D_55xmw")
 [node name="HiLight" type="Sprite2D" parent="Board"]
 visible = false
 modulate = Color(1, 1, 1, 0.376471)
-position = Vector2(-398, 384)
-texture = ExtResource("7_kjeiy")
+position = Vector2(-438, 438)
+texture = ExtResource("8_45ksi")
 
 [node name="popNew" type="Window" parent="."]
 title = "New Game Options"
-position = Vector2i(355, 271)
-size = Vector2i(750, 600)
+position = Vector2i(585, 231)
+size = Vector2i(750, 640)
 visible = false
 popup_window = true
-theme_override_fonts/title_font = ExtResource("3_7nhen")
-theme_override_font_sizes/title_font_size = 24
+theme_type_variation = &"LargeFont"
 script = ExtResource("5_bu5ts")
 
 [node name="MC" type="MarginContainer" parent="popNew"]
-offset_left = 24.0
-offset_top = 24.0
-offset_right = 724.0
-offset_bottom = 574.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 1236.0
+offset_bottom = 564.0
 
 [node name="VC" type="VBoxContainer" parent="popNew/MC"]
 layout_mode = 2
+
+[node name="HC" type="HBoxContainer" parent="popNew/MC/VC"]
+layout_mode = 2
+
+[node name="lblTitle" type="Label" parent="popNew/MC/VC/HC"]
+custom_minimum_size = Vector2(125, 0)
+layout_mode = 2
+text = "Title"
+
+[node name="txtTitle" type="TextEdit" parent="popNew/MC/VC/HC"]
+custom_minimum_size = Vector2(565, 24)
+layout_mode = 2
+
+[node name="SeparatorTitle" type="Label" parent="popNew/MC/VC"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
+text = "____________________________________________________________________________
+"
+horizontal_alignment = 1
+clip_text = true
 
 [node name="WhitePlayer" type="GridContainer" parent="popNew/MC/VC"]
 layout_mode = 2
@@ -107,21 +140,16 @@ columns = 2
 
 [node name="lblWhite" type="Label" parent="popNew/MC/VC/WhitePlayer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 20
 text = "White
 "
 
 [node name="txtName" type="TextEdit" parent="popNew/MC/VC/WhitePlayer"]
 custom_minimum_size = Vector2(425, 24)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
 
 [node name="lblSkill" type="Label" parent="popNew/MC/VC/WhitePlayer"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Skill (0-2500)
 "
 horizontal_alignment = 2
@@ -136,7 +164,6 @@ rounded = true
 
 [node name="lblPlayerType" type="Label" parent="popNew/MC/VC/WhitePlayer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Player Type
 "
 horizontal_alignment = 2
@@ -148,7 +175,6 @@ alignment = 1
 
 [node name="optHuman" type="CheckBox" parent="popNew/MC/VC/WhitePlayer/HC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_pressed = true
 button_group = ExtResource("10_8y1dj")
 text = "Human"
@@ -156,7 +182,6 @@ alignment = 2
 
 [node name="optComputer" type="CheckBox" parent="popNew/MC/VC/WhitePlayer/HC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("10_8y1dj")
 text = "Computer
 "
@@ -165,10 +190,9 @@ text = "Computer
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-text = "--------------------------------------------
-"
-vertical_alignment = 1
+text = "____________________________________________________________________________"
+horizontal_alignment = 1
+clip_text = true
 
 [node name="BlackPlayer" type="GridContainer" parent="popNew/MC/VC"]
 layout_mode = 2
@@ -179,8 +203,6 @@ columns = 2
 [node name="lblBlack" type="Label" parent="popNew/MC/VC/BlackPlayer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 20
 text = "Black
 "
 vertical_alignment = 2
@@ -188,13 +210,10 @@ vertical_alignment = 2
 [node name="txtName" type="TextEdit" parent="popNew/MC/VC/BlackPlayer"]
 custom_minimum_size = Vector2(425, 24)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 18
 
 [node name="lblSkill" type="Label" parent="popNew/MC/VC/BlackPlayer"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Skill (0-2500)
 "
 horizontal_alignment = 2
@@ -209,7 +228,6 @@ rounded = true
 
 [node name="lblPlayerType" type="Label" parent="popNew/MC/VC/BlackPlayer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Player Type
 "
 horizontal_alignment = 2
@@ -221,14 +239,12 @@ alignment = 1
 
 [node name="optHuman" type="CheckBox" parent="popNew/MC/VC/BlackPlayer/HC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("11_ikrfp")
 text = "Human"
 alignment = 2
 
 [node name="optComputer" type="CheckBox" parent="popNew/MC/VC/BlackPlayer/HC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_pressed = true
 button_group = ExtResource("11_ikrfp")
 text = "Computer
@@ -238,9 +254,8 @@ text = "Computer
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-text = "--------------------------------------------"
-vertical_alignment = 1
+text = "____________________________________________________________________________"
+horizontal_alignment = 1
 
 [node name="Clock" type="GridContainer" parent="popNew/MC/VC"]
 layout_mode = 2
@@ -257,43 +272,36 @@ layout_mode = 2
 [node name="Label" type="Label" parent="popNew/MC/VC/Clock/HC/VC"]
 custom_minimum_size = Vector2(260, 28)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Clock Type"
 
 [node name="optNone" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_pressed = true
 button_group = ExtResource("11_vfgdq")
 text = "None"
 
 [node name="optSuddenDeath" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("11_vfgdq")
 text = "Sudden Death
 "
 
 [node name="optIncrement" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("11_vfgdq")
 text = "Increment
 "
 
 [node name="optBronstein" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("11_vfgdq")
 text = "Bronstein
 "
 
 [node name="optSimple" type="CheckBox" parent="popNew/MC/VC/Clock/HC/VC"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 button_group = ExtResource("11_vfgdq")
 text = "Simple
-
 "
 
 [node name="TVC" type="VBoxContainer" parent="popNew/MC/VC/Clock/HC"]
@@ -303,7 +311,6 @@ layout_mode = 2
 [node name="chkSame" type="CheckBox" parent="popNew/MC/VC/Clock/HC/TVC"]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Separate Black/White Time"
 
 [node name="AllowWhite" type="HBoxContainer" parent="popNew/MC/VC/Clock/HC/TVC"]
@@ -314,7 +321,6 @@ mult = 60000.0
 
 [node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AllowWhite"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Allow (m)"
 
 [node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AllowWhite"]
@@ -342,7 +348,6 @@ mult = 60000.0
 [node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AllowBlack"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Allow (m)"
 
 [node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AllowBlack"]
@@ -370,7 +375,6 @@ mult = 1000.0
 
 [node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AddWhite"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Add (s)  "
 
 [node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AddWhite"]
@@ -398,7 +402,6 @@ mult = 1000.0
 [node name="lblTitle" type="Label" parent="popNew/MC/VC/Clock/HC/TVC/AddBlack"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Add (s)  "
 
 [node name="HSlider" type="HSlider" parent="popNew/MC/VC/Clock/HC/TVC/AddBlack"]
@@ -429,7 +432,6 @@ offset_right = -30.0004
 offset_bottom = -9.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "OK"
 
 [node name="btnCancel" type="Button" parent="popNew"]
@@ -444,7 +446,103 @@ offset_right = -200.0
 offset_bottom = -9.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_fonts/font = ExtResource("3_7nhen")
+text = " Cancel "
+
+[node name="popPuzzle" type="Window" parent="."]
+title = "Load Puzzle"
+position = Vector2i(585, 429)
+size = Vector2i(750, 240)
+visible = false
+script = ExtResource("14_s72vn")
+
+[node name="MC" type="MarginContainer" parent="popPuzzle"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 715.0
+offset_bottom = 124.0
+
+[node name="Player" type="GridContainer" parent="popPuzzle/MC"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 2
+
+[node name="lblName" type="Label" parent="popPuzzle/MC/Player"]
+layout_mode = 2
+text = "Name
+"
+
+[node name="txtName" type="TextEdit" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(425, 24)
+layout_mode = 2
+
+[node name="lblSkill" type="Label" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+text = "Skill (0-2500)
+"
+horizontal_alignment = 2
+
+[node name="lvlSkill" type="HSlider" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+max_value = 2500.0
+step = 50.0
+value = 600.0
+rounded = true
+
+[node name="lblRating" type="Label" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+text = "Rating (0-2500)
+"
+horizontal_alignment = 2
+
+[node name="lvlRating" type="HSlider" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+max_value = 2500.0
+step = 50.0
+value = 600.0
+rounded = true
+
+[node name="lblKeywords" type="Label" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+text = "Keywords (,)
+"
+horizontal_alignment = 2
+
+[node name="txtKeywords" type="TextEdit" parent="popPuzzle/MC/Player"]
+custom_minimum_size = Vector2(425, 24)
+layout_mode = 2
+
+[node name="btnOK" type="Button" parent="popPuzzle"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -40.0
+offset_right = -30.0004
+offset_bottom = -9.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "OK"
+
+[node name="btnCancel" type="Button" parent="popPuzzle"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -290.0
+offset_top = -40.0
+offset_right = -200.0
+offset_bottom = -9.0
+grow_horizontal = 0
+grow_vertical = 0
 text = " Cancel "
 
 [node name="popLoad" type="FileDialog" parent="."]
@@ -465,117 +563,354 @@ access = 2
 filters = PackedStringArray("*.chs ; Sentinel Chess Files")
 script = ExtResource("11_dt7qr")
 
+[node name="popSettings" type="Window" parent="."]
+title = "Settings"
+position = Vector2i(590, 325)
+size = Vector2i(750, 325)
+visible = false
+script = ExtResource("18_vfrru")
+
+[node name="MC" type="MarginContainer" parent="popSettings"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 728.0
+offset_bottom = 360.0
+
+[node name="VC" type="VBoxContainer" parent="popSettings/MC"]
+layout_mode = 2
+
+[node name="HC" type="HBoxContainer" parent="popSettings/MC/VC"]
+layout_mode = 2
+
+[node name="lblSkin" type="Label" parent="popSettings/MC/VC/HC"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "Skin"
+
+[node name="optRetro" type="CheckBox" parent="popSettings/MC/VC/HC"]
+layout_mode = 2
+button_group = ExtResource("19_608yc")
+text = "Retro 80s"
+
+[node name="optPhoto" type="CheckBox" parent="popSettings/MC/VC/HC"]
+layout_mode = 2
+button_group = ExtResource("19_608yc")
+text = "Photo Board
+"
+
+[node name="optChessCom" type="CheckBox" parent="popSettings/MC/VC/HC"]
+layout_mode = 2
+button_group = ExtResource("19_608yc")
+text = "Illustrative"
+
+[node name="VSpacer" type="Label" parent="popSettings/MC/VC"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+
+[node name="lblVoice" type="Label" parent="popSettings/MC/VC"]
+layout_mode = 2
+text = "Voice Volume
+"
+
+[node name="sldVoice" type="HSlider" parent="popSettings/MC/VC"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_vertical = 1
+value = 50.0
+
+[node name="lblMusic" type="Label" parent="popSettings/MC/VC"]
+layout_mode = 2
+text = "Music Volume
+"
+
+[node name="sldMusic" type="HSlider" parent="popSettings/MC/VC"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+value = 50.0
+
+[node name="lblSfx" type="Label" parent="popSettings/MC/VC"]
+layout_mode = 2
+text = "SFX Volume
+"
+
+[node name="sldSfx" type="HSlider" parent="popSettings/MC/VC"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+value = 50.0
+
+[node name="btnOK" type="Button" parent="popSettings"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -40.0
+offset_right = -30.0004
+offset_bottom = -9.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "OK"
+
+[node name="btnCancel" type="Button" parent="popSettings"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -290.0
+offset_top = -40.0
+offset_right = -200.0
+offset_bottom = -9.0
+grow_horizontal = 0
+grow_vertical = 0
+text = " Cancel "
+
 [node name="GameUI" type="CanvasLayer" parent="."]
 script = ExtResource("10_0mwoa")
 step = 16
 
-[node name="btnNew" type="Button" parent="GameUI"]
-offset_left = 1485.0
-offset_top = 10.0
-offset_right = 1560.0
-offset_bottom = 81.0
-icon = ExtResource("11_ehsup")
+[node name="pnlScore" type="Panel" parent="GameUI"]
+offset_left = 16.0
+offset_top = 968.0
+offset_right = 419.0
+offset_bottom = 1071.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ck3d1")
+script = ExtResource("18_m2w67")
 
-[node name="btnLoad" type="Button" parent="GameUI"]
-offset_left = 1552.0
+[node name="sprPuzzle" type="Sprite2D" parent="GameUI/pnlScore"]
+texture_filter = 1
+position = Vector2(5, 8)
+texture = ExtResource("20_bw7a2")
+centered = false
+
+[node name="lblPoints1" type="Label" parent="GameUI/pnlScore"]
+layout_mode = 0
+offset_left = 132.0
+offset_top = 16.0
+offset_right = 396.0
+offset_bottom = 43.0
+theme_type_variation = &"LargeFont"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "2400 Points"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="lblPoints2" type="Label" parent="GameUI/pnlScore"]
+layout_mode = 0
+offset_left = 109.0
+offset_top = 59.0
+offset_right = 397.0
+offset_bottom = 86.0
+theme_type_variation = &"LargeFont"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "1/2 Hints"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="lblTitle" type="Label" parent="GameUI"]
+offset_left = 1516.0
 offset_top = 10.0
-offset_right = 1627.0
-offset_bottom = 81.0
-icon = ExtResource("12_5o0s6")
+offset_right = 1903.0
+offset_bottom = 169.0
+theme_type_variation = &"LargeFont"
+theme_override_colors/font_color = Color(0.890196, 0.890196, 0.890196, 1)
+text = "No Game"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="pnlPlayerTop" type="Panel" parent="GameUI"]
+offset_left = 1528.0
+offset_top = 188.0
+offset_right = 1933.0
+offset_bottom = 228.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_3n8gr")
+script = ExtResource("17_di116")
+
+[node name="sprType" type="Sprite2D" parent="GameUI/pnlPlayerTop"]
+position = Vector2(1, 0)
+scale = Vector2(0.9, 0.9)
+texture = ExtResource("32_ho85t")
+centered = false
+region_enabled = true
+region_rect = Rect2(240, 40, 40, 40)
+
+[node name="lblName" type="Label" parent="GameUI/pnlPlayerTop"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 8.0
+offset_right = 274.0
+offset_bottom = 32.0
+vertical_alignment = 1
+
+[node name="lblSkill" type="Label" parent="GameUI/pnlPlayerTop"]
+layout_mode = 0
+offset_left = 270.0
+offset_top = 8.0
+offset_right = 367.0
+offset_bottom = 33.0
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="pnlPlayerBottom" type="Panel" parent="GameUI"]
+offset_left = 1528.0
+offset_top = 227.0
+offset_right = 1933.0
+offset_bottom = 267.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_1epvs")
+script = ExtResource("17_di116")
+
+[node name="sprType" type="Sprite2D" parent="GameUI/pnlPlayerBottom"]
+position = Vector2(1, 0)
+scale = Vector2(0.9, 0.9)
+texture = ExtResource("32_ho85t")
+centered = false
+region_enabled = true
+region_rect = Rect2(240, 40, 40, 40)
+
+[node name="lblName" type="Label" parent="GameUI/pnlPlayerBottom"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 8.0
+offset_right = 274.0
+offset_bottom = 32.0
+vertical_alignment = 1
+
+[node name="lblSkill" type="Label" parent="GameUI/pnlPlayerBottom"]
+layout_mode = 0
+offset_left = 270.0
+offset_top = 8.0
+offset_right = 367.0
+offset_bottom = 33.0
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="btnNew" type="Button" parent="GameUI"]
+offset_left = 32.0
+offset_top = 180.0
+offset_right = 118.0
+offset_bottom = 263.0
+icon = ExtResource("23_vurwe")
+flat = true
+
+[node name="btnNewPuzzle" type="Button" parent="GameUI"]
+offset_left = 32.0
+offset_top = 265.0
+offset_right = 118.0
+offset_bottom = 348.0
+icon = ExtResource("24_s2205")
+flat = true
+
+[node name="btnOpen" type="Button" parent="GameUI"]
+offset_left = 32.0
+offset_top = 350.0
+offset_right = 118.0
+offset_bottom = 433.0
+icon = ExtResource("25_iyhe2")
+flat = true
 
 [node name="btnSave" type="Button" parent="GameUI"]
-offset_left = 1619.0
-offset_top = 10.0
-offset_right = 1694.0
-offset_bottom = 81.0
+offset_left = 32.0
+offset_top = 435.0
+offset_right = 118.0
+offset_bottom = 518.0
 disabled = true
-icon = ExtResource("15_pwrnu")
+icon = ExtResource("26_ayax4")
+flat = true
 
 [node name="btnRewind" type="Button" parent="GameUI"]
-offset_left = 1686.0
-offset_top = 10.0
-offset_right = 1761.0
-offset_bottom = 81.0
+offset_left = 32.0
+offset_top = 520.0
+offset_right = 118.0
+offset_bottom = 603.0
 disabled = true
-icon = ExtResource("17_fpd0j")
+icon = ExtResource("27_jv8pw")
+flat = true
 
 [node name="btnPause" type="Button" parent="GameUI"]
-offset_left = 1753.0
-offset_top = 10.0
-offset_right = 1828.0
-offset_bottom = 81.0
+offset_left = 32.0
+offset_top = 605.0
+offset_right = 118.0
+offset_bottom = 688.0
 disabled = true
-icon = ExtResource("16_arl5w")
+icon = ExtResource("28_ywkm3")
+flat = true
 
 [node name="btnAdvance" type="Button" parent="GameUI"]
-offset_left = 1820.0
-offset_top = 10.0
-offset_right = 1895.0
-offset_bottom = 81.0
+offset_left = 32.0
+offset_top = 690.0
+offset_right = 118.0
+offset_bottom = 773.0
 disabled = true
-icon = ExtResource("21_12fke")
+icon = ExtResource("29_6dddg")
+flat = true
+
+[node name="btnHelp" type="Button" parent="GameUI"]
+offset_left = 32.0
+offset_top = 775.0
+offset_right = 118.0
+offset_bottom = 858.0
+disabled = true
+icon = ExtResource("30_nm5rb")
+flat = true
 
 [node name="lblHistory" type="RichTextLabel" parent="GameUI"]
-offset_left = 1490.0
-offset_top = 102.0
-offset_right = 1894.0
-offset_bottom = 903.0
-theme_override_fonts/normal_font = SubResource("FontVariation_h0o2n")
-theme_override_font_sizes/normal_font_size = 16
+offset_left = 1528.0
+offset_top = 271.0
+offset_right = 1897.0
+offset_bottom = 861.0
+theme_override_constants/line_separation = 8
 scroll_following = true
 
 [node name="lblCmd" type="Label" parent="GameUI"]
-offset_left = 1503.0
-offset_top = 984.0
-offset_right = 1591.0
-offset_bottom = 1006.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
+offset_left = 1539.0
+offset_top = 932.0
+offset_right = 1627.0
+offset_bottom = 954.0
 theme_override_font_sizes/font_size = 20
 text = "CMD>"
 
 [node name="txtCmd" type="LineEdit" parent="GameUI"]
-offset_left = 1591.0
-offset_top = 968.0
-offset_right = 1889.0
-offset_bottom = 1016.0
+offset_left = 1620.0
+offset_top = 918.0
+offset_right = 1894.0
+offset_bottom = 961.0
 focus_neighbor_top = NodePath("../btnNew")
 theme_override_colors/font_color = Color(0.754947, 0.837007, 1, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 20
 
 [node name="lblError" type="Label" parent="GameUI"]
-offset_left = 1493.0
-offset_top = 901.0
-offset_right = 1905.0
-offset_bottom = 960.0
-theme_override_colors/font_color = Color(1, 0, 0, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 16
+offset_left = 1529.0
+offset_top = 862.0
+offset_right = 1899.0
+offset_bottom = 911.0
+theme_override_colors/font_color = Color(0.8, 0, 0, 1)
 horizontal_alignment = 1
 vertical_alignment = 2
 autowrap_mode = 3
 
 [node name="lblWhiteClock" type="Label" parent="GameUI"]
-offset_left = 1485.0
-offset_top = 1039.0
-offset_right = 1692.0
-offset_bottom = 1073.0
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 22
+visible = false
+offset_left = 1609.0
+offset_top = 976.0
+offset_right = 1897.0
+offset_bottom = 1023.0
+theme_type_variation = &"HugeFont"
 text = "0:00:00.0
 "
+horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="lblBlackClock" type="Label" parent="GameUI"]
-offset_left = 1701.0
-offset_top = 1039.0
-offset_right = 1901.0
+visible = false
+offset_left = 1609.0
+offset_top = 1026.0
+offset_right = 1897.0
 offset_bottom = 1073.0
+theme_type_variation = &"HugeFont"
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 22
 text = "0:00:00.0"
+horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="voice" type="AudioStreamPlayer" parent="GameUI"]
@@ -583,43 +918,49 @@ volume_db = 6.0
 max_polyphony = 2
 
 [node name="pnlCaptured" type="Panel" parent="GameUI"]
-offset_left = 1425.0
-offset_top = 80.0
-offset_right = 1465.0
-offset_bottom = 1040.0
+offset_left = 263.0
+offset_top = 150.0
+offset_right = 407.0
+offset_bottom = 930.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_aqyli")
 script = ExtResource("23_422qp")
 
 [node name="Piece" type="Sprite2D" parent="GameUI/pnlCaptured"]
-position = Vector2(20, 20)
-texture = ExtResource("23_e8kc2")
+position = Vector2(40, 40)
+scale = Vector2(2, 2)
+texture = ExtResource("32_ho85t")
 region_enabled = true
 region_rect = Rect2(0, 0, 40, 40)
 script = ExtResource("25_4lao4")
 
+[node name="btnSettings" type="Button" parent="GameUI"]
+offset_left = 1865.0
+offset_right = 1937.0
+offset_bottom = 72.0
+scale = Vector2(0.75, 0.75)
+icon = ExtResource("33_a1gye")
+flat = true
+
 [node name="popEnd" type="Panel" parent="."]
 visible = false
 material = SubResource("CanvasItemMaterial_nno4e")
-offset_left = 323.0
+offset_left = 560.0
 offset_top = 294.0
-offset_right = 1128.0
+offset_right = 1365.0
 offset_bottom = 807.0
 script = ExtResource("23_6dbbk")
 
-[node name="sequence" type="Sprite2D" parent="popEnd"]
+[node name="background" type="Sprite2D" parent="popEnd"]
 position = Vector2(402, 256)
-scale = Vector2(4, 4)
-texture = ExtResource("23_urpj6")
-hframes = 4
-vframes = 4
+texture = ExtResource("34_gycr6")
 
 [node name="black" type="Sprite2D" parent="popEnd"]
 visible = false
-position = Vector2(103, 437)
+position = Vector2(103, 420)
 texture = ExtResource("25_3rvpk")
 
 [node name="white" type="Sprite2D" parent="popEnd"]
-position = Vector2(103, 437)
+position = Vector2(103, 420)
 texture = ExtResource("26_8s3l2")
 
 [node name="status" type="Label" parent="popEnd"]
@@ -628,10 +969,9 @@ offset_left = 214.0
 offset_top = 37.0
 offset_right = 594.0
 offset_bottom = 75.0
+theme_type_variation = &"HugeFont"
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 25
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 38
+theme_override_constants/outline_size = 12
 text = "Checkmate"
 horizontal_alignment = 1
 
@@ -641,10 +981,9 @@ offset_left = 238.0
 offset_top = 432.0
 offset_right = 618.0
 offset_bottom = 470.0
+theme_type_variation = &"HugeFont"
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 25
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 38
+theme_override_constants/outline_size = 12
 text = "White Wins"
 horizontal_alignment = 1
 
@@ -653,20 +992,19 @@ volume_db = 3.0
 
 [node name="popPromote" type="Panel" parent="."]
 visible = false
-offset_left = 400.0
-offset_top = 445.0
-offset_right = 1105.0
-offset_bottom = 668.0
+offset_left = 610.0
+offset_top = 430.0
+offset_right = 1315.0
+offset_bottom = 653.0
 script = ExtResource("27_e8o3p")
 
 [node name="Label" type="Label" parent="popPromote"]
 layout_mode = 0
 offset_left = 4.0
 offset_top = 10.0
-offset_right = 628.0
-offset_bottom = 33.0
-theme_override_fonts/font = ExtResource("3_7nhen")
-theme_override_font_sizes/font_size = 16
+offset_right = 682.0
+offset_bottom = 37.0
+theme_type_variation = &"LargeFont"
 text = "Choose a piece to promote your Pawn to:"
 
 [node name="Cancel" type="Button" parent="popPromote"]
@@ -675,7 +1013,6 @@ offset_left = 229.0
 offset_top = 181.0
 offset_right = 493.0
 offset_bottom = 212.0
-theme_override_fonts/font = ExtResource("3_7nhen")
 text = "Cancel this Move
 "
 
@@ -712,12 +1049,15 @@ offset_bottom = 168.0
 [connection signal="canceled" from="popSave" to="popSave" method="_on_canceled"]
 [connection signal="confirmed" from="popSave" to="popSave" method="_on_confirmed"]
 [connection signal="pressed" from="GameUI/btnNew" to="GameUI" method="_on_btn_new_pressed"]
-[connection signal="pressed" from="GameUI/btnLoad" to="GameUI" method="_on_btn_load_pressed"]
+[connection signal="pressed" from="GameUI/btnNewPuzzle" to="GameUI" method="_on_btn_puzzle_pressed"]
+[connection signal="pressed" from="GameUI/btnOpen" to="GameUI" method="_on_btn_load_pressed"]
 [connection signal="pressed" from="GameUI/btnSave" to="GameUI" method="_on_btn_save_pressed"]
 [connection signal="pressed" from="GameUI/btnRewind" to="GameUI" method="_on_btn_rewind_pressed"]
 [connection signal="pressed" from="GameUI/btnPause" to="GameUI" method="_on_btn_pause_pressed"]
 [connection signal="pressed" from="GameUI/btnAdvance" to="GameUI" method="_on_btn_advance_pressed"]
+[connection signal="pressed" from="GameUI/btnHelp" to="GameUI" method="_on_btn_hint_pressed"]
 [connection signal="text_submitted" from="GameUI/txtCmd" to="GameUI" method="_on_txt_cmd_text_submitted"]
+[connection signal="pressed" from="GameUI/btnSettings" to="GameUI" method="_on_btn_settings_pressed"]
 [connection signal="pressed" from="popPromote/Cancel" to="popPromote" method="_on_cancel_pressed"]
 [connection signal="pressed" from="popPromote/Queen" to="popPromote" method="_on_queen_pressed"]
 [connection signal="pressed" from="popPromote/Rook" to="popPromote" method="_on_rook_pressed"]

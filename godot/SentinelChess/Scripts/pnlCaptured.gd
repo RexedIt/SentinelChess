@@ -1,22 +1,32 @@
 extends Panel
 
+@onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var PieceProto : Sprite2D = get_node('Piece')
 
-const piece_arr_size = 27
-const piece_delta = 36
+const piece_arr_size = 26	
+const piece_delta = 30	
 var piece_arr = []
 var bottom_color : SentinelChess.ChessColor = SentinelChess.White
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	applyskin()
 	piece_arr.resize(piece_arr_size)
 	PieceProto.visible = false
 	for y in piece_arr_size:
 		var po = PieceProto.duplicate()
 		po.position.y = piece_delta*y
+		if (y % 2) == 1:
+			po.position.x = 95
 		add_child(po)
 		piece_arr[y]=po
 
+func applyskin():
+	PieceProto.texture = skin.sprite('SmallPieces.png')
+	for piece in piece_arr:
+		if piece:
+			piece.texture = PieceProto.texture
+			
 func setup(bc : SentinelChess.ChessColor):
 	bottom_color = bc;
 

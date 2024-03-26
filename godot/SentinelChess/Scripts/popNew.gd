@@ -1,14 +1,16 @@
 extends Window
 
 @export var cancelled : bool = false
+var _title : String
 var _white : ChessPlayer
 var _black : ChessPlayer
 var _clock : ChessClock
 
+@onready var txtTitle : TextEdit = get_node("MC/VC/HC/txtTitle")
 @onready var btnCancel : Button = get_node("btnCancel")
 @onready var btnOK : Button = get_node("btnOK")
 @onready var optNone : CheckBox = get_node("MC/VC/Clock/HC/VC/optNone")
-@onready var optSuddenDeath : CheckBox = get_node("MC/VC/Clock/HC/VC/optNone")
+@onready var optSuddenDeath : CheckBox = get_node("MC/VC/Clock/HC/VC/optSuddenDeath")
 @onready var optIncrement : CheckBox = get_node("MC/VC/Clock/HC/VC/optIncrement")
 @onready var optBronstein : CheckBox = get_node("MC/VC/Clock/HC/VC/optBronstein")
 @onready var optSimple : CheckBox = get_node("MC/VC/Clock/HC/VC/optSimple")
@@ -25,10 +27,10 @@ func _ready():
 	btnOK.pressed.connect(_OnOK)
 	chkSame.toggled.connect(_OnSame)
 	optNone.toggled.connect(_OnType)
-	optSuddenDeath.toggled.connect(_OnType)
-	optIncrement.toggled.connect(_OnType)
-	optBronstein.toggled.connect(_OnType)
-	optSimple.toggled.connect(_OnType)
+	optSuddenDeath.toggled.connect(_OnType1)
+	optIncrement.toggled.connect(_OnType2)
+	optBronstein.toggled.connect(_OnType3)
+	optSimple.toggled.connect(_OnType4)
 			
 	visibility_changed.connect(_VisibilityChanged)
 	_white = ChessPlayer.new()
@@ -41,19 +43,21 @@ func _process(delta):
 	pass
 
 # outbound signal
-signal on_closed(_cancelled, _white, _black, _clock)
+signal on_closed(_cancelled, _text, _white, _black, _clock)
 
 func _VisibilityChanged():
 	if (visible):
+		txtTitle.text = "New Game"
 		initializePlayer('White','',600,'Human')
 		initializePlayer('Black','Computer',600,'Computer')
 		initializeClock(ChessClock.ccNone, 60, 10)
 		cancelled = false
 	else:
+		_title = txtTitle.text
 		readPlayer(_white,'White')
 		readPlayer(_black,'Black')
 		readClock(_clock)
-		on_closed.emit(cancelled, _white, _black, _clock)
+		on_closed.emit(cancelled, _title, _white, _black, _clock)
 	
 func _OnCancel():
 	cancelled = true
@@ -71,6 +75,15 @@ func _OnSame(ch):
 		AllowBlack.visible = true
 		AddBlack.visible = optIncrement.button_pressed or optBronstein.button_pressed or optSimple.button_pressed	
 
+func _OnType1(ch):
+	_OnType(ch)
+func _OnType2(ch):
+	_OnType(ch)
+func _OnType3(ch):
+	_OnType(ch)
+func _OnType4(ch):
+	_OnType(ch)
+	
 func _OnType(ch):
 	TVC.visible = !optNone.button_pressed
 	AllowWhite.visible = !optNone.button_pressed

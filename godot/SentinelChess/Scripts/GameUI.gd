@@ -1,36 +1,89 @@
 extends CanvasLayer
 
+@onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var game_manager : SentinelChess = get_parent().get_node('SentinelChess')
+
+@onready var pnlScore : Panel = get_node('pnlScore')
+@onready var lblTitle : Label = get_node('lblTitle')
+@onready var pnlPlayerTop : Panel = get_node('pnlPlayerTop')
+@onready var pnlPlayerBottom : Panel = get_node('pnlPlayerBottom')
+@onready var pnlCaptured : Panel = get_node('pnlCaptured')
 @onready var lblHistory : RichTextLabel = get_node('lblHistory')
 @onready var txtCmd : LineEdit = get_node('txtCmd')
 @onready var lblError : Label = get_node('lblError')
 @onready var lblCmd : Label = get_node('lblCmd')
+
+@onready var btnNew : Button = get_node('btnNew')
+@onready var btnNewPuzzle : Button = get_node('btnNewPuzzle')
+@onready var btnOpen : Button = get_node('btnOpen')
 @onready var btnSave : Button = get_node('btnSave')
 @onready var btnRewind : Button = get_node('btnRewind')
-@onready var btnAdvance : Button = get_node('btnAdvance')
 @onready var btnPause : Button = get_node('btnPause')
+@onready var btnAdvance : Button = get_node('btnAdvance')
+@onready var btnHelp : Button = get_node('btnHelp')
+@onready var btnSettings : Button = get_node('btnSettings')
 @onready var lblWhiteClock : Label = get_node('lblWhiteClock')
 @onready var lblBlackClock : Label = get_node('lblBlackClock')
 @onready var voice : AudioStreamPlayer = get_node('voice')
-@onready var MoveSound = preload('res://Sound/SFX/Open_01.mp3')
-@onready var PromoteSound = preload('res://Sound/SFX/Collect_Point_01.mp3')
-@onready var PlayTexture : Texture2D = preload('res://Sprites/RetroWood/Play.jpg')
+@onready var MoveSound
+@onready var PromoteSound
 @export var step : int
 
 const GameState = preload("res://Scripts/GameState.gd").GameState_
 
+var PlayTexture : Texture2D;
 var is_idle : bool = false
 var PauseTexture : Texture2D
-
+var meta : ChessMeta = null
+var puzzle : bool = false
+var hints : int = 0
+var points : int = 0
+var white_points : int = 0
+var black_points : int = 0
 var voice_queue = []
 var do_voice : bool = false
 var do_sfx : bool = false
+var loaded: bool = false
+var skinned: bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	# do some skinning
+	loaded = true	
+	if not skinned:
+		applyskin()
 	txtCmd.grab_focus()
+		
+func applyskin():
+	# applied heirarchically from game manager
+	if not loaded:
+		return
+	btnNew.icon = skin.sprite('New.png')
+	btnNewPuzzle.icon = skin.sprite('NewPuzzle.png')
+	btnOpen.icon = skin.sprite('Open.png')
+	btnSave.icon = skin.sprite('Save.png')
+	btnRewind.icon = skin.sprite('Rewind.png')
+	btnPause.icon = skin.sprite('Pause.png')
+	btnAdvance.icon = skin.sprite('Advance.png')
+	btnHelp.icon = skin.sprite('Help.png')
+	btnSettings.icon = skin.sprite('Gear.png')
 	PauseTexture = btnPause.icon
-
+	PlayTexture = skin.sprite('Play.png')
+	MoveSound = skin.commonsound('Slide.mp3')
+	PromoteSound = skin.sound('Promote.mp3')
+	lblWhiteClock.set_theme(skin.theme)
+	lblBlackClock.set_theme(skin.theme)
+	lblTitle.set_theme(skin.theme)
+	lblHistory.set_theme(skin.theme)
+	lblCmd.set_theme(skin.theme)
+	txtCmd.set_theme(skin.theme)
+	pnlScore.applyskin()
+	pnlPlayerTop.applyskin()
+	pnlPlayerBottom.applyskin()
+	pnlCaptured.applyskin()
+	
+	skinned = true
+	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
@@ -50,6 +103,45 @@ func _physics_process(delta):
 			lblError.modulate.a = smooth
 	clock_update(delta)
 	play_voice()
+
+func update_players(turnc : SentinelChess.ChessColor):
+	# who's on top?
+	var botc : SentinelChess.ChessColor
+	if game_manager.is_local_active(turnc):
+		botc = turnc
+	else:
+		botc = game_manager.preferred_board_color()
+	if botc == SentinelChess.White:
+		pnlPlayerTop.refreshplayer(SentinelChess.Black, meta.black())
+		pnlPlayerBottom.refreshplayer(botc, meta.white())
+	else:
+		pnlPlayerTop.refreshplayer(SentinelChess.White, meta.white())
+		pnlPlayerBottom.refreshplayer(botc, meta.black())
+	
+func initialize(msg : String):
+	meta = game_manager.get_meta()
+	var tc = game_manager.turn_color()
+	lblTitle.text = meta.title()
+	puzzle = meta.puzzle()
+	hints = meta.hints()
+	points = meta.points()
+	white_points = meta.white_points()
+	black_points = meta.black_points()
+	pnlScore.visible = true
+	if puzzle:
+		pnlScore.setPuzzleValues(points,hints,true)
+	else:
+		pnlScore.setScoreValues(white_points,black_points);
+	btnHelp.disabled = (not puzzle) or hints <= 0
+	btnRewind.disabled = puzzle
+	btnPause.disabled = puzzle
+	btnAdvance.disabled = puzzle
+	lblWhiteClock.visible = false
+	lblBlackClock.visible = false
+	clear_history()
+	append_history(msg)
+	#update_players(tc)
+	announceTurn(tc)
 	
 func clear_history():
 	lblHistory.clear()
@@ -104,13 +196,8 @@ func refreshPrompt(col : SentinelChess.ChessColor):
 	if col == SentinelChess.ChessColor.Black:
 		crgb = Color(0,0,0)
 	lblCmd.set('theme_override_colors/font_color', crgb)	
+	update_players(col)
 	
-func append_load(msg: String):
-	append_history('Load Game - ' + msg)
-	# for last move info
-	#if game_manager.playno()>1:
-	#	append_move(game_manager.playno()-1, game_manager.lastmove(), game_manager.get_board(), game_manager.lastcolor())
-		
 func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.ChessColor):
 	var color : String = 'white'
 	if col == SentinelChess.ChessColor.Black:
@@ -124,6 +211,7 @@ func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.Che
 	if (b.check_state(SentinelChess.White)):
 		append_history('White in Check.', 'white')
 		add_voice('Check')
+		
 # UI Handlers
 func show_error(msg : String):
 	errortime = 3
@@ -151,7 +239,19 @@ func _on_btn_pause_pressed():
 func _on_btn_advance_pressed():
 	handle_advance()
 
+func _on_btn_puzzle_pressed():
+	game_manager._on_load_puzzle()
+
+func _on_btn_hint_pressed():
+	handle_hint()
+
+func _on_btn_settings_pressed():
+	game_manager._on_settings()
+
 func handle_goto(turn_no: int) -> bool:
+	if puzzle:
+		show_error('In Puzzle')
+		true
 	var err : int = game_manager.goto_turn(turn_no)
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
@@ -161,6 +261,9 @@ func handle_goto(turn_no: int) -> bool:
 	return true
 	
 func handle_rewind() -> bool:
+	if puzzle:
+		show_error('In Puzzle')
+		true
 	var err : int = game_manager.rewind_game()
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
@@ -170,6 +273,9 @@ func handle_rewind() -> bool:
 	return true
 
 func handle_advance() -> bool:
+	if puzzle:
+		show_error('In Puzzle')
+		true
 	var err : int = game_manager.advance_game()
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
@@ -177,8 +283,24 @@ func handle_advance() -> bool:
 	append_history('Advance')
 	#game_manager.refresh_turn(game_manager.get_board())
 	return true
+
+func refreshhints():
+	hints = game_manager.hints()
+	points = game_manager.win_points(SentinelChess.cNone)
+	btnHelp.disabled =(not puzzle) or hints <= 0
+	pnlScore.setPuzzleValues(points,hints,false)
+
+func handle_hint() -> bool:
+	var h : String = game_manager.hintstr()
+	append_history('*** HINT ***', 'darkgreen')
+	append_history(h, 'darkgreen')
+	refreshhints()
+	return true
 	
 func handle_pause():
+	if puzzle:
+		show_error('In Puzzle')
+		true
 	var err : int = game_manager.pause_game()
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
@@ -203,6 +325,9 @@ func _on_txt_cmd_text_submitted(new_text):
 		'N':
 			_on_btn_new_pressed()
 			handled = true
+		'Z':
+			_on_btn_puzzle_pressed()
+			handled = true
 		'M':
 			handled = handle_move(cmd.get_slice(' ',1))
 		'L':
@@ -223,6 +348,11 @@ func _on_txt_cmd_text_submitted(new_text):
 			handled = handle_play()
 		'I':
 			handled = handle_pause()
+		'H':
+			if hints <=0:
+				show_error('No Hint Available')
+			else:
+				handled = handle_hint()
 		# a move?
 		_:
 			handled = handle_move(cmd)
@@ -246,9 +376,7 @@ func handle_load(filename: String) -> bool:
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
 		return false
-	clear_history()
-	append_load(toload)
-	announceTurn(game_manager.turn_color())
+	initialize('Load Game - ' + toload)
 	#game_manager.refresh_board()
 	game_manager.set_idle(true)
 	return true
@@ -261,6 +389,13 @@ func handle_save(filename: String) -> bool:
 		return false
 	append_history('Save Game - ' + tosave)
 	return true
+	
+func incorrectmove():
+	refreshhints()
+	if hints > 0:
+		add_voice('IncorrectMoveHintUsed')
+	else:
+		add_voice('IncorrectMove')
 	
 func handle_move(cmd: String) -> bool:
 	var c : SentinelChess.ChessColor = game_manager.turn_color()
@@ -281,8 +416,10 @@ func time_str(t : int) -> String:
 		return ""
 	
 func clock_turn(col : SentinelChess.ChessColor, wt : int, bt : int):
+	lblWhiteClock.visible = wt > 0
+	lblBlackClock.visible = bt > 0
 	lblWhiteClock.text = time_str(wt)
-	lblBlackClock.text = time_str(wt)
+	lblBlackClock.text = time_str(bt)
 	countcol = col
 	if col == SentinelChess.White:
 		countdown = float(wt) / 1000.0
@@ -308,15 +445,18 @@ func set_idle(b : bool):
 func gamestate(gs):
 	if btnRewind:
 		var no_game = gs < GameState.PLAY
-		btnRewind.disabled = no_game
-		btnPause.disabled = no_game
-		btnAdvance.disabled = no_game
+		var puzzle = game_manager.puzzle()
+		btnRewind.disabled = no_game or puzzle
+		btnPause.disabled = no_game or puzzle
+		btnAdvance.disabled = no_game or puzzle
+		btnHelp.disabled = no_game or (not puzzle) or hints <= 0
 		btnSave.disabled = no_game
 		do_voice = game_manager.has_local()
 		do_sfx = do_voice
 		
 func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
 	append_history(game_manager.gamestatestr(s))
+	countdown = -1.0
 	match s:
 		SentinelChess.CheckMate:
 			add_voice('CheckMate')
@@ -358,8 +498,7 @@ func play_voice():
 		if !voice.playing:
 			if has_voice():
 				var s = pop_voice()
-				var r = 'res://Sound/Voice/' + s + '.wav'
-				voice.stream = load(r)
+				voice.stream = skin.voice(s + '.mp3')
 				voice.play()
 				
 func play_move_sfx():

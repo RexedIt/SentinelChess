@@ -9,11 +9,11 @@ namespace chess
     chesscomputer::chesscomputer()
     {
         m_level = 3;
-        m_cancel = false;
+        m_name = "Computer";
         m_playertype = t_computer;
         m_listenertype = cl_computer;
+        m_cancel = false;
         m_thread_running = false;
-        m_name = "Computer";
     }
 
     chesscomputer::chesscomputer(color_e color, std::string name, int32_t skill)
@@ -24,12 +24,12 @@ namespace chess
             m_level = 1;
         if (m_level > 6)
             m_level = 6;
-        m_cancel = false;
         m_playertype = t_computer;
         m_listenertype = cl_computer;
-        m_thread_running = false;
         m_name = name;
         m_skill = skill;
+        m_cancel = false;
+        m_thread_running = false;
     }
 
     chesscomputer::~chesscomputer()

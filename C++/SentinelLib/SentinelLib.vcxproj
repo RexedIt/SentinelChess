@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="chessboard.cpp" />
+    <ClCompile Include="chessclock.cpp" />
     <ClCompile Include="chesscommon.cpp" />
     <ClCompile Include="chesscomputer.cpp" />
     <ClCompile Include="chessgame.cpp" />
@@ -156,10 +157,13 @@
     <ClCompile Include="chessmove.cpp" />
     <ClCompile Include="chesspiece.cpp" />
     <ClCompile Include="chessplayer.cpp" />
+    <ClCompile Include="chesspuzzle.cpp" />
+    <ClCompile Include="chesspuzzleplayer.cpp" />
     <ClCompile Include="chessturn.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="chessboard.h" />
+    <ClInclude Include="chessclock.h" />
     <ClInclude Include="chesscommon.h" />
     <ClInclude Include="chesscomputer.h" />
     <ClInclude Include="chessgame.h" />
@@ -168,6 +172,8 @@
     <ClInclude Include="chessmove.h" />
     <ClInclude Include="chesspiece.h" />
     <ClInclude Include="chessplayer.h" />
+    <ClInclude Include="chesspuzzle.h" />
+    <ClInclude Include="chesspuzzleplayer.h" />
     <ClInclude Include="chessturn.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

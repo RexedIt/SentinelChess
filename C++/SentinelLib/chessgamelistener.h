@@ -32,6 +32,8 @@ namespace chess
         chessevent() { ; }
         chessevent(chesseventtype e) { etype = e; }
         chessevent(const chessevent &e);
+        void operator=(const chessevent &e);
+        void copy(const chessevent &e);
         chesseventtype etype = ce_empty;
         int16_t turn_no = 0;
         bool check = false;

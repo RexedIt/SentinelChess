@@ -6,8 +6,15 @@
 /C++/.vs
 /C++/**/*.user
 /C++/SentinelGodot/.sconsign.dblite
+/C#/**/.vs
+/C#/**/bin/
+/C#/**/obj/
 /godot/Export
 /.vs
 /Assets
 C++/SentinelGodot/demo/bin/libgdsentinel*.*
 godot/SentinelChess/bin/libgdsentinel*.*
+C++/SentinelGodot/vc140.pdb
+C++/SentinelGodot/vc140.pdb
+godot/SentinelChess/bin/vc140.pdb
+

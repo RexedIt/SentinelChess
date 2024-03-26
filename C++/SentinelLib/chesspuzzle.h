@@ -13,7 +13,8 @@ namespace chess
         void operator=(const chesspuzzle &);
 
         error_e load_line(std::string line);
-        error_e load_random(std::string filename, int rating);
+        error_e load_random(std::string filename, std::string keywords, int rating);
+        error_e load_specific(std::string filename, std::string puzzleid);
 
         std::string puzzleid;
         std::string fen;
@@ -23,10 +24,8 @@ namespace chess
         int popularity;
         int nbplays;
         std::string themes;
-        std::string gameurl;
         std::string openingtags;
 
-    private:
-        std::string interpret_opening(std::string);
+        std::string title();
     };
 }

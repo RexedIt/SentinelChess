@@ -6,6 +6,7 @@
 #include "chesscommon.h"
 #include "chesspiece.h"
 #include "chessboard.h"
+#include "chessmove.h"
 
 namespace chess
 {
@@ -25,7 +26,7 @@ namespace chess
         case e_missing_move:
             return "Must include move";
         case e_invalid_move:
-            return "Invalid Move, should be in form XX-XX or PGN Move format.";
+            return "Invalid Move";
         case e_failed_move:
             return "Move generation failed";
         case e_missing_filename:
@@ -45,7 +46,7 @@ namespace chess
         case e_missing_coord:
             return "Must include coordinate";
         case e_invalid_coord:
-            return "Invalid Move, should be in form XX with first digit A-H, second 1-8";
+            return "Invalid Coordinate";
         case e_missing_piece:
             return "Must include piece";
         case e_missing_coord_piece:
@@ -88,15 +89,21 @@ namespace chess
             return "Listener already registered";
         case e_listener_not_found:
             return "Listener not found";
+        case e_none_found:
+            return "Nothing found";
+        case e_incorrect_move:
+            return "Incorrect move";
         default:
             return "Unknown Error";
         }
     }
 
+    const char *c_open_board = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
     chessclock_s::chessclock_s()
     {
         ctype = cc_none;
-        for (int i = 0; i < 0; i++)
+        for (int i = 0; i < 2; i++)
         {
             allowedms[i] = 0;
             remainms[i] = 0;
@@ -107,7 +114,7 @@ namespace chess
     chessclock_s::chessclock_s(const chessclock_s &c)
     {
         ctype = c.ctype;
-        for (int i = 0; i < 0; i++)
+        for (int i = 0; i < 2; i++)
         {
             allowedms[i] = c.allowedms[i];
             remainms[i] = c.remainms[i];
@@ -118,7 +125,7 @@ namespace chess
     void chessclock_s::operator=(const chessclock_s &c)
     {
         ctype = c.ctype;
-        for (int i = 0; i < 0; i++)
+        for (int i = 0; i < 2; i++)
         {
             allowedms[i] = c.allowedms[i];
             remainms[i] = c.remainms[i];
@@ -130,7 +137,7 @@ namespace chess
     {
         if (ctype != c.ctype)
             return false;
-        for (int i = 0; i < 0; i++)
+        for (int i = 0; i < 2; i++)
         {
             if (allowedms[i] != c.allowedms[i])
                 return false;
@@ -145,6 +152,38 @@ namespace chess
     int color_idx(color_e c)
     {
         return (c == c_white) ? 0 : 1;
+    }
+
+    std::string clock_type_str(chessclock_e ct)
+    {
+        switch (ct)
+        {
+        case cc_suddendeath:
+            return "Sudden Death";
+        case cc_increment:
+            return "Increment";
+        case cc_bronstein_delay:
+            return "Bronstein Delay";
+        case cc_simple_delay:
+            return "Simple Delay";
+        default:
+            return "None";
+        }
+    }
+
+    chessclock_e str_clock_type(std::string ct)
+    {
+        chessclock_e ret = cc_none;
+        std::string ctu = uppercase(ct);
+        if (ctu == "SUDDEN DEATH")
+            ret = cc_suddendeath;
+        else if (ctu == "INCREMENT")
+            ret = cc_increment;
+        else if (ctu == "BRONSTEIN DELAY")
+            ret = cc_bronstein_delay;
+        else if (ctu == "SIMPLE DELAY")
+            ret = cc_simple_delay;
+        return ret;
     }
 
     std::string color_str(color_e col)
@@ -282,6 +321,8 @@ namespace chess
             return "Forfeit";
         case time_up_e:
             return "Time Up";
+        case puzzle_solution_e:
+            return "Puzzle Solution";
         case terminate_e:
             return "Terminated";
         case draw_stalemate_e:
@@ -309,6 +350,8 @@ namespace chess
             return forfeit_e;
         if (gu == "TIME UP")
             return time_up_e;
+        if (gu == "PUZZLE SOLUTION")
+            return puzzle_solution_e;
         if (gu == "TERMINATED")
             return terminate_e;
         if (gu == "STALEMATE")
@@ -327,9 +370,24 @@ namespace chess
         if (s.length() != 2)
             return false;
         s = lowercase(s);
-        c.x = (int8_t)(s[0] - 'a');
-        c.y = (int8_t)(s[1] - '1');
-        return true;
+        int8_t x = (int8_t)(s[0] - 'a');
+        int8_t y = (int8_t)(s[1] - '1');
+        if (in_range(y, x))
+        {
+            c.x = (int8_t)(s[0] - 'a');
+            c.y = (int8_t)(s[1] - '1');
+            return true;
+        }
+        return false;
+    }
+
+    bool is_coord(std::string s)
+    {
+        if (s.length() != 2)
+            return false;
+        int8_t x = (int8_t)(s[0] - 'a');
+        int8_t y = (int8_t)(s[1] - '1');
+        return in_range(y, x);
     }
 
     bool in_range(coord_s s)
@@ -365,7 +423,7 @@ namespace chess
         int32_t tenths = (t % 100) / 10;
         int32_t seconds = (t / 1000) % 60;
         int32_t minutes = (t / 60000) % 60;
-        int32_t hours = (t / 360000);
+        int32_t hours = (t / 3600000);
         sprintf_s(tbuf, 32, "%d:%2.2d:%2.2d.%d", hours, minutes, seconds, tenths);
         std::string ret(tbuf);
         return ret;
@@ -423,9 +481,9 @@ namespace chess
     }
 
     // trim from both ends of string (right then left)
-    inline std::string trim(std::string s, const char *t = ws)
+    std::string trim(std::string s)
     {
-        return ltrim(rtrim(s, t), t);
+        return ltrim(rtrim(s));
     }
 
     std::vector<std::string> split_string(std::string cmd, char div)
@@ -448,9 +506,108 @@ namespace chess
 
     uintmax_t get_file_size(std::string filename)
     {
+        std::string fixedfile = fix_path(filename);
         struct stat stat_buf;
-        uintmax_t rc = stat(filename.c_str(), &stat_buf);
+        uintmax_t rc = stat(fixedfile.c_str(), &stat_buf);
         return rc == 0 ? stat_buf.st_size : -1;
+    }
+
+    bool get_dir_exists(std::string dirname)
+    {
+        std::string fixeddir = fix_path(dirname);
+        struct stat st;
+        return (stat(fixeddir.c_str(), &st) == 0);
+    }
+
+    std::string data_folder = "..\\ChessData\\";
+
+    std::string get_data_folder()
+    {
+        return data_folder;
+    }
+
+    bool set_data_folder(std::string f)
+    {
+        if (!get_dir_exists(f))
+            return false;
+        data_folder = f;
+        return true;
+    }
+
+    std::string string_replace(std::string s, char o, char n)
+    {
+        std::string ret = s;
+        std::replace(ret.begin(), ret.end(), o, n);
+        return ret;
+    }
+
+    inline char separator()
+    {
+#ifdef _WIN32
+        return '\\';
+#else
+        return '/';
+#endif
+    }
+
+    std::string fix_path(std::string f)
+    {
+#ifdef _WIN32
+        return string_replace(f, '/', '\\');
+#else
+        return string_replace(f, '\\', '/');
+#endif
+    }
+
+    std::string data_file(std::string f)
+    {
+        if (data_folder == "")
+            return f;
+        char lc = data_folder[data_folder.length() - 1];
+        if ((lc == '\\') || (lc == '/'))
+            return fix_path(data_folder + f);
+        return fix_path(data_folder + "\\" + f);
+    }
+
+    uint32_t hash(unsigned char *b, size_t l)
+    {
+        uint32_t ret = 0;
+        uint32_t accv = 0;
+        int n = 0;
+        for (size_t i = 0; i < l; i++)
+        {
+            accv = (accv << 8) + b[i];
+            if (++n >= 4)
+            {
+                ret += (ret << 1) + (ret << 4) + (ret << 7) + (ret << 8) + (ret << 24);
+                ret ^= accv;
+                accv = 0;
+                n = 0;
+            }
+        }
+        if (n)
+        {
+            ret += (ret << 1) + (ret << 4) + (ret << 7) + (ret << 8) + (ret << 24);
+            ret ^= accv;
+        }
+        return ret;
+    }
+
+    uint32_t hash(std::vector<chessmove> moves)
+    {
+        // for moves we only want to hash the from/to elements of the move.
+        unsigned char buf[256];
+        if (moves.size() > 64)
+            return 0;
+        int p = 0;
+        for (size_t i = 0; i < moves.size(); i++)
+        {
+            buf[p++] = moves[i].p0.y;
+            buf[p++] = moves[i].p0.x;
+            buf[p++] = moves[i].p1.y;
+            buf[p++] = moves[i].p1.x;
+        }
+        return hash(buf, moves.size() * 4);
     }
 
 }

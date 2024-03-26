@@ -1,5 +1,6 @@
 #include "chessgame.h"
 #include "chesscomputer.h"
+#include "chessclock.h"
 
 namespace chess
 {
@@ -10,6 +11,13 @@ namespace chess
         m_win_color = c_none;
         m_play_pos = -1;
         m_puzzle = false;
+        m_hints = 0;
+        m_points = 0;
+    }
+
+    chessgame::~chessgame()
+    {
+        remove_clock();
     }
 
     chessboard chessgame::board()
@@ -39,7 +47,11 @@ namespace chess
         if ((m_turn.size() == 0) || (m_play_pos < 0))
         {
             chessturn m;
-            m.b.new_board();
+            m.t = -1;
+            m.b.load_xfen(m_init_board);
+            m.c = m.b.turn_color();
+            m.ch = m.b.check_state(m.c);
+            m.g = play_e;
             return m;
         }
         return m_turn[m_play_pos];
@@ -111,19 +123,25 @@ namespace chess
                 g = draw_fivefold_e;
                 m_win_color = c_none;
             }
+            // Puzzle mode
+            if (m.error == e_incorrect_move)
+            {
+                if (m_hints <= 0)
+                {
+                    m_win_color = other(col);
+                    g = puzzle_solution_e;
+                }
+            }
         }
         return g;
     }
 
     void chessgame::clock_remaining(color_e col, int32_t &wt, int32_t &bt)
     {
-        // *** NATHANAEL ***
-        // This can be the event that gets called 'on turn' that would cause you
-        // to return the current remaining times as well as internally call
-        // your method to start counting in behalf of the player designated
-        // as color_e col (c_white or c_black)
         wt = 0;
         bt = 0;
+        if (mp_clock)
+            mp_clock->time_remaining(wt, bt);
     }
 
     error_e chessgame::forfeit(color_e col)
@@ -131,21 +149,56 @@ namespace chess
         return end_game(forfeit_e, other(col));
     }
 
+    error_e chessgame::puzzle_solved(color_e col)
+    {
+        return end_game(puzzle_solution_e, other(col));
+    }
+
     error_e chessgame::move(color_e col, chessmove m0)
     {
         std::unique_lock<std::mutex> guard(m_mutex);
         if (m_state != play_e)
+        {
+            guard.unlock();
             return e_invalid_game_state;
+        }
         if (col == m_board.turn_color())
         {
-            chessmove m = m_board.attempt_move(col, m0);
-            if (m.error)
-                return m.error;
+            chessmove m;
+            if (m_puzzle)
+            {
+                m = m0;
+                std::map<int16_t, chessmove> moves = player_moves(col);
+                if (moves.count(m_play_pos + 1) == 0)
+                    m.error = e_incorrect_move;
+                else
+                {
+                    chessmove pm = moves[m_play_pos + 1];
+                    if ((pm.p0 != m0.p0) || (pm.p1 != m0.p1))
+                        m.error = e_incorrect_move;
+                }
+                if (m.error == e_incorrect_move)
+                {
+                    // Consume a hint
+                    if (m_hints > 0)
+                    {
+                        m_hints--;
+                        m_points /= 2;
+                        guard.unlock();
+                        return m.error;
+                    }
+                }
+            }
+            if (m.error == e_none)
+                m = m_board.attempt_move(col, m0);
             guard.unlock();
             set_state(is_game_over(col, m));
-            push_new_turn(m);
+            if (m.error == e_none)
+                push_new_turn(m);
+            return m.error;
         }
-        return e_none;
+        guard.unlock();
+        return e_out_of_turn;
     }
 
     error_e chessgame::move(color_e col, coord_s p0, coord_s p1, piece_e promote)
@@ -172,12 +225,69 @@ namespace chess
 
     std::map<int16_t, chessmove> chessgame::player_moves(color_e col)
     {
+        // as far as TURN is concerned, the records are whose turn
+        // it IS rather than WAS, and the move is 'WAS'
+        // So we search for the reverse color.
         std::map<int16_t, chessmove> ret;
         int16_t num_turns = playmax();
         for (int16_t i = 0; i < num_turns; i++)
-            if (m_turn[i].c == col)
+            if (m_turn[i].c == other(col))
                 ret[m_turn[i].t] = m_turn[i].m;
         return ret;
+    }
+
+    bool chessgame::puzzle()
+    {
+        return m_puzzle;
+    }
+
+    int chessgame::hints()
+    {
+        return m_hints;
+    }
+
+    int chessgame::points()
+    {
+        return m_points;
+    }
+
+    void chessgame::set_points(const int v)
+    {
+        m_points = v;
+    }
+
+    chessmove chessgame::hint()
+    {
+        if ((m_hints > 0) && (m_play_pos < playmax()))
+        {
+            m_hints--;
+            m_points /= 2;
+            return m_turn[m_play_pos + 1].m;
+        }
+        chessmove m;
+        m.error = e_invalid_move;
+        return m;
+    }
+
+    std::string chessgame::hintstr()
+    {
+        if ((m_hints > 0) && (m_play_pos < playmax()))
+        {
+            m_hints--;
+            m_points /= 2;
+            return move_str(m_turn[m_play_pos + 1].m);
+        }
+        return "No Hint Available";
+    }
+
+    std::string chessgame::title()
+    {
+        return m_title;
+    }
+
+    void chessgame::set_title(std::string t)
+    {
+        m_title = t;
     }
 
     bool chessgame::check_state(color_e col)
@@ -215,21 +325,22 @@ namespace chess
     {
         if (idx != m_play_pos)
         {
+            bool turn_rw = (m_state == play_e && !m_puzzle);
             if ((idx >= 0) && (m_turn.size() > 0))
             {
                 m_board.copy(m_turn[idx].b);
-                if (m_state == play_e)
+                if (turn_rw)
                     m_turn.resize(idx + 1);
                 m_play_pos = idx;
             }
             else
             {
-                m_board.new_board();
-                if (m_state == play_e)
+                m_board.load_xfen(m_init_board);
+                if (turn_rw)
                     m_turn.clear();
                 m_play_pos = -1;
             }
-            if (m_state == play_e)
+            if (turn_rw)
                 refresh_board_positions();
         }
         signal_on_turn();
@@ -283,21 +394,15 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::new_game(const chessclock_s &clock)
+    error_e chessgame::new_game(std::string title, const chessclock_s &clock)
     {
         m_win_color = c_none;
-        // *** NATHANAEL ***
-        // Your class could take clock and use it for it's
-        // data storage and read and write a chessclock_s
-        // in the load and save functions.
-        // I recommend you act sort of like
-        // the board, and just have a method to reset
-        // the clock to default settings
-        // maybe something like
-        // m_clock.new();
-        m_board.new_board();
+        m_init_board = c_open_board;
+        m_board.load_xfen(m_init_board);
         m_turn.clear();
         m_play_pos = -1;
+        m_title = title;
+        add_clock(clock);
         refresh_board_positions();
         set_state(play_e, true);
         signal_on_turn();
@@ -310,16 +415,10 @@ namespace chess
         {
             if (jsonf.is_null())
                 return e_loading;
-            // *** NATHANAEL ***
-            // Read in to your class would be done here, for load game.
-            // I recommend using something like my chessclock_s structure (common.h)
-            // at any rate, your function signature might look like
-            // if (m_clock.load(jsonf) != e_none)
-            //     return e_loading;
-            // note you would immediately begin functioning your clock
-            // as per the settings loaded.
             m_state = str_game_state(jsonf["state"]);
             m_win_color = str_color(jsonf["win_color"]);
+
+            add_clock(chessclock::load(jsonf["Clock"], this));
 
             auto turns = jsonf["turns"];
             m_turn.clear();
@@ -332,8 +431,11 @@ namespace chess
                 m_turn.push_back(t);
             }
 
+            JSON_LOAD(jsonf, "init_board", m_init_board, c_open_board);
             JSON_LOAD(jsonf, "puzzle", m_puzzle, false);
-            JSON_LOAD(jsonf, "opening", m_opening, "");
+            JSON_LOAD(jsonf, "hints", m_hints, 0);
+            JSON_LOAD(jsonf, "title", m_title, "");
+            JSON_LOAD(jsonf, "points", m_points, 0);
 
             m_play_pos = jsonf["play_pos"];
             if (m_play_pos < 0)
@@ -374,15 +476,6 @@ namespace chess
         int16_t n = 0;
         chessturn t;
 
-        t.t = n++;
-        t.b = b;
-        t.c = tc;
-        t.g = play_e;
-        t.ch = b.check_state(tc);
-        t.wc = c_none;
-
-        turns.push_back(t);
-
         for (std::string move : moves)
         {
             chessmove m;
@@ -392,6 +485,7 @@ namespace chess
             m = b.attempt_move(tc, m);
             if (m.error != e_none)
                 return err;
+            tc = b.turn_color();
             t.t = n++;
             t.b = b;
             t.c = tc;
@@ -400,15 +494,18 @@ namespace chess
             t.g = play_e;
             t.wc = c_none;
             turns.push_back(t);
-            tc = other(tc);
         }
 
+        mp_clock = nullptr;
+        m_init_board = p.fen;
         m_turn = turns;
-        m_play_pos = 0;
-        m_board.copy(turns[0].b);
+        m_play_pos = -1;
+        m_board.load_xfen(p.fen);
         m_puzzle = true;
+        m_title = p.title();
+        m_hints = turns.size() / 4;
         refresh_board_positions();
-        set_state(idle_e, true);
+        set_state(play_e, true);
         signal_on_turn();
         return e_none;
     }
@@ -417,17 +514,6 @@ namespace chess
     {
         try
         {
-            // *** NATHANAEL ***
-            // Here is where your class would write settings to a save
-            // game file, this would be consistent with that of
-            // the load function in terms of content strategy.  I recommend
-            // utilizing chessclock_s structure but within your class
-            // this code might look like
-            // auto clock = json::object();
-            // if (m_clock.save(os) != e_none)
-            //     return e_saving;
-            // jsonf["clock"] = clock;
-            //
             jsonf["state"] = game_state_str(m_state);
             jsonf["win_color"] = color_str(win_color());
 
@@ -442,9 +528,19 @@ namespace chess
             }
             jsonf["turns"] = turns;
 
+            if (mp_clock)
+            {
+                auto clock = json::object();
+                mp_clock->save(clock);
+                jsonf["Clock"] = clock;
+            }
+
+            jsonf["init_board"] = m_init_board;
             jsonf["puzzle"] = m_puzzle;
-            jsonf["opening"] = m_opening;
+            jsonf["hints"] = m_hints;
+            jsonf["title"] = m_title;
             jsonf["play_pos"] = m_play_pos;
+            jsonf["points"] = m_points;
 
             auto board = json::object();
             if (m_board.save(board) != e_none)
@@ -467,10 +563,8 @@ namespace chess
             return ret;
         m_board.copy(b);
         m_win_color = c_none;
-        // *** NATHANAEL ***
-        // in the case of an XFEN paste, we should
-        // remove the clock I think since the
-        // game state is indeterminate.
+        if (mp_clock)
+            mp_clock->clear();
         m_turn.clear();
         m_play_pos = -1;
         refresh_board_positions();
@@ -484,6 +578,27 @@ namespace chess
     std::string chessgame::save_xfen()
     {
         return m_board.save_xfen();
+    }
+
+    void chessgame::add_clock(const chessclock_s &clock)
+    {
+        std::shared_ptr<chessclock> p_clock(new chessclock(clock, this));
+        add_clock(p_clock);
+    }
+
+    void chessgame::add_clock(std::shared_ptr<chessclock> p_clock)
+    {
+        remove_clock();
+        mp_clock = p_clock;
+        if (mp_clock)
+            listen(mp_clock);
+    }
+
+    void chessgame::remove_clock()
+    {
+        if (mp_clock)
+            unlisten(mp_clock->id());
+        mp_clock = nullptr;
     }
 
     error_e chessgame::listen(std::shared_ptr<chessgamelistener> plistener)
@@ -506,16 +621,6 @@ namespace chess
 
     error_e chessgame::end_game(game_state_e end_state, color_e win_color)
     {
-        // *** NATHANAEL ***
-        // You are going to need to be able to call this function
-        // with a time_up_e value for end_state, and declare the winner.
-        // It is a bit of a conundrum with how to get the reference
-        // to the game object for the clock.  I suppose it would be
-        // OK to use a traditional pointer with a set_game function
-        // Alternatively we could do all of this up above at the lobby level
-        // where a shared pointer to the game exists.  A third option
-        // that might be cleanest, is to give the clock a pointer to
-        // this function as a callback.
         std::unique_lock<std::mutex> guard(m_mutex);
         m_win_color = win_color;
         set_state(end_state);
@@ -564,9 +669,17 @@ namespace chess
     {
         if (m.is_valid())
         {
-            add_board_position();
-            m_turn.push_back(new_turn(m));
-            m_play_pos = (int)m_turn.size() - 1;
+            if (!m_puzzle)
+            {
+                add_board_position();
+                m_turn.push_back(new_turn(m));
+                m_play_pos = (int)m_turn.size() - 1;
+            }
+            else
+            {
+                if (m_play_pos < (int)m_turn.size() - 1)
+                    m_play_pos++;
+            }
             signal_on_turn();
         }
     }
@@ -623,10 +736,6 @@ namespace chess
     {
         for (const auto &kv : mp_listeners)
             kv.second->signal_on_state(m_state, m_win_color);
-        // *** NATHANAEL ***
-        // See above, you will need to react to this event.  later
-        // we will add a pause or resume event but for now it's just
-        // this
     }
 
     void chessgame::signal_chat(std::string msg, color_e c)

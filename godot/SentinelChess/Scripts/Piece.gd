@@ -4,6 +4,8 @@ extends Area2D
 var sprite : Sprite2D
 var board : Sprite2D
 
+@onready var skin : Node = get_node('/root/MainGame/Skin')
+
 var piececolor : SentinelChess.ChessColor = SentinelChess.ChessColor.cNone
 var piecetype : SentinelChess.ChessPiece = SentinelChess.ChessPiece.pNone
 var y_ind : int = -1
@@ -84,29 +86,32 @@ func _physics_process(delta):
 			x_ind = dest.x
 			board._on_animated(src, dest)
 			self.z_index = 0
-					
+
+func applyskin():
+	var SpriteName : String = 'White'
+	if (piececolor == SentinelChess.ChessColor.Black):
+		SpriteName = 'Black'
+	match(piecetype):
+		SentinelChess.ChessPiece.Pawn:
+			SpriteName += 'Pawn'
+		SentinelChess.ChessPiece.Rook:
+			SpriteName += 'Rook'
+		SentinelChess.ChessPiece.Bishop:
+			SpriteName += 'Bishop'
+		SentinelChess.ChessPiece.Knight:
+			SpriteName += 'Knight'
+		SentinelChess.ChessPiece.Queen:
+			SpriteName += 'Queen'
+		SentinelChess.ChessPiece.King:
+			SpriteName += 'King'
+	sprite.texture = skin.sprite(SpriteName + '.png')
+				
 func refresh(pc,pt,r):
 	rotation_degrees = r
 	if pc != piececolor or pt != piecetype:
 		piececolor = pc
 		piecetype = pt
-		var SpriteName : String = 'White'
-		if (pc == SentinelChess.ChessColor.Black):
-			SpriteName = 'Black'
-		match(pt):
-			SentinelChess.ChessPiece.Pawn:
-				SpriteName += 'Pawn'
-			SentinelChess.ChessPiece.Rook:
-				SpriteName += 'Rook'
-			SentinelChess.ChessPiece.Bishop:
-				SpriteName += 'Bishop'
-			SentinelChess.ChessPiece.Knight:
-				SpriteName += 'Knight'
-			SentinelChess.ChessPiece.Queen:
-				SpriteName += 'Queen'
-			SentinelChess.ChessPiece.King:
-				SpriteName += 'King'
-		sprite.texture = load('res://Sprites/RetroWood/' + SpriteName + '.png')
+	applyskin()
 		
 func center() -> Vector2:
 	var v : Vector2

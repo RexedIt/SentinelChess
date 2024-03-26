@@ -11,6 +11,7 @@
 #include "console.h"
 #include "chessplayer.h"
 #include "chesspiece.h"
+#include "chessopenings.h"
 
 using namespace chess;
 
@@ -86,18 +87,47 @@ bool load_game(std::string cmd, chesslobby &lobby)
     return true;
 }
 
-bool load_puzzle(std::string cmd, chesslobby &lobby)
+bool load_puzzle(std::string userfile, chesslobby &lobby)
 {
-    std::vector<std::string> args = get_args(cmd);
-    if (args.size() == 0)
-        return print_error("Need Filename and Rating");
-    int rating = 600;
+    std::string filename = userfile;
+    if (filename == "")
+        filename = data_file("db_puzzles.csv");
+    std::string name = "Human";
+    int skill = 600;
+    int rating = 700;
+    std::cout << "\r\nEnter Player Options: name, skill, puzzle rating, keywords\r\n"
+              << std::endl;
+    std::cout << "Player: ";
+    std::string cmd;
+    std::getline(std::cin, cmd);
+    std::vector<std::string> args = get_args(cmd, ',');
+    if (args.size() > 0)
+        name = args[0];
     if (args.size() > 1)
-        rating = atoi(args[1].c_str());
-    error_e err = lobby.load_puzzle(args[0], rating);
+    {
+        skill = atoi(args[1].c_str());
+        rating = skill + 100;
+    }
+    if (args.size() > 2)
+        rating = atoi(args[2].c_str());
+    std::string keywords = "";
+    for (int i = 3; i < args.size(); i++)
+    {
+        if (keywords != "")
+            keywords += ",";
+        keywords += args[i];
+    }
+    error_e err = lobby.load_puzzle(name, skill, filename, keywords, rating);
     if (err != e_none)
-        return print_error(e_loading);
+        return print_error(err);
     refresh_data(lobby);
+    std::cout << p_game->title() << std::endl;
+    int p = p_game->points();
+    std::cout << "Worth up to " << p << " points. ";
+    int n = p_game->hints();
+    if (n > 0)
+        std::cout << "You have " << n << " hints.";
+    std::cout << std::endl;
     return true;
 }
 
@@ -219,6 +249,8 @@ chessclock_s get_clock_options()
         ret.addms[0] = get_ms_value("White bonus/delay", "Seconds", 1000.0, 10.0);
         ret.addms[1] = get_ms_value("Black bonus/delay", "Seconds", 1000.0, 10.0);
     }
+    ret.remainms[0] = ret.allowedms[0];
+    ret.remainms[1] = ret.allowedms[1];
     return ret;
 }
 
@@ -235,7 +267,7 @@ bool new_game(chesslobby &lobby)
         return false;
     // Now, for clock options
     chessclock_s clock = get_clock_options();
-    error_e err = lobby.new_game(clock);
+    error_e err = lobby.new_game("New Game - Console", clock);
     if (err != e_none)
         return print_error(err);
     refresh_data(lobby);
@@ -349,6 +381,9 @@ void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
 int main(void)
 {
 
+    if (!set_data_folder("..\\..\\..\\..\\ChessData\\"))
+        print_error("Data folder does not exist! Try SET command with path to ChessData");
+
     /*
     std::shared_ptr<chessgamelistener_direct> p_listener(
         new chessgamelistener_direct(cl_user,
@@ -357,6 +392,11 @@ int main(void)
                                      &on_turn,
                                      &on_state,
                                      &on_chat)); */
+
+    // chessopenings co;
+    // co.load_scid_eco(data_file("scid.eco"));
+    // co.save_binary(data_file("scid.bin"));
+    // co.load_binary(data_file("scid.bin"));
 
     std::shared_ptr<chessgamelistener_queue> p_listener(
         new chessgamelistener_queue(cl_user));
@@ -385,7 +425,8 @@ int main(void)
         }
         else if ((cmdl == "Z") || (cmdu == "PUZZLE"))
         {
-            if (load_puzzle(cmd, lobby))
+            std::string filename = get_arg(cmd);
+            if (load_puzzle(filename, lobby))
                 break;
         }
         else if (cmdl == "Q")
@@ -409,7 +450,7 @@ int main(void)
                 std::cout << "\r\nCommands: (N)EW, (L)OAD Filename, (S)AVE FileName, PU(Z)ZLE FileName Difficulty, " << std::endl;
                 std::cout << "\t(P)LAY, (I)DLE, (Q)UIT, ";
                 if (!is_idle)
-                    std::cout << "(M)OVE MoveStr, ";
+                    std::cout << "(M)OVE MoveStr, HINT, ";
                 std::cout << "<, >, T Turn PIECE Coord Piece, - [Coord], (X)FEN [String] " << std::endl;
                 continue;
             }
@@ -425,7 +466,8 @@ int main(void)
             }
             else if ((cmdl == "Z") || (cmdu == "PUZZLE"))
             {
-                if (load_puzzle(cmd, lobby))
+                std::string filename = get_arg(cmd);
+                if (load_puzzle(filename, lobby))
                     continue;
             }
             else if (cmdl == "S")
@@ -539,6 +581,18 @@ int main(void)
             {
                 if (!is_idle)
                 {
+                    if (cmdu == "HINT")
+                    {
+                        int n = p_game->hints();
+                        cmd = get_arg(cmd);
+                        if ((cmd != "?") && (n > 0))
+                            std::cout << "*** " << p_game->hintstr() << " *** ";
+                        if (n == 0)
+                            std::cout << "No hints remain.\r\n\r\n";
+                        else
+                            std::cout << n << "hints remain.\r\n\r\n";
+                        continue;
+                    }
                     if (cmdl == "M")
                     {
                         cmd = get_arg(cmd);

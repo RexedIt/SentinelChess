@@ -3,6 +3,7 @@ extends Node
 enum GameState_ {
 		INIT,
 		NEW,
+		PUZZLE,
 		LOAD,
 		SAVE,
 		PLAY,
@@ -11,5 +12,5 @@ enum GameState_ {
 		COMPUTERMOVE,
 		ANIMATEMOVE,
 		PIECESELECT,
-		END		
+		END	
 }

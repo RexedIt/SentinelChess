@@ -5,7 +5,6 @@
 #include "chessgamelistener.h"
 #include "chessturn.h"
 #include "chesspuzzle.h"
-
 #include <fstream>
 #include <mutex>
 #include <map>
@@ -17,16 +16,19 @@ namespace chess
 {
 
     class chessgamelistener;
+    class chessclock;
 
     class chessgame
     {
     public:
         chessgame();
+        ~chessgame();
 
         friend class chessplayer;
         friend class chesscomputer;
         friend class chessgamelistener;
         friend class chesslobby;
+        friend class chessclock;
 
         // Getters for players note these
         // are accessible in the event as well
@@ -42,9 +44,19 @@ namespace chess
         color_e win_color();
         int16_t playmax();
         int16_t playno();
+        bool puzzle();
+        int hints();
+        int points();
+
+        chessmove hint();
+        std::string hintstr();
+
+        std::string title();
+        void set_title(std::string t);
 
         // Any Player
         error_e forfeit(color_e col);
+        error_e puzzle_solved(color_e col);
         error_e move(color_e col, chessmove m0);
         error_e move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
         error_e move(color_e col, std::string s);
@@ -70,7 +82,7 @@ namespace chess
         error_e pause_game();
 
     protected:
-        error_e new_game(const chessclock_s &clock);
+        error_e new_game(std::string title, const chessclock_s &clock);
         error_e load_game(json &j);
         error_e save_game(json &j);
         error_e load_puzzle(chesspuzzle &p);
@@ -80,6 +92,8 @@ namespace chess
         error_e end_game(game_state_e, color_e);
         error_e chat(std::string, color_e);
         error_e consider(chessmove, color_e, int8_t pct = -1);
+
+        void set_points(const int);
 
     private:
         void set_state(game_state_e g, bool force_notify = false);
@@ -97,18 +111,26 @@ namespace chess
         void signal_on_state();
         void signal_chat(std::string, color_e);
 
+        void add_clock(const chessclock_s &);
+        void add_clock(std::shared_ptr<chessclock>);
+        void remove_clock();
+
         game_state_e m_state;
         std::vector<chessturn> m_turn;
         int m_play_pos;
         bool m_puzzle;
-        std::string m_opening;
+        int m_hints;
+        int m_points;
+        std::string m_title;
 
         color_e m_win_color;
 
         chessboard m_board;
+        std::string m_init_board;
 
         std::mutex m_mutex;
         std::map<int, std::shared_ptr<chessgamelistener>> mp_listeners;
+        std::shared_ptr<chessclock> mp_clock;
 
         // Draw Indicators - Fivefold Repetition
         std::map<uint32_t, int> m_board_positions;

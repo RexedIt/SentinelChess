@@ -15,10 +15,9 @@ run/main_scene="res://Banner.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
 boot_splash/bg_color=Color(0, 0, 0, 0)
 boot_splash/show_image=false
-boot_splash/image="res://Sprites/RetroWood/RetroBannerBack.png"
 boot_splash/fullsize=false
 boot_splash/use_filter=false
-config/icon="res://icon.svg"
+config/icon="res://ChessBoard.png"
 
 [display]
 
@@ -27,3 +26,7 @@ window/size/viewport_height=540
 window/size/borderless=true
 window/stretch/mode="canvas_items"
 window/stretch/scale=0.5
+
+[gui]
+
+theme/custom="res://Skins/RetroWood/theme.tres"

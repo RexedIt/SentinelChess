@@ -1,5 +1,6 @@
 extends Sprite2D
 
+@onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var game : SentinelChess = get_parent().get_node('SentinelChess')
 @onready var PieceProto : Area2D = get_node('Piece')
 @onready var HiLight : Sprite2D = get_node('HiLight')
@@ -9,6 +10,8 @@ var cell_arr = []
 var last_drag_y : int
 var last_drag_x : int
 var possible_moves : Array
+var loaded : bool = false
+var skinned : bool = false
 
 @export var board_x0 : int = -560 # 156
 @export var board_y0 : int = 386 # 126
@@ -17,9 +20,21 @@ var possible_moves : Array
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	loaded = true
 	piece_arr.resize(64)
 	HiLight.visible = false
-	
+	if not skinned:
+		applyskin()
+
+func applyskin():
+	if not loaded:
+		return
+	skinned = true
+	texture = skin.sprite('Board.png')
+	for piece in piece_arr:
+		if piece:
+			piece.applyskin()
+		
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass

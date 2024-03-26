@@ -28,21 +28,35 @@ private:
     String errorstr(int num);
     String gamestatestr(ChessGameState state);
 
-    int new_game(const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black, const Ref<ChessClock> &clock);
+    int new_game(String title, const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black, const Ref<ChessClock> &clock);
+    int load_puzzle(const Ref<ChessPlayer> &player, String keywords, const int rating);
+
     int save_game(String filename);
     int load_game(String filename);
     int load_xfen(String content);
+
     String save_xfen();
     ChessGameState state();
     ChessColor turn_color();
     ChessColor win_color();
     bool check_state(ChessColor col);
 
+    bool puzzle();
+    int hints();
+    Ref<ChessMove> hint();
+    String hintstr();
+    int win_points(ChessColor col);
+    bool set_datafolder(const String &);
+    String get_datafolder();
+
+    // For getting high level info about the game, useful one time
+    Ref<ChessMeta> get_meta();
+
     int forfeit(ChessColor col);
     int move_c(ChessColor col, const Ref<ChessCoord> &p0, const Ref<ChessCoord> &p1, ChessPiece promote);
     int move_m(ChessColor col, const Ref<ChessMove> &m);
     int move_s(ChessColor col, String s);
-    
+
     Array possible_moves(ChessColor col);
 
     int play_game();

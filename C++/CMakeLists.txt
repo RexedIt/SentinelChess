@@ -14,6 +14,13 @@ include_directories("SentinelLib")
 add_subdirectory("SentinelLib")
 add_subdirectory("SentinelConsole")
 
+# Build test target
+set(SC_TEST_EXE sc_test CACHE INTERNAL "")
+include(CTest)
+enable_testing()
+add_subdirectory(googletest)
+add_subdirectory(test)
+
 file(COPY SentinelConsole/readme.txt DESTINATION ${CMAKE_BINARY_DIR}/Console/Debug)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
