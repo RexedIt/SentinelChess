@@ -89,7 +89,9 @@ namespace chess
         if (clock.is_null())
             return nullptr;
         chessclock_s cc;
-        JSON_LOAD(clock, "Type", cc.ctype, cc_none);
+        std::string clocktype;
+        JSON_LOAD(clock, "Type", clocktype, "None");
+        cc.ctype = str_clock_type(clocktype);
         JSON_LOAD(clock, "AllowedWhite", cc.allowedms[0], 0);
         JSON_LOAD(clock, "AllowedBlack", cc.allowedms[1], 0);
         JSON_LOAD(clock, "RemainWhite", cc.remainms[0], 0);
