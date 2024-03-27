@@ -1,5 +1,6 @@
-#set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-set(gtest_force_shared_crt ON)
+set(SC_TEST_EXE sc_test CACHE INTERNAL "")
+include(CTest)
+enable_testing()
 
 file(GLOB TestSources *.cpp)
 

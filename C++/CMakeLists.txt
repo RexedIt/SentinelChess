@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.0.0)
 
 project(SentinelChess VERSION 0.2.0 LANGUAGES C CXX)
 
+set(gtest_force_shared_crt ON)
+
 if (MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
@@ -15,9 +17,6 @@ add_subdirectory("SentinelLib")
 add_subdirectory("SentinelConsole")
 
 # Build test target
-set(SC_TEST_EXE sc_test CACHE INTERNAL "")
-include(CTest)
-enable_testing()
 add_subdirectory(googletest)
 add_subdirectory(test)
 
