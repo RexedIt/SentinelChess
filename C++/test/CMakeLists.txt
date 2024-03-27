@@ -1,6 +1,7 @@
-file(GLOB TestSources *.cpp)
-
+#set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(gtest_force_shared_crt ON)
+
+file(GLOB TestSources *.cpp)
 
 include_directories("../googletest/googletest/include")
 add_executable(${SC_TEST_EXE} ${TestSources})

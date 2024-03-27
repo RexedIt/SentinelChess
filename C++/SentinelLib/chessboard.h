@@ -67,9 +67,10 @@ namespace chess
 
         // User Move
         chessmove attempt_move(color_e col, chessmove m);
+        chessmove attempt_move(color_e col, std::string s);
         chessmove attempt_move(color_e col, coord_s p0, coord_s p1, piece_e promote = p_none);
-        std::vector<chessmove> possible_moves(color_e col);
-        std::vector<chessmove> possible_moves(color_e col, piece_e piece, int8_t yc = -1, int8_t xc = -1);
+        std::vector<chessmove> possible_moves(color_e col, bool allowcheck = true);
+        std::vector<chessmove> possible_moves(color_e col, piece_e piece, int8_t yc = -1, int8_t xc = -1, bool allowcheck = true);
         std::vector<piece_e> captured_pieces(color_e col);
         std::string captured_pieces_abbr(color_e col);
         error_e set_captured_pieces(std::string pieces);
