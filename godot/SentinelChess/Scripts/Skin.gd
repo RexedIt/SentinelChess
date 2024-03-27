@@ -55,7 +55,9 @@ func commonpath() -> String:
 	return "res://Skins/Common/"
 	
 func step() -> int:
-	return 16
+	if skinname == 'RetroWood':
+		return 16
+	return 1
 	
 func load(filename):
 	return load(path() + filename)
