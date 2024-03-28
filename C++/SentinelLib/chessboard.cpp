@@ -89,18 +89,30 @@ namespace chess
         }
         ss << ' ' << ((m_turn == c_white) ? 'w' : 'b');
 
-        if ((m_castled_left == 0) || (m_castled_right == 0))
+        bool wc = false;
+        ss << ' ';
+        if ((m_castled_right & c_white) == 0)
         {
-            ss << ' ';
-            if ((m_castled_right & c_white) == 0)
-                ss << 'K';
-            if ((m_castled_left & c_white) == 0)
-                ss << 'Q';
-            if ((m_castled_right & c_black) == 0)
-                ss << 'k';
-            if ((m_castled_left & c_black) == 0)
-                ss << 'q';
+            wc = true;
+            ss << 'K';
         }
+        if ((m_castled_left & c_white) == 0)
+        {
+            wc = true;
+            ss << 'Q';
+        }
+        if ((m_castled_right & c_black) == 0)
+        {
+            wc = true;
+            ss << 'k';
+        }
+        if ((m_castled_left & c_black) == 0)
+        {
+            wc = true;
+            ss << 'q';
+        }
+        if (!wc)
+            ss << '-';
 
         if (m_ep.y == -1)
         {
@@ -121,7 +133,6 @@ namespace chess
         if (o.is_null())
             return e_loading;
         load_xfen(o["xfen"], false);
-        update_kill_bits();
         m_check[0] = o["white_check"];
         m_check[1] = o["black_check"];
         m_turn = str_color(o["turn"]);
@@ -133,10 +144,12 @@ namespace chess
         std::vector<std::string> args = split_string(contents, ' ');
         if (args.size() < 4)
             return e_xfen_read;
-        std::string board = args[0];
-        std::string col = args[1];
-        std::string KQkq = args[2];
-        std::string ep = args[3];
+
+        size_t idx = 0;
+        std::string board = args[idx++];
+        std::string col = args[idx++];
+        std::string KQkq = args[idx++];
+        std::string ep = args[idx++];
 
         // others are game state level
         unsigned char ucboard[64];
@@ -208,16 +221,17 @@ namespace chess
         }
 
         // we need to read half move and full move
-        if (args.size() >= 5)
-            m_halfmove = atoi(args[4].c_str());
-        if (args.size() >= 6)
-            m_fullmove = atoi(args[5].c_str());
+        if (args.size() > idx)
+            m_halfmove = atoi(args[idx++].c_str());
+        if (args.size() > idx)
+            m_fullmove = atoi(args[idx++].c_str());
 
         m_hash = 0;
 
         if (recalc_captured)
             calc_captured_pieces();
 
+        update_kill_bits();
         return e_none;
     }
 
@@ -397,6 +411,9 @@ namespace chess
     chessmove chessboard::attempt_move(color_e col, chessmove m)
     {
         chessmove empty;
+        empty.error = e_out_of_turn;
+        if (col != turn_color())
+            return empty;
         empty.error = e_invalid_move;
         coord_s p0 = m.p0;
         coord_s p1 = m.p1;
@@ -442,7 +459,11 @@ namespace chess
         return attempt_move(col, m);
     }
 
-    // *** MUST GO ***
+    chessmove chessboard::attempt_move(color_e col, std::string s)
+    {
+        return attempt_move(col, new_move(s, col, *this));
+    }
+
     float weight(board_metric_s bm)
     {
         const float kc_weight = 0.25f;
@@ -456,7 +477,7 @@ namespace chess
                ((float)bm.bp) * bp_weight;
     }
 
-    std::vector<chessmove> chessboard::possible_moves(color_e turn_col)
+    std::vector<chessmove> chessboard::possible_moves(color_e turn_col, bool allowcheck)
     {
         std::vector<chessmove> possible;
         for (int8_t y = 0; y < 8; y++)
@@ -472,10 +493,26 @@ namespace chess
                 }
             }
         }
-        return possible;
+        if (allowcheck)
+        {
+            return possible;
+        }
+        else
+        {
+            // Narrow out any moves where the move execution results in check
+            std::vector<chessmove> impossible;
+            for (size_t i = 0; i < possible.size(); i++)
+            {
+                chessboard b(*this);
+                b.execute_move(possible[i]);
+                if (!b.find_check(turn_col))
+                    impossible.push_back(possible[i]);
+            }
+            return impossible;
+        }
     }
 
-    std::vector<chessmove> chessboard::possible_moves(color_e turn_col, piece_e piece, int8_t yc, int8_t xc)
+    std::vector<chessmove> chessboard::possible_moves(color_e turn_col, piece_e piece, int8_t yc, int8_t xc, bool allowcheck)
     {
         std::vector<chessmove> possible;
         for (int8_t y = 0; y < 8; y++)
@@ -497,7 +534,23 @@ namespace chess
                 }
             }
         }
-        return possible;
+        if (allowcheck)
+        {
+            return possible;
+        }
+        else
+        {
+            // Narrow out any moves where the move execution results in check
+            std::vector<chessmove> impossible;
+            for (size_t i = 0; i < possible.size(); i++)
+            {
+                chessboard b(*this);
+                b.execute_move(possible[i]);
+                if (!b.find_check(turn_col))
+                    impossible.push_back(possible[i]);
+            }
+            return impossible;
+        }
     }
 
     void chessboard::possible_moves(std::vector<chessmove> &possible, coord_s p0)

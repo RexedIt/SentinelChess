@@ -86,6 +86,23 @@ namespace chess
         return coord_str(m.p0) + "-" + coord_str(m.p1);
     }
 
+    std::string move_str_c4(chessmove m)
+    {
+        return coord_str(m.p0) + coord_str(m.p1);
+    }
+
+    std::string move_str_c4(std::vector<chessmove> v)
+    {
+        std::string ret = "";
+        for (chessmove m : v)
+        {
+            if (ret != "")
+                ret += " ";
+            ret += move_str_c4(m);
+        }
+        return ret;
+    }
+
     error_e str_move(std::string s, chessmove &m)
     {
         // Simple parse only!
@@ -316,6 +333,14 @@ namespace chess
     chessmove new_move(coord_s p0, coord_s p1, piece_e promote)
     {
         chessmove m(p0, p1, promote);
+        return m;
+    }
+
+    chessmove new_move(std::string s, color_e c, chessboard &b)
+    {
+        chessmove m;
+        error_e err = str_move(s, c, b, m);
+        m.error = err;
         return m;
     }
 

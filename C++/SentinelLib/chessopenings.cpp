@@ -191,7 +191,6 @@ namespace chess
             _load_binary(inf, num);
             for (size_t i = 0; i < num; i++)
             {
-                uint32_t pos = inf.tellg();
                 if (inf.get() != 255)
                 {
                     inf.close();
