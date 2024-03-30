@@ -355,6 +355,14 @@ namespace chess
         return true;
     }
 
+    bool contains(std::vector<chessmove> &a, chessmove &b)
+    {
+        for (size_t i = 0; i < a.size(); i++)
+            if (a[i].matches(b))
+                return true;
+        return false;
+    }
+
     chessmove new_move(int8_t y0, int8_t x0, int8_t y1, int8_t x1)
     {
         chessmove m(coord_s(y0, x0), coord_s(y1, x1));

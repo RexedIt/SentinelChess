@@ -42,19 +42,19 @@ namespace chess
         error_e save_binary(std::string filename);
 
         error_e chessopenings(std::vector<chessopening> &openings);
-        error_e preferredecos(color_e col, std::set<std::string> &ecos);
+        error_e preferredecos(color_e col, std::vector<std::string> &ecos);
 
     private:
         void initialize();
         error_e load_scid_line(std::string line, std::string &errextra);
         error_e load_move(std::string s, color_e tc, chessboard &b, chessmove &m, std::string &errorstr);
         std::vector<chessopening> m_openings;
-        std::map<color_e, std::set<std::string>> m_preferred;
+        std::map<color_e, std::vector<std::string>> m_preferred;
     };
 
     // static calls dependent on instantiation of eco db
     error_e get_chessopenings(std::vector<chessopening> &openings);
-    error_e get_preferredecos(color_e col, std::set<std::string> &ecos);
+    error_e get_preferredecos(color_e col, std::vector<std::string> &ecos);
 
     class chessopenfilter
     {

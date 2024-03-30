@@ -42,6 +42,7 @@ namespace chess
     error_e str_move(std::string s, chessmove &m);
     error_e str_move(std::string s, color_e c, chessboard &b, chessmove &m);
     bool equals(std::vector<chessmove> &a, std::vector<chessmove> &b);
+    bool contains(std::vector<chessmove> &a, chessmove &b);
     chessmove new_move(int8_t y0, int8_t x0, int8_t y1, int8_t x1);
     chessmove new_move(coord_s p0, coord_s p1, int8_t cx = -1, bool en_passant = false);
     chessmove new_move(coord_s p0, coord_s p1, piece_e promote);

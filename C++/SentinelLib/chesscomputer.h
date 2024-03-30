@@ -30,11 +30,20 @@ namespace chess
         float computer_move_min(chessboard &board, color_e turn_col, float _alpha, float _beta, int32_t rec);
         void cancel_execution();
 
+        void initialize_opening();
+        float opening_weight(chessmove &m);
+
         int32_t m_level;
 
         chessboard m_board;
+        int m_turn_no;
         std::thread::id m_thread_id;
         bool m_thread_running;
         volatile bool m_cancel;
+
+        // opening
+        std::string m_opening;
+        std::vector<chessmove> m_next_opening_moves;
+        int m_opening_weight;
     };
 }

@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
+#include <chrono>
 
 #include "chesscommon.h"
 #include "chesspiece.h"
@@ -446,10 +447,19 @@ namespace chess
     {
         if (!_sinit)
         {
-            srand((int)time(NULL));
+            using namespace std::chrono;
+            milliseconds ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+            srand((unsigned int)ms.count());
             _sinit = true;
         }
         return (float)rand() / (float)RAND_MAX;
+    }
+
+    int get_rand_int(int min, int max)
+    {
+        float r = get_rand();
+        r = r * (float)(max - min);
+        return min + (int)r;
     }
 
     std::string uppercase(std::string l)

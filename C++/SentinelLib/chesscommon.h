@@ -214,6 +214,7 @@ namespace chess
     color_e other(color_e c);
 
     float get_rand();
+    int get_rand_int(int min, int max);
 
     std::string trim(std::string s);
     std::vector<std::string> split_string(std::string cmd, char div);

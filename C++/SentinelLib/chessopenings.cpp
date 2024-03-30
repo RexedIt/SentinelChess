@@ -88,6 +88,13 @@ namespace chess
         return e_no_openings;
     }
 
+    error_e get_preferredecos(color_e col, std::vector<std::string> &ecos)
+    {
+        if (p_eco)
+            return p_eco->preferredecos(col, ecos);
+        return e_no_openings;
+    }
+
     chessecodb::chessecodb()
     {
         p_eco = this;
@@ -223,7 +230,7 @@ namespace chess
         return e_none;
     }
 
-    error_e chessecodb::preferredecos(color_e col, std::set<std::string> &ecos)
+    error_e chessecodb::preferredecos(color_e col, std::vector<std::string> &ecos)
     {
         if (m_preferred.count(col) == 0)
             return e_no_openings;
@@ -284,8 +291,8 @@ namespace chess
 
     void chessecodb::initialize()
     {
-        m_preferred[c_white] = std::set<std::string>({"D00", "C21", "C22", "C23", "C25", "C26", "C27", "C28", "D06", "D07", "D08", "D09", "C60", "C44", "C45", "A00", "A10", "A04"});
-        m_preferred[c_black] = std::set<std::string>({"B20", "B00", "B03", "B04", "B05", "A00", "A42", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19"});
+        m_preferred[c_white] = std::vector<std::string>({"D00", "C21", "C22", "C23", "C25", "C26", "C27", "C28", "D06", "D07", "D08", "D09", "C60", "C44", "C45", "A00", "A10", "A04"});
+        m_preferred[c_black] = std::vector<std::string>({"B20", "B00", "B03", "B04", "B05", "A00", "A42", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19"});
     }
 
     error_e chessecodb::load_scid_eco(std::string filename)
@@ -587,4 +594,5 @@ namespace chess
                 m_eco = mi->second;
         }
     }
+
 }
