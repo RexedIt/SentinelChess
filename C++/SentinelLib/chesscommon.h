@@ -58,7 +58,8 @@ namespace chess
         e_listener_already_registered,
         e_listener_not_found,
         e_none_found,
-        e_incorrect_move
+        e_incorrect_move,
+        e_no_openings
     } error_e;
 
     std::string errorstr(error_e num);
@@ -220,6 +221,7 @@ namespace chess
     unsigned char read_hex_uchar(std::string line);
     std::string uppercase(std::string l);
     std::string lowercase(std::string u);
+    bool starts_with(std::string a, std::string b);
     uintmax_t get_file_size(std::string f);
     bool get_dir_exists(std::string dirname);
 

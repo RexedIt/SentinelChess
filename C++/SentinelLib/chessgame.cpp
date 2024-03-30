@@ -1,6 +1,7 @@
 #include "chessgame.h"
 #include "chesscomputer.h"
 #include "chessclock.h"
+// #include <iostream>
 
 namespace chess
 {
@@ -30,6 +31,36 @@ namespace chess
     game_state_e chessgame::state()
     {
         return m_state;
+    }
+
+    std::string chessgame::eco()
+    {
+        // depends on state of eco database and move history
+        return m_open_filter.eco();
+    }
+
+    std::string chessgame::open_title()
+    {
+        // depends on state of eco database and move history
+        return m_open_filter.title();
+    }
+
+    int chessgame::possible_opening_count()
+    {
+        // depends on state of eco database and move history
+        return m_open_filter.possible_opening_count();
+    }
+
+    error_e chessgame::next_opening_moves(color_e col, std::string eco, std::vector<chessmove> &m)
+    {
+        // depends on state of eco database and move history
+        return m_open_filter.next_opening_moves(col, eco, m);
+    }
+
+    void chessgame::narrow_moves()
+    {
+        m_open_filter.narrow(moves());
+        // std::cout << "ECO: " << m_open_filter.eco() << " Title: " << m_open_filter.title() << std::endl;
     }
 
     color_e chessgame::turn_color()
@@ -446,7 +477,7 @@ namespace chess
             auto board = jsonf["board"];
             if (m_board.load(board) != e_none)
                 return e_loading;
-
+            narrow_moves();
             refresh_board_positions();
             // when we load any game, if it's state
             // is play we turn to idle (review mode)
@@ -665,6 +696,14 @@ namespace chess
         return chess::new_turn(n, m, ch, m_board, c, g, wc, wt, bt);
     }
 
+    std::vector<chessmove> chessgame::moves()
+    {
+        std::vector<chessmove> ret;
+        for (int i = 0; i <= m_play_pos; i++)
+            ret.push_back(m_turn[i].m);
+        return ret;
+    }
+
     void chessgame::push_new_turn(chessmove m)
     {
         if (m.is_valid())
@@ -674,6 +713,7 @@ namespace chess
                 add_board_position();
                 m_turn.push_back(new_turn(m));
                 m_play_pos = (int)m_turn.size() - 1;
+                narrow_moves();
             }
             else
             {

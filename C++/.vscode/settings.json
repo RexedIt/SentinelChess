@@ -78,7 +78,10 @@
         "span": "cpp",
         "unordered_map": "cpp",
         "valarray": "cpp",
-        "xhash": "cpp"
+        "xhash": "cpp",
+        "condition_variable": "cpp",
+        "unordered_set": "cpp",
+        "variant": "cpp"
     },
     "cmake.debugConfig": {
         "externalConsole": true,

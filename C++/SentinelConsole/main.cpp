@@ -393,10 +393,11 @@ int main(void)
                                      &on_state,
                                      &on_chat)); */
 
-    // chessopenings co;
+    // Initialize the eco db
+    chessecodb co;
     // co.load_scid_eco(data_file("scid.eco"));
     // co.save_binary(data_file("scid.bin"));
-    // co.load_binary(data_file("scid.bin"));
+    co.load_binary(data_file("scid.bin"));
 
     std::shared_ptr<chessgamelistener_queue> p_listener(
         new chessgamelistener_queue(cl_user));

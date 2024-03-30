@@ -5,6 +5,8 @@
 #include "chessgamelistener.h"
 #include "chessturn.h"
 #include "chesspuzzle.h"
+#include "chessopenings.h"
+
 #include <fstream>
 #include <mutex>
 #include <map>
@@ -53,6 +55,12 @@ namespace chess
 
         std::string title();
         void set_title(std::string t);
+
+        // relating to opening move system
+        std::string eco();
+        std::string open_title();
+        int possible_opening_count();
+        error_e next_opening_moves(color_e col, std::string eco, std::vector<chessmove> &m);
 
         // Any Player
         error_e forfeit(color_e col);
@@ -103,6 +111,7 @@ namespace chess
         int prev_position_count();
         void add_board_position();
         chessturn new_turn(chessmove);
+        std::vector<chessmove> moves();
 
         // Signallers
         void signal_refresh_board();
@@ -114,6 +123,8 @@ namespace chess
         void add_clock(const chessclock_s &);
         void add_clock(std::shared_ptr<chessclock>);
         void remove_clock();
+
+        void narrow_moves();
 
         game_state_e m_state;
         std::vector<chessturn> m_turn;
@@ -127,6 +138,7 @@ namespace chess
 
         chessboard m_board;
         std::string m_init_board;
+        chessopenfilter m_open_filter;
 
         std::mutex m_mutex;
         std::map<int, std::shared_ptr<chessgamelistener>> mp_listeners;

@@ -14,6 +14,22 @@ namespace chess
         mate = false;
         error = e_none;
     }
+
+    chessmove::chessmove(int32_t _i)
+    {
+        int8_t *pi = (int8_t *)&_i;
+        p0.y = pi[0];
+        p0.x = pi[1];
+        p1.y = pi[2];
+        p1.x = pi[3];
+        cx = -1;
+        en_passant = false;
+        promote = p_none;
+        check = false;
+        mate = false;
+        error = e_none;
+    }
+
     chessmove::chessmove(coord_s _p0, coord_s _p1, int8_t _cx, bool _en_passant)
     {
         p0 = _p0;
@@ -79,6 +95,17 @@ namespace chess
             if (p1 == m.p1)
                 return true;
         return false;
+    }
+
+    int32_t chessmove::intval() const
+    {
+        int32_t ret;
+        int8_t *pret = (int8_t *)&ret;
+        pret[0] = p0.y;
+        pret[1] = p0.x;
+        pret[2] = p1.y;
+        pret[3] = p1.x;
+        return ret;
     }
 
     std::string move_str(chessmove m)
@@ -316,6 +343,16 @@ namespace chess
             }
         }
         return (count == 1);
+    }
+
+    bool equals(std::vector<chessmove> &a, std::vector<chessmove> &b)
+    {
+        if (a.size() != b.size())
+            return false;
+        for (size_t i = 0; i < a.size(); i++)
+            if (!a[i].matches(b[i]))
+                return false;
+        return true;
     }
 
     chessmove new_move(int8_t y0, int8_t x0, int8_t y1, int8_t x1)

@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iostream>
 
+#include <set>
+
 namespace chess
 {
 
@@ -38,6 +40,38 @@ namespace chess
         copy(oth);
     }
 
+    bool chessopening::matches(std::vector<chessmove> filter)
+    {
+        if (moves.size() != filter.size())
+            return false;
+        size_t n = moves.size();
+        for (size_t i = 0; i < n; i++)
+            if (!filter[i].matches(moves[i]))
+                return false;
+        return true;
+    }
+
+    bool chessopening::startswith(std::vector<chessmove> filter)
+    {
+        if (filter.size() > moves.size())
+            return false;
+        size_t n = filter.size();
+        for (size_t i = 0; i < n; i++)
+            if (!filter[i].matches(moves[i]))
+                return false;
+        return true;
+    }
+
+    bool chessopening::get_move(size_t index, chessmove &m)
+    {
+        if (moves.size() > index)
+        {
+            m = moves[index];
+            return true;
+        }
+        return false;
+    }
+
     uint32_t chessopening::hash()
     {
         if (m_hash == 0)
@@ -45,14 +79,25 @@ namespace chess
         return m_hash;
     }
 
-    chessopenings::chessopenings()
+    chessecodb *p_eco = NULL;
+
+    error_e get_chessopenings(std::vector<chessopening> &openings)
     {
+        if (p_eco)
+            return p_eco->chessopenings(openings);
+        return e_no_openings;
     }
 
-    chessopenings::~chessopenings()
+    chessecodb::chessecodb()
     {
-        m_op_hash.clear();
-        m_op_name.clear();
+        p_eco = this;
+        initialize();
+    }
+
+    chessecodb::~chessecodb()
+    {
+        m_openings.clear();
+        p_eco = NULL;
     }
 
     bool _save_binary(std::ofstream &of, size_t v)
@@ -142,7 +187,7 @@ namespace chess
         return true;
     }
 
-    error_e chessopenings::save_binary(std::string filename)
+    error_e chessecodb::save_binary(std::string filename)
     {
         try
         {
@@ -151,16 +196,15 @@ namespace chess
             // begin tag
             std::string tag = "\\/\\/\\/\\v1";
             _save_binary(outf, tag);
-            _save_binary(outf, m_op_hash.size());
-            std::map<uint32_t, std::shared_ptr<chessopening>>::iterator kv;
-            for (kv = m_op_hash.begin(); kv != m_op_hash.end(); ++kv)
+            _save_binary(outf, m_openings.size());
+            for (size_t i = 0; i < m_openings.size(); i++)
             {
+                chessopening opening = m_openings[i];
                 outf.put((char)255); // Demark each
-                std::shared_ptr<chessopening> p_opening = kv->second;
-                _save_binary(outf, kv->first);
-                _save_binary(outf, p_opening->eco);
-                _save_binary(outf, p_opening->title);
-                _save_binary(outf, p_opening->moves);
+                _save_binary(outf, opening.hash());
+                _save_binary(outf, opening.eco);
+                _save_binary(outf, opening.title);
+                _save_binary(outf, opening.moves);
             }
             outf.close();
             return e_none;
@@ -171,7 +215,23 @@ namespace chess
         }
     }
 
-    error_e chessopenings::load_binary(std::string filename)
+    error_e chessecodb::chessopenings(std::vector<chessopening> &openings)
+    {
+        if (m_openings.size() == 0)
+            return e_no_openings;
+        openings = m_openings;
+        return e_none;
+    }
+
+    error_e chessecodb::preferredecos(color_e col, std::set<std::string> &ecos)
+    {
+        if (m_preferred.count(col) == 0)
+            return e_no_openings;
+        ecos = m_preferred[col];
+        return e_none;
+    }
+
+    error_e chessecodb::load_binary(std::string filename)
     {
         try
         {
@@ -185,8 +245,7 @@ namespace chess
                 inf.close();
                 return e_loading;
             }
-            m_op_hash.clear();
-            m_op_name.clear();
+            m_openings.clear();
             size_t num = 0;
             _load_binary(inf, num);
             for (size_t i = 0; i < num; i++)
@@ -210,9 +269,8 @@ namespace chess
                 }
                 if ((hash != 0) && (move_vec.size() > 0))
                 {
-                    std::shared_ptr<chessopening> p_opening(new chessopening(eco, title, move_vec, hash));
-                    m_op_hash[hash] = p_opening;
-                    m_op_name[title] = p_opening;
+                    chessopening opening(eco, title, move_vec, hash);
+                    m_openings.push_back(opening);
                 }
             }
             inf.close();
@@ -224,12 +282,17 @@ namespace chess
         }
     }
 
-    error_e chessopenings::load_scid_eco(std::string filename)
+    void chessecodb::initialize()
+    {
+        m_preferred[c_white] = std::set<std::string>({"D00", "C21", "C22", "C23", "C25", "C26", "C27", "C28", "D06", "D07", "D08", "D09", "C60", "C44", "C45", "A00", "A10", "A04"});
+        m_preferred[c_black] = std::set<std::string>({"B20", "B00", "B03", "B04", "B05", "A00", "A42", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19"});
+    }
+
+    error_e chessecodb::load_scid_eco(std::string filename)
     {
         try
         {
-            m_op_hash.clear();
-            m_op_name.clear();
+            m_openings.clear();
             int lines = 0;
             std::string partial_line;
             std::ifstream pf(filename);
@@ -268,7 +331,23 @@ namespace chess
         }
     }
 
-    error_e chessopenings::load_scid_line(std::string line, std::string &errextra)
+    std::string clean_title(std::string orig)
+    {
+        // comma
+        size_t c = orig.find_last_of(',');
+        if (c != std::string::npos)
+            return orig.substr(0, c);
+        c = orig.find('.'); // has moves, we will now truncate to :
+        if (c != std::string::npos)
+        {
+            c = orig.find(':');
+            if (c != std::string::npos)
+                return orig.substr(0, c);
+        }
+        return orig;
+    }
+
+    error_e chessecodb::load_scid_line(std::string line, std::string &errextra)
     {
         std::string eco;
         std::string title;
@@ -280,7 +359,7 @@ namespace chess
             errextra = "Title not enclosed in quotes";
             return e_loading;
         }
-        eco = trim(line.substr(0, q));
+        eco = trim(line.substr(0, q > 3 ? 3 : q));
         title = line.substr(q + 1);
         q = title.find('\"');
         if (q == std::string::npos)
@@ -289,7 +368,10 @@ namespace chess
             return e_loading;
         }
         moves = trim(title.substr(q + 1));
-        title = trim(title.substr(0, q));
+        if (moves == "*")
+            return e_none;
+
+        title = clean_title(trim(title.substr(0, q)));
 
         chessboard b;
         b.load_xfen(c_open_board);
@@ -355,23 +437,13 @@ namespace chess
         }
         if (move_vec.size())
         {
-            std::shared_ptr<chessopening> p_opening = std::shared_ptr<chessopening>(new chessopening(eco, title, move_vec));
-            uint32_t hash = p_opening->hash();
-            if (m_op_hash.count(hash) > 0)
-            {
-                errextra = "Hash already found! " + std::to_string(hash);
-                return e_loading;
-            }
-            else
-            {
-                m_op_hash[hash] = p_opening;
-                m_op_name[title] = p_opening;
-            }
+            chessopening opening(eco, title, move_vec);
+            m_openings.push_back(opening);
         }
         return e_none;
     }
 
-    error_e chessopenings::load_move(std::string s, color_e tc, chessboard &b, chessmove &m, std::string &errextra)
+    error_e chessecodb::load_move(std::string s, color_e tc, chessboard &b, chessmove &m, std::string &errextra)
     {
         error_e err = str_move(s, tc, b, m);
         if (err != e_none)
@@ -388,4 +460,131 @@ namespace chess
         return e_none;
     }
 
+    chessopenfilter::chessopenfilter()
+    {
+        get_chessopenings(m_openings);
+        m_filtered = m_openings;
+        m_last_match_size = 0;
+    }
+
+    chessopenfilter::~chessopenfilter()
+    {
+    }
+
+    void chessopenfilter::reset()
+    {
+        m_filtered = m_openings;
+        m_last.clear();
+        m_eco = "";
+        m_title = "";
+        m_last_match_size = 0;
+    }
+
+    error_e chessopenfilter::narrow(std::vector<chessmove> &filter)
+    {
+        // if we are rewinding reset
+        if (filter.size() < m_last.size())
+            reset();
+        if (equals(filter, m_last))
+            return e_none;
+        // Okay we can refilter
+        std::vector<chessopening> refilter;
+        for (size_t i = 0; i < m_filtered.size(); i++)
+            if (m_filtered[i].startswith(filter))
+                refilter.push_back(m_filtered[i]);
+        m_filtered = refilter;
+        m_last = filter;
+        return e_none;
+    }
+
+    std::string chessopenfilter::eco()
+    {
+        find_best_opening_match();
+        return m_eco;
+    }
+
+    std::string chessopenfilter::title()
+    {
+        find_best_opening_match();
+        return m_title;
+    }
+
+    std::vector<chessopening> chessopenfilter::possible_openings()
+    {
+        return m_filtered;
+    }
+
+    size_t chessopenfilter::possible_opening_count()
+    {
+        return m_filtered.size();
+    }
+
+    error_e chessopenfilter::next_opening_moves(color_e col, std::string eco, std::vector<chessmove> &possible)
+    {
+        size_t index = m_last.size();
+        if ((col == c_black) && (index % 2 == 0))
+            return e_out_of_turn;
+        if ((col == c_white) && (index % 2 == 1))
+            return e_out_of_turn;
+        possible.clear();
+        std::set<int32_t> move_set;
+        for (size_t i = 0; i < m_filtered.size(); i++)
+        {
+            if (eco != "")
+                if (!starts_with(m_filtered[i].eco, eco))
+                    continue;
+            chessmove m;
+            if (m_filtered[i].get_move(index, m))
+            {
+                int32_t mi = m.intval();
+                if (move_set.count(mi) == 0)
+                {
+                    possible.push_back(m);
+                    move_set.insert(mi);
+                }
+            }
+        }
+        // reload possible with actual moves
+        return e_none;
+    }
+
+    void chessopenfilter::find_best_opening_match()
+    {
+        // Don't do this repeatedly
+        if (m_last_match_size == m_filtered.size())
+            return;
+        if (m_filtered.size() > 0)
+        {
+            m_last_match_size = m_filtered.size();
+            std::map<std::string, int> titles;
+            std::map<std::string, int> ecos;
+            for (size_t i = 0; i < m_filtered.size(); i++)
+            {
+                std::string title = m_filtered[i].title;
+                std::string eco = m_filtered[i].eco;
+                if (titles.count(title))
+                    titles[title] = titles[title] + 1;
+                else
+                    titles[title] = 1;
+                if (ecos.count(eco))
+                    ecos[eco] = ecos[eco] + 1;
+                else
+                    ecos[eco] = 1;
+            }
+            // We could do this with a transform but more readable and about the same time?
+            std::map<int, std::string> titles_sorted;
+            std::map<int, std::string> ecos_sorted;
+            for (auto kv : titles)
+                titles_sorted[kv.second] = kv.first;
+            for (auto kv : ecos)
+                ecos_sorted[kv.second] = kv.first;
+            std::map<int, std::string>::reverse_iterator mi;
+            mi = titles_sorted.rbegin();
+            if (mi != titles_sorted.rend())
+                m_title = mi->second;
+            mi = ecos_sorted.rbegin();
+            if (mi != ecos_sorted.rend())
+                m_eco = mi->second;
+        }
+    }
 }

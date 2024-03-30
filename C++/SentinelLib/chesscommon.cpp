@@ -93,6 +93,8 @@ namespace chess
             return "Nothing found";
         case e_incorrect_move:
             return "Incorrect move";
+        case e_no_openings:
+            return "No Chess Opening Data";
         default:
             return "Unknown Error";
         }
@@ -462,6 +464,13 @@ namespace chess
         std::string cmdu = u;
         std::transform(cmdu.begin(), cmdu.end(), cmdu.begin(), ::tolower);
         return cmdu;
+    }
+
+    bool starts_with(std::string a, std::string b)
+    {
+        if (a.length() < b.length())
+            return false;
+        return (a.substr(0, b.length()) == b);
     }
 
     const char *ws = " \t\n\r\f\v";
