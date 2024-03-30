@@ -15,6 +15,7 @@ namespace chess
         m_cancel = false;
         m_thread_running = false;
         m_opening_weight = 0;
+        m_opening_in_play = false;
         m_turn_no = 0;
     }
 
@@ -32,6 +33,7 @@ namespace chess
         m_skill = skill;
         m_cancel = false;
         m_opening_weight = 0;
+        m_opening_in_play = false;
         m_turn_no = 0;
         m_thread_running = false;
     }
@@ -188,6 +190,8 @@ namespace chess
                 m_opening = ecos[idx];
             }
         }
+        if (m_turn_no < 2)
+            m_opening_in_play = true;
         m_opening_weight = 32;
         for (int i = 0; i < (m_turn_no + 1) / 2; i++)
         {
@@ -195,8 +199,22 @@ namespace chess
             if (m_opening_weight == 0)
                 return;
         }
-        if (mp_game->next_opening_moves(m_color, m_opening, m_next_opening_moves) != e_none)
+        std::string filter = m_opening_in_play ? m_opening : "";
+        if (mp_game->next_opening_moves(m_color, filter, m_next_opening_moves) != e_none)
+        {
             m_opening_weight = 0;
+            return;
+        }
+        if ((m_opening_in_play) && (m_next_opening_moves.size() == 0))
+        {
+            m_opening_in_play = false;
+            filter = "";
+            if (mp_game->next_opening_moves(m_color, filter, m_next_opening_moves) != e_none)
+            {
+                m_opening_weight = 0;
+                return;
+            }
+        }
     }
 
     float chesscomputer::opening_weight(chessmove &m)

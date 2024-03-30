@@ -45,5 +45,6 @@ namespace chess
         std::string m_opening;
         std::vector<chessmove> m_next_opening_moves;
         int m_opening_weight;
+        bool m_opening_in_play;
     };
 }
