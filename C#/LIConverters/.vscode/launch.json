@@ -14,6 +14,25 @@
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
             "console": "internalConsole"
+        },
+        {
+            "name": "LIPGNConverter",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/LIPGNConverter/bin/Debug/net5.0/LIPGNConverter.exe",
+            "args": [
+                "C:\\Users\\Rex\\Downloads\\lichess_db_standard_rated_2013-01.pgn",
+                "-maxItems",
+                "100",
+                "-minrating",
+                "1500",
+                "-out",
+                "C:\\Users\\Rex\\Downloads\\PGN"
+            ]
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
         }
     ]
 }

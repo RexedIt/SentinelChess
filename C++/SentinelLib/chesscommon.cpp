@@ -96,6 +96,8 @@ namespace chess
             return "Incorrect move";
         case e_no_openings:
             return "No Chess Opening Data";
+        case e_pgn_parse:
+            return "PGN Parsing Error";
         default:
             return "Unknown Error";
         }
@@ -627,6 +629,133 @@ namespace chess
             buf[p++] = moves[i].p1.x;
         }
         return hash(buf, moves.size() * 4);
+    }
+
+    bool little_endian()
+    {
+        int n = 1;
+        return (*(char *)&n == 1);
+    }
+
+    void save_nl(std::ofstream &of, char *c, size_t l)
+    {
+        if ((little_endian()) && (l <= 8))
+        {
+            char d[8];
+            size_t i = l;
+            size_t j = 0;
+            while (i > 0)
+                d[--i] = c[j++];
+            of.write(d, l);
+        }
+        else
+        {
+            of.write(c, l);
+        }
+    }
+
+    void load_nl(std::ifstream &inf, char *c, size_t l)
+    {
+        if ((little_endian()) && (l <= 8))
+        {
+            char d[8];
+            inf.read(d, l);
+            size_t i = l;
+            size_t j = 0;
+            while (i > 0)
+                c[--i] = d[j++];
+        }
+        else
+        {
+            inf.read(c, l);
+        }
+    }
+
+    bool save_binary(std::ofstream &of, size_t v)
+    {
+        save_nl(of, (char *)&v, sizeof(v));
+        return true;
+    }
+
+    bool load_binary(std::ifstream &inf, size_t &v)
+    {
+        load_nl(inf, (char *)&v, sizeof(v));
+        return true;
+    }
+
+    bool save_binary(std::ofstream &of, uint32_t &v)
+    {
+        save_nl(of, (char *)&v, sizeof(v));
+        return true;
+    }
+
+    bool load_binary_u(std::ifstream &inf, uint32_t &v)
+    {
+        load_nl(inf, (char *)&v, sizeof(v));
+        return true;
+    }
+
+    bool save_binary(std::ofstream &of, std::string &v)
+    {
+        save_binary(of, v.length());
+        of.write(v.c_str(), v.length());
+        return true;
+    }
+
+    bool load_binary(std::ifstream &inf, std::string &v)
+    {
+        size_t l = 0;
+        load_binary(inf, l);
+        char buf[256];
+        if ((l < 0) || (l > 255))
+            return false;
+        inf.read(buf, l);
+        buf[l] = 0;
+        v = std::string(buf);
+        return true;
+    }
+
+    bool save_binary(std::ofstream &of, chessmove v)
+    {
+        int8_t buf[5];
+        buf[0] = v.p0.y;
+        buf[1] = v.p0.x;
+        buf[2] = v.p1.y;
+        buf[3] = v.p1.x;
+        of.write((char *)buf, 4);
+        return true;
+    }
+
+    bool load_binary(std::ifstream &inf, chessmove &v)
+    {
+        int8_t buf[5];
+        inf.read((char *)&buf, 4);
+        v = new_move(buf[0], buf[1], buf[2], buf[3]);
+        return true;
+    }
+
+    bool save_binary(std::ofstream &of, std::vector<chessmove> &v)
+    {
+        save_binary(of, v.size());
+        for (size_t i = 0; i < v.size(); i++)
+            save_binary(of, v[i]);
+        return true;
+    }
+
+    bool load_binary(std::ifstream &inf, std::vector<chessmove> &v)
+    {
+        size_t l = 0;
+        load_binary(inf, l);
+        if ((l < 0) || (l > 64))
+            return false;
+        for (size_t i = 0; i < l; i++)
+        {
+            chessmove m;
+            if (!load_binary(inf, m))
+                return false;
+            v.push_back(m);
+        }
+        return true;
     }
 
 }

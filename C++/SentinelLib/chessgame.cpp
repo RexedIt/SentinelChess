@@ -541,6 +541,18 @@ namespace chess
         return e_none;
     }
 
+    error_e chessgame::load_pgn(chesspgn &p)
+    {
+        // *** REM *** TODO
+        return e_none;
+    }
+
+    error_e chessgame::save_pgn(chesspgn &p)
+    {
+        // *** REM *** TODO
+        return e_none;
+    }
+
     error_e chessgame::save_game(json &jsonf)
     {
         try

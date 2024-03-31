@@ -9,6 +9,7 @@ namespace chess
     chesscomputer::chesscomputer()
     {
         m_level = 3;
+        m_half_level = false;
         m_name = "Computer";
         m_playertype = t_computer;
         m_listenertype = cl_computer;
@@ -27,6 +28,9 @@ namespace chess
             m_level = 1;
         if (m_level > 6)
             m_level = 6;
+        if (m_level < 4)
+            m_half_level = skill % 500 >= 250;
+
         m_playertype = t_computer;
         m_listenertype = cl_computer;
         m_name = name;
@@ -93,6 +97,10 @@ namespace chess
         m_cancel = false;
         int rec = m_level;
         chessmove best;
+
+        if (m_half_level)
+            if ((m_turn_no / 2) % 2 == 1)
+                rec++;
 
         std::vector<chessmove> possible = board.possible_moves(m_color);
         initialize_opening();

@@ -5,6 +5,7 @@
 #include "chessgamelistener.h"
 #include "chessturn.h"
 #include "chesspuzzle.h"
+#include "chesspgn.h"
 #include "chessopenings.h"
 
 #include <fstream>
@@ -94,6 +95,8 @@ namespace chess
         error_e load_game(json &j);
         error_e save_game(json &j);
         error_e load_puzzle(chesspuzzle &p);
+        error_e load_pgn(chesspgn &p);
+        error_e save_pgn(chesspgn &p);
 
         error_e listen(std::shared_ptr<chessgamelistener>);
         error_e unlisten(int);

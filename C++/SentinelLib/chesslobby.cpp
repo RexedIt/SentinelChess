@@ -2,6 +2,7 @@
 #include "chessplayer.h"
 #include "chesscomputer.h"
 #include "chesspuzzleplayer.h"
+#include "chesspgn.h"
 
 namespace chess
 {
@@ -234,6 +235,41 @@ namespace chess
         if (err != e_none)
             return err;
         return load_puzzle(name, skill, p);
+    }
+
+    error_e chesslobby::save_pgn(std::string filename)
+    {
+        return e_none;
+    }
+
+    error_e chesslobby::load_pgn(std::string filename)
+    {
+        // Load the pgn first
+        chesspgn p;
+        error_e err = p.load(filename);
+        if (err != e_none)
+            return err;
+
+        backup();
+
+        // create game object early
+        mp_game = std::shared_ptr<chessgame>(new chessgame());
+        attach_to_game();
+
+        err = add_player(c_white, p.white, p.whiteelo, t_human);
+        if (err != e_none)
+            return restore(err);
+            
+        err = add_player(c_black, p.black, p.blackelo, t_human);
+        if (err != e_none)
+            return restore(err);
+
+        err = mp_game->load_pgn(p);
+        if (err != e_none)
+            return restore(err);
+
+        attach_to_game();
+        return err;
     }
 
     error_e chesslobby::add_player(color_e color, std::string name, int skill, chessplayertype_e ptype)

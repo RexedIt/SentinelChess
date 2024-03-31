@@ -34,6 +34,7 @@ namespace chess
         float opening_weight(chessmove &m);
 
         int32_t m_level;
+        bool m_half_level;
 
         chessboard m_board;
         int m_turn_no;
