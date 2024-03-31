@@ -47,7 +47,6 @@ namespace chess
     private:
         void initialize();
         error_e load_scid_line(std::string line, std::string &errextra);
-        error_e load_move(std::string s, color_e tc, chessboard &b, chessmove &m, std::string &errorstr);
         std::vector<chessopening> m_openings;
         std::map<color_e, std::vector<std::string>> m_preferred;
     };

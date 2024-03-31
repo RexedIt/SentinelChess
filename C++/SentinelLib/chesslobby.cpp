@@ -242,11 +242,11 @@ namespace chess
         return e_none;
     }
 
-    error_e chesslobby::load_pgn(std::string filename)
+    error_e chesslobby::load_pgn(std::string filename, std::string &errextra)
     {
         // Load the pgn first
         chesspgn p;
-        error_e err = p.load(filename);
+        error_e err = p.load(filename, errextra);
         if (err != e_none)
             return err;
 
@@ -256,11 +256,11 @@ namespace chess
         mp_game = std::shared_ptr<chessgame>(new chessgame());
         attach_to_game();
 
-        err = add_player(c_white, p.white, p.whiteelo, t_human);
+        err = add_player(c_white, p.white(), p.whiteelo(), t_human);
         if (err != e_none)
             return restore(err);
-            
-        err = add_player(c_black, p.black, p.blackelo, t_human);
+
+        err = add_player(c_black, p.black(), p.blackelo(), t_human);
         if (err != e_none)
             return restore(err);
 

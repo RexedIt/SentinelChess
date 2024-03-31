@@ -1,5 +1,6 @@
 #include "chessopenings.h"
 #include "chessboard.h"
+#include "chesspgn.h"
 
 #include <fstream>
 #include <iostream>
@@ -293,91 +294,15 @@ namespace chess
 
         title = clean_title(trim(title.substr(0, q)));
 
-        chessboard b;
-        b.load_xfen(c_open_board);
-        color_e tc = b.turn_color();
         std::vector<chessmove> move_vec;
-        error_e err = e_none;
+        error_e err = read_pgn_moves(moves, move_vec, errextra);
 
-        // We want to move through the file in move pairs.
-        int ft = 0;
-        std::string fts = std::to_string(++ft) + ".";
-        q = moves.find(fts);
-        if (q == std::string::npos)
-            return e_none;
-        moves = trim(moves.substr(q + fts.length()));
-
-        while (moves != "")
-        {
-            std::string move_pair = moves;
-            std::string fts = std::to_string(++ft) + ".";
-            q = moves.find(fts);
-            if (q != std::string::npos)
-            {
-                move_pair = trim(moves.substr(0, q));
-                moves = trim(moves.substr(q + fts.length()));
-            }
-            else
-            {
-                moves = "";
-            }
-            std::vector<std::string> pair = split_string(move_pair, ' ');
-            if ((pair.size() == 0) || (pair.size() > 3))
-            {
-                errextra = "Full move sequence error";
-                return e_loading;
-            }
-            std::string white = trim(pair[0]);
-            if (white == "*")
-                return e_none;
-            if (tc != c_white)
-                return e_out_of_turn;
-            chessmove m;
-            err = load_move(white, tc, b, m, errextra);
-            if (err != e_none)
-                return err;
-            move_vec.push_back(m);
-            tc = b.turn_color();
-            std::string black;
-            if (pair.size() > 1)
-            {
-                black = pair[1];
-                if (black == "*")
-                    black = "";
-            }
-            if (black != "")
-            {
-                err = load_move(black, tc, b, m, errextra);
-                if (err != e_none)
-                    return err;
-                move_vec.push_back(m);
-                tc = b.turn_color();
-            }
-            // for next
-        }
-        if (move_vec.size())
+        if (err == e_none)
         {
             chessopening opening(eco, title, move_vec);
             m_openings.push_back(opening);
         }
-        return e_none;
-    }
-
-    error_e chessecodb::load_move(std::string s, color_e tc, chessboard &b, chessmove &m, std::string &errextra)
-    {
-        error_e err = str_move(s, tc, b, m);
-        if (err != e_none)
-        {
-            errextra = "Move parse error - " + s;
-            return err;
-        }
-        m = b.attempt_move(tc, m);
-        if (m.error != e_none)
-        {
-            errextra = "Move execute error - " + s;
-            return err;
-        }
-        return e_none;
+        return err;
     }
 
     chessopenfilter::chessopenfilter()
