@@ -543,7 +543,45 @@ namespace chess
 
     error_e chessgame::load_pgn(chesspgn &p)
     {
-        // *** REM *** TODO
+        chessboard b;
+        error_e err = b.load_xfen(c_open_board);
+        if (err != e_none)
+            return err;
+
+        color_e tc = b.turn_color();
+        std::vector<chessturn> turns;
+
+        int16_t n = 0;
+        chessturn t;
+
+        for (chessmove m : p.moves())
+        {
+            m = b.attempt_move(tc, m);
+            if (m.error != e_none)
+                return err;
+            tc = b.turn_color();
+            t.t = n++;
+            t.b = b;
+            t.c = tc;
+            t.m = m;
+            t.ch = b.check_state(tc);
+            t.g = play_e;
+            t.wc = c_none;
+            turns.push_back(t);
+        }
+
+        mp_clock = nullptr;
+        m_init_board = c_open_board;
+        m_turn = turns;
+
+        m_play_pos = -1;
+        m_board.load_xfen(c_open_board);
+        m_puzzle = false;
+        m_title = p.event();
+        refresh_board_positions();
+        goto_turn(turns.size() - 1);
+        set_state(idle_e, true);
+        signal_on_turn();
         return e_none;
     }
 

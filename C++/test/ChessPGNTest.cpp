@@ -2,6 +2,7 @@
 
 #include "chesscommon.h"
 #include "chesspgn.h"
+#include "chesslobby.h"
 
 using namespace chess;
 using namespace testing;
@@ -44,4 +45,16 @@ TEST_F(ChessPGNTest, LoadTest)
     std::string expected_moves = "1. e4 e6 2. d4 b6 3. a3 Bb7 4. Nc3 Nh6 5. Bxh6 gxh6 6. Be2 Qg5 7. Bg4 h5 "
                                  "8. Nf3 Qg6 9. Nh4 Qg5 10. Bxh5 Qxh4 11. Qf3 Kd8 12. Qxf7 Nc6 13. Qe8# 1-0";
     EXPECT_EQ(expected_moves, p.moves_str());
+}
+
+TEST_F(ChessPGNTest, LobbyLoad)
+{
+    chesslobby l;
+    std::string errextra;
+    EXPECT_EQ(e_none, l.load_pgn(test_file("00000002.pgn"), errextra));
+    EXPECT_EQ("", errextra);
+    std::map<color_e, std::string> player_names = l.player_names();
+    EXPECT_EQ(2, player_names.size());
+    EXPECT_EQ("Desmond_Wilson", player_names[c_white]);
+    EXPECT_EQ("savinka59", player_names[c_black]);
 }
