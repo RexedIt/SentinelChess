@@ -328,7 +328,8 @@ namespace chess
 
     void chessopenfilter::initialize()
     {
-        get_chessopenings(m_openings);
+        if (m_openings.size() == 0)
+            get_chessopenings(m_openings);
         m_filtered = m_openings;
         m_last_match_size = 0;
     }
