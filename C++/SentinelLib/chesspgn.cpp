@@ -27,12 +27,18 @@ namespace chess
 
     int chesspgn::whiteelo()
     {
-        return atoi(tag("WhiteElo").c_str());
+        std::string elo = tag("WhiteElo");
+        if ((elo == "") || (elo == "?"))
+            return -1;
+        return atoi(elo.c_str());
     }
 
     int chesspgn::blackelo()
     {
-        return atoi(tag("BlackElo").c_str());
+        std::string elo = tag("BlackElo");
+        if ((elo == "") || (elo == "?"))
+            return -1;
+        return atoi(elo.c_str());
     }
 
     std::string chesspgn::eco()
@@ -50,9 +56,46 @@ namespace chess
         return m_moves_str;
     }
 
+    std::string chesspgn::xfen()
+    {
+        return m_xfen;
+    }
+
     std::vector<chessmove> chesspgn::moves()
     {
         return m_moves;
+    }
+
+    color_e chesspgn::win_color()
+    {
+        std::string result = tag("Result");
+        if (result == "1-0")
+            return c_white;
+        else if (result == "0-1")
+            return c_black;
+        return c_none;
+    }
+
+    game_state_e chesspgn::game_state()
+    {
+        std::string result = tag("Result");
+        std::string termination = tag("Termination");
+        color_e wc = win_color();
+        if (wc == c_none)
+        {
+            // draw states, pick one
+            return draw_stalemate_e;
+        }
+        else
+        {
+            // had winner
+            std::string checkmate = "# " + result;
+            if (ends_with(m_moves_str, checkmate))
+                return checkmate_e;
+            if (termination == "Time forfeit")
+                return time_up_e;
+            return forfeit_e;
+        }
     }
 
     error_e chesspgn::read_tag(std::string line)
@@ -122,7 +165,7 @@ namespace chess
                 {
                     has_moves = true;
                     m_moves_str = line;
-                    error_e err = read_pgn_moves(m_moves_str, m_moves, errextra);
+                    error_e err = read_pgn_moves(m_moves_str, m_moves, m_xfen, errextra);
                     if (err != e_none)
                     {
                         // remove
@@ -192,14 +235,16 @@ namespace chess
         }
         return false;
     }
-    error_e read_pgn_moves(std::string moves_str, std::vector<chessmove> &move_vec, std::string &errextra)
+    error_e read_pgn_moves(std::string moves_str, std::vector<chessmove> &move_vec, std::string &xfen, std::string &errextra)
     {
         chessboard b;
         b.load_xfen(c_open_board);
         color_e tc = b.turn_color();
 
         move_vec.clear();
+        xfen = c_open_board;
         errextra = "";
+
         std::string moves = moves_str;
 
         // We want to move through the file in move pairs.
@@ -210,6 +255,7 @@ namespace chess
             return e_none;
         moves = trim(moves.substr(q + fts.length()));
 
+        error_e err = e_none;
         while (moves != "")
         {
             std::string move_pair = moves;
@@ -227,18 +273,22 @@ namespace chess
             std::vector<std::string> pair = split_string(move_pair, ' ');
             if ((pair.size() == 0) || (pair.size() > 3))
             {
+                err = e_loading;
                 errextra = "Full move sequence error";
-                return e_loading;
+                break;
             }
             std::string white = trim(pair[0]);
             if (terminal(white))
-                return e_none;
+                break;
             if (tc != c_white)
-                return e_out_of_turn;
+            {
+                err = e_out_of_turn;
+                break;
+            }
             chessmove m;
-            error_e err = load_move(white, tc, b, m, errextra);
+            err = load_move(white, tc, b, m, errextra);
             if (err != e_none)
-                return err;
+                break;
             move_vec.push_back(m);
             tc = b.turn_color();
             std::string black;
@@ -246,14 +296,22 @@ namespace chess
                 black = pair[1];
             if (!terminal(black))
             {
+                m.invalidate();
                 err = load_move(black, tc, b, m, errextra);
                 if (err != e_none)
-                    return err;
+                    break;
                 move_vec.push_back(m);
                 tc = b.turn_color();
             }
         }
-        return e_none;
+
+        if (ft > 0)
+        {
+            xfen = b.save_xfen();
+            if (errextra != "")
+                errextra += " at " + std::to_string(ft) + ".";
+        }
+        return err;
     }
 
 }

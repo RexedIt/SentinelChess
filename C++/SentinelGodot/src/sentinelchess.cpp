@@ -382,7 +382,9 @@ int SentinelChess::win_points(ChessColor col)
 
 bool SentinelChess::set_datafolder(const String &r)
 {
-    return set_data_folder(r.ascii().get_data());
+    if (set_data_folder(r.ascii().get_data()))
+        return (m_ecodb.load_binary(data_file("scid.bin")) == e_none);
+    return false;
 }
 
 String SentinelChess::get_datafolder()

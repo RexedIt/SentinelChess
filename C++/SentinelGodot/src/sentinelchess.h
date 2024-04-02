@@ -5,6 +5,7 @@
 #include <godot_cpp/variant/typed_array.hpp>
 
 #include "chesslobby.h"
+#include "chessopenings.h"
 #include "chessgame.h"
 #include "chessgamelistener.h"
 
@@ -100,6 +101,8 @@ private:
     void refresh_data();
     std::shared_ptr<chessgamelistener_queue> mp_listener;
     chesslobby m_lobby;
+    chessecodb m_ecodb;
+
     std::shared_ptr<chessgame> mp_game;
 };
 

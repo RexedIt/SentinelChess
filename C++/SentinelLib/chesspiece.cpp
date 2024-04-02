@@ -326,7 +326,7 @@ namespace chess
         calc_king_move(possible, p0, 1, 1, cells);
         // Can we castle left?
         if ((castled_left & color) == 0)
-            if (castle_path(p0, p0.y, 1, cells))
+            if (castle_path(p0, p0.y, 2, cells))
                 possible.push_back(new_move(p0, coord_s(p0.y, 2), 0));
         // How about right?
         if ((castled_right & color) == 0)

@@ -46,7 +46,6 @@ namespace chess
 
     private:
         void initialize();
-        error_e load_scid_line(std::string line, std::string &errextra);
         std::vector<chessopening> m_openings;
         std::map<color_e, std::vector<std::string>> m_preferred;
     };
@@ -54,6 +53,7 @@ namespace chess
     // static calls dependent on instantiation of eco db
     error_e get_chessopenings(std::vector<chessopening> &openings);
     error_e get_preferredecos(color_e col, std::vector<std::string> &ecos);
+    error_e load_scid_line(std::string line, chessopening &open, std::string &errextra);
 
     class chessopenfilter
     {
@@ -61,6 +61,7 @@ namespace chess
         chessopenfilter();
         ~chessopenfilter();
 
+        void initialize();
         void reset();
         error_e narrow(std::vector<chessmove> &filter);
         std::string eco();

@@ -157,6 +157,8 @@ namespace chess
         try
         {
             std::ifstream inf(filename, std::ios::binary);
+            if (!inf.is_open())
+                return e_loading;
             // Save in hash order or m_op_hash
             // begin tag
             std::string tag = "\\/\\/\\/\\v1";
@@ -232,8 +234,11 @@ namespace chess
                         if (partial_line != "")
                             line = trim(partial_line) + " " + trim(line);
                         partial_line = "";
-                        err = load_scid_line(line, errextra);
-                        if (err != e_none)
+                        chessopening open;
+                        err = load_scid_line(line, open, errextra);
+                        if (err == e_none)
+                            m_openings.push_back(open);
+                        else
                             std::cout << "Error, line " << lines << " : " << errorstr(err) << " - " << errextra << std::endl;
                     }
                     else
@@ -256,19 +261,28 @@ namespace chess
     {
         // comma
         size_t c = orig.find_last_of(',');
-        if (c != std::string::npos)
-            return orig.substr(0, c);
-        c = orig.find('.'); // has moves, we will now truncate to :
+        size_t p = orig.find('.');
+        size_t o = orig.find(':');
         if (c != std::string::npos)
         {
-            c = orig.find(':');
-            if (c != std::string::npos)
-                return orig.substr(0, c);
+            if (p == std::string::npos)
+                if (o < c)
+                    return orig;
+            // std::cout << orig.substr(0, c) << "    ,    " << orig << std::endl;
+            return orig.substr(0, c);
+        }
+        if (p != std::string::npos)
+        {
+            if (o != std::string::npos)
+            {
+                // std::cout << orig.substr(0, o) << "    .    " << orig << std::endl;
+                return orig.substr(0, o);
+            }
         }
         return orig;
     }
 
-    error_e chessecodb::load_scid_line(std::string line, std::string &errextra)
+    error_e load_scid_line(std::string line, chessopening &open, std::string &errextra)
     {
         std::string eco;
         std::string title;
@@ -295,25 +309,28 @@ namespace chess
         title = clean_title(trim(title.substr(0, q)));
 
         std::vector<chessmove> move_vec;
-        error_e err = read_pgn_moves(moves, move_vec, errextra);
+        std::string xfen;
+        error_e err = read_pgn_moves(moves, move_vec, xfen, errextra);
 
         if (err == e_none)
-        {
-            chessopening opening(eco, title, move_vec);
-            m_openings.push_back(opening);
-        }
+            open = chessopening(eco, title, move_vec);
         return err;
     }
 
     chessopenfilter::chessopenfilter()
     {
-        get_chessopenings(m_openings);
-        m_filtered = m_openings;
         m_last_match_size = 0;
     }
 
     chessopenfilter::~chessopenfilter()
     {
+    }
+
+    void chessopenfilter::initialize()
+    {
+        get_chessopenings(m_openings);
+        m_filtered = m_openings;
+        m_last_match_size = 0;
     }
 
     void chessopenfilter::reset()

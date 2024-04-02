@@ -217,7 +217,7 @@ namespace chess
         if (our_cx != -1)
         {
             // Kingside Castling
-            poss = b.possible_moves(col, p_king);
+            poss = b.possible_moves(col, p_king, -1, -1, false);
             int8_t kingsrow = (col == c_white) ? 0 : 7;
             m = new_move(kingsrow, 4, kingsrow, our_cx);
             if (contains_move(poss, m, true))
@@ -280,7 +280,7 @@ namespace chess
         std::string ms = si.substr(l - 2);
         if (coord_int(ms, m.p1))
         {
-            poss = b.possible_moves(col, p, yc, xc);
+            poss = b.possible_moves(col, p, yc, xc, false);
             if (contains_move_dest(poss, m))
             {
                 // Double check capture
@@ -337,9 +337,12 @@ namespace chess
                 // inherit is allowing a user move to pick up the en passant and
                 // castle flags the CPU would have determined possible for the
                 // square so the user move need only be a coordinate not additional
-                // instructions.
-                m = possible_moves[i];
-                count++;
+                // instructions.  This is just an exception for pawns
+                if ((m.promote == p_none) || (m.promote == possible_moves[i].promote))
+                {
+                    m = possible_moves[i];
+                    count++;
+                }
             }
         }
         return (count == 1);

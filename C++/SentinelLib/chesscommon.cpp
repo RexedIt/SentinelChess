@@ -98,6 +98,8 @@ namespace chess
             return "No Chess Opening Data";
         case e_pgn_parse:
             return "PGN Parsing Error";
+        case e_invalid_extension:
+            return "Invalid Extension, must be CHS or PGN";
         default:
             return "Unknown Error";
         }
@@ -485,6 +487,13 @@ namespace chess
         return (a.substr(0, b.length()) == b);
     }
 
+    bool ends_with(std::string a, std::string b)
+    {
+        if (a.length() < b.length())
+            return false;
+        return (a.substr(a.length() - b.length(), b.length()) == b);
+    }
+
     const char *ws = " \t\n\r\f\v";
 
     // trim from end of string (right)
@@ -673,13 +682,16 @@ namespace chess
 
     bool save_binary(std::ofstream &of, size_t v)
     {
-        save_nl(of, (char *)&v, sizeof(v));
+        int32_t i = (int32_t)v;
+        save_nl(of, (char *)&i, sizeof(i));
         return true;
     }
 
     bool load_binary(std::ifstream &inf, size_t &v)
     {
-        load_nl(inf, (char *)&v, sizeof(v));
+        int32_t i = 0;
+        load_nl(inf, (char *)&i, sizeof(i));
+        v = (size_t)i;
         return true;
     }
 

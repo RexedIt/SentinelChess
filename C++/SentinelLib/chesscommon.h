@@ -60,7 +60,8 @@ namespace chess
         e_none_found,
         e_incorrect_move,
         e_no_openings,
-        e_pgn_parse
+        e_pgn_parse,
+        e_invalid_extension,
     } error_e;
 
     std::string errorstr(error_e num);
@@ -224,6 +225,7 @@ namespace chess
     std::string uppercase(std::string l);
     std::string lowercase(std::string u);
     bool starts_with(std::string a, std::string b);
+    bool ends_with(std::string a, std::string b);
     uintmax_t get_file_size(std::string f);
     bool get_dir_exists(std::string dirname);
 

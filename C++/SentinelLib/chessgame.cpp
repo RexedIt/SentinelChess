@@ -121,21 +121,26 @@ namespace chess
                 m.mate = true;
                 m.check = check_state(opponent);
                 if (!m.check)
-                    m.mate = false;
-                // Check all moves
-                std::vector<chessmove> pm = possible_moves(opponent);
-                for (size_t i = 0; i < pm.size(); i++)
                 {
-                    chessboard b(m_board);
-                    chessmove m0 = b.attempt_move(opponent, pm[i]);
-                    if (m0.is_valid())
-                    {
-                        m.mate = false;
-                        break;
-                    }
+                    m.mate = false;
                 }
-                if (m.mate)
-                    winner_col = col;
+                else
+                {
+                    // Check all moves
+                    std::vector<chessmove> pm = possible_moves(opponent);
+                    for (size_t i = 0; i < pm.size(); i++)
+                    {
+                        chessboard b(m_board);
+                        chessmove m0 = b.attempt_move(opponent, pm[i]);
+                        if (m0.is_valid())
+                        {
+                            m.mate = false;
+                            break;
+                        }
+                    }
+                    if (m.mate)
+                        winner_col = col;
+                }
             }
             // Conclusion
             if (m.mate)
@@ -433,6 +438,7 @@ namespace chess
         m_turn.clear();
         m_play_pos = -1;
         m_title = title;
+        m_open_filter.initialize();
         add_clock(clock);
         refresh_board_positions();
         set_state(play_e, true);
@@ -449,6 +455,7 @@ namespace chess
             m_state = str_game_state(jsonf["state"]);
             m_win_color = str_color(jsonf["win_color"]);
 
+            m_open_filter.initialize();
             add_clock(chessclock::load(jsonf["Clock"], this));
 
             auto turns = jsonf["turns"];
@@ -550,6 +557,7 @@ namespace chess
 
         color_e tc = b.turn_color();
         std::vector<chessturn> turns;
+        m_open_filter.initialize();
 
         int16_t n = 0;
         chessturn t;
@@ -579,8 +587,25 @@ namespace chess
         m_puzzle = false;
         m_title = p.event();
         refresh_board_positions();
-        goto_turn(turns.size() - 1);
-        set_state(idle_e, true);
+
+        // update the last turn.
+        int last_turn = playmax();
+        game_state_e detect_state = idle_e;
+        if (last_turn >= 1)
+        {
+            // We want to replay the last move for state sake and load position
+            goto_turn(last_turn);
+            chessturn lt = turns[last_turn - 1];
+            m_state = play_e;
+            detect_state = is_game_over(other(lt.c), lt.m);
+            if (m_win_color == c_none)
+                m_win_color = lt.wc = p.win_color();
+            if (detect_state == play_e)
+                detect_state = lt.g = p.game_state();
+            turns[last_turn - 1] = lt;
+        }
+        set_state(detect_state, true);
+        // and set it.
         signal_on_turn();
         return e_none;
     }

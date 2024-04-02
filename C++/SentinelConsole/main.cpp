@@ -80,7 +80,12 @@ bool load_game(std::string cmd, chesslobby &lobby)
     std::string filename = get_arg(cmd);
     if (filename == "")
         return print_error(e_missing_filename);
-    error_e err = lobby.load_game(filename);
+    bool pgn = ends_with(uppercase(filename), ".PGN");
+    bool chs = ends_with(uppercase(filename), ".CHS");
+    if ((!pgn) && (!chs))
+        return print_error(e_invalid_extension);
+    std::string errextra;
+    error_e err = pgn ? lobby.load_pgn(filename, errextra) : lobby.load_game(filename);
     if (err != e_none)
         return print_error(e_loading);
     refresh_data(lobby);
@@ -111,7 +116,7 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
     if (args.size() > 2)
         rating = atoi(args[2].c_str());
     std::string keywords = "";
-    for (int i = 3; i < args.size(); i++)
+    for (size_t i = 3; i < args.size(); i++)
     {
         if (keywords != "")
             keywords += ",";

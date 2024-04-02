@@ -3,6 +3,7 @@
 #include "chesscommon.h"
 #include "chesspgn.h"
 #include "chesslobby.h"
+#include "PGNTest.h"
 
 using namespace chess;
 using namespace testing;
@@ -42,9 +43,27 @@ TEST_F(ChessPGNTest, LoadTest)
     EXPECT_EQ("23:01:03", p["UTCTime"]);
     EXPECT_EQ("600+8", p["TimeControl"]);
     EXPECT_EQ("Normal", p["Termination"]);
+    EXPECT_EQ(c_white, p.win_color());
+    EXPECT_EQ(checkmate_e, p.game_state());
     std::string expected_moves = "1. e4 e6 2. d4 b6 3. a3 Bb7 4. Nc3 Nh6 5. Bxh6 gxh6 6. Be2 Qg5 7. Bg4 h5 "
                                  "8. Nf3 Qg6 9. Nh4 Qg5 10. Bxh5 Qxh4 11. Qf3 Kd8 12. Qxf7 Nc6 13. Qe8# 1-0";
     EXPECT_EQ(expected_moves, p.moves_str());
+}
+
+TEST_F(ChessPGNTest, WikiLoad)
+{
+    chesspgn p;
+    std::string errextra;
+    EXPECT_EQ(e_none, p.load(test_file("wikialgnt.pgn"), errextra));
+    EXPECT_EQ("", errextra);
+    EXPECT_EQ("Third Rosenwald Trophy", p.event());
+    EXPECT_EQ("Donald Byrne", p.white());
+    EXPECT_EQ("Robert James Fischer", p.black());
+    EXPECT_EQ(-1, p.whiteelo());
+    EXPECT_EQ(-1, p.blackelo());
+    EXPECT_EQ("D92", p.eco());
+    EXPECT_EQ(c_black, p.win_color());
+    EXPECT_EQ(checkmate_e, p.game_state());
 }
 
 TEST_F(ChessPGNTest, LobbyLoad)
@@ -57,4 +76,60 @@ TEST_F(ChessPGNTest, LobbyLoad)
     EXPECT_EQ(2, player_names.size());
     EXPECT_EQ("Desmond_Wilson", player_names[c_white]);
     EXPECT_EQ("savinka59", player_names[c_black]);
+    // Check the game state also
+    EXPECT_EQ(c_white, l.game()->win_color());
+    EXPECT_EQ(forfeit_e, l.game()->state());
+    // Now, do 00000009.pgn which ends on a checkmate
+    EXPECT_EQ(e_none, l.load_pgn(test_file("00000009.pgn"), errextra));
+    EXPECT_EQ("", errextra);
+    player_names = l.player_names();
+    EXPECT_EQ(2, player_names.size());
+    EXPECT_EQ("BFG9k", player_names[c_white]);
+    EXPECT_EQ("Sagaz", player_names[c_black]);
+    // Check the game state also
+    EXPECT_EQ(c_black, l.game()->win_color());
+    EXPECT_EQ(checkmate_e, l.game()->state());
+}
+
+TEST_F(ChessPGNTest, KnightMoves)
+{
+    chesspgn p;
+    std::string errextra;
+    EXPECT_EQ(e_none, p.load(test_file("00000007.pgn"), errextra));
+    EXPECT_EQ("", errextra);
+}
+
+TEST_F(ChessPGNTest, QueenPromoteCheck)
+{
+    chesspgn p;
+    std::string errextra;
+    EXPECT_EQ(e_none, p.load(test_file("00000012.pgn"), errextra));
+    EXPECT_EQ("", errextra);
+}
+
+TEST_F(ChessPGNTest, CastleCheck)
+{
+    chesspgn p;
+    std::string errextra;
+    EXPECT_EQ(e_none, p.load(test_file("00000042.pgn"), errextra));
+    EXPECT_EQ("", errextra);
+}
+
+TEST_F(ChessPGNTest, BruteForceLoad)
+{
+    for (int i = 1; i <= cx_pgn_count; i++)
+    {
+        std::ostringstream ss;
+        ss << std::setw(8) << std::setfill('0') << i;
+        std::string pgnfile = ss.str() + ".pgn";
+        {
+            chesspgn p;
+            std::string errextra;
+            EXPECT_EQ(e_none, p.load(test_file(pgnfile), errextra));
+            EXPECT_EQ("", errextra);
+            EXPECT_EQ(pgn_final_xfen(i), p.xfen());
+            // use to generate new XFENs from properly loaded
+            // std::cout << "\"" << p.xfen() << "\", // " << pgnfile << std::endl;
+        }
+    }
 }
