@@ -53,8 +53,7 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("hint"), &SentinelChess::hint);
     ClassDB::bind_method(D_METHOD("hintstr"), &SentinelChess::hintstr);
     ClassDB::bind_method(D_METHOD("win_points", "col"), &SentinelChess::win_points);
-    ClassDB::bind_method(D_METHOD("get_datafolder"), &SentinelChess::get_datafolder);
-    ClassDB::bind_method(D_METHOD("set_datafolder", "f"), &SentinelChess::set_datafolder);
+    ClassDB::bind_method(D_METHOD("initialize", "f"), &SentinelChess::initialize);
     ClassDB::bind_method(D_METHOD("get_meta"), &SentinelChess::get_meta);
     ClassDB::bind_method(D_METHOD("forfeit"), &SentinelChess::forfeit);
     ClassDB::bind_method(D_METHOD("move_m", "col", "m"), &SentinelChess::move_m);
@@ -225,7 +224,9 @@ int SentinelChess::save_game(String filename)
 
 int SentinelChess::load_game(String filename)
 {
-    error_e err = m_lobby.load_game(filename.ascii().get_data());
+    std::string sfilename = filename.ascii().get_data();
+    std::string errorstr;
+    error_e err = m_lobby.load_game(sfilename, errorstr);
     refresh_data();
     return err;
 }
@@ -380,16 +381,11 @@ int SentinelChess::win_points(ChessColor col)
     return m_lobby.win_points((color_e)col);
 }
 
-bool SentinelChess::set_datafolder(const String &r)
+bool SentinelChess::initialize(const String &d)
 {
-    if (set_data_folder(r.ascii().get_data()))
+    if (set_data_folder(d.ascii().get_data()))
         return (m_ecodb.load_binary(data_file("scid.bin")) == e_none);
     return false;
-}
-
-String SentinelChess::get_datafolder()
-{
-    return String(get_data_folder().c_str());
 }
 
 int SentinelChess::forfeit(ChessColor col)

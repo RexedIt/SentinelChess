@@ -47,8 +47,7 @@ private:
     Ref<ChessMove> hint();
     String hintstr();
     int win_points(ChessColor col);
-    bool set_datafolder(const String &);
-    String get_datafolder();
+    bool initialize(const String &);
 
     // For getting high level info about the game, useful one time
     Ref<ChessMeta> get_meta();

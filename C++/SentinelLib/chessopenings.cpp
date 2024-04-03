@@ -320,33 +320,26 @@ namespace chess
     chessopenfilter::chessopenfilter()
     {
         m_last_match_size = 0;
+        m_initialized = false;
     }
 
     chessopenfilter::~chessopenfilter()
     {
     }
 
-    void chessopenfilter::initialize()
-    {
-        if (m_openings.size() == 0)
-            get_chessopenings(m_openings);
-        m_filtered = m_openings;
-        m_last_match_size = 0;
-    }
-
     void chessopenfilter::reset()
     {
-        m_filtered = m_openings;
+        get_chessopenings(m_filtered);
         m_last.clear();
         m_eco = "";
         m_title = "";
         m_last_match_size = 0;
+        m_initialized = true;
     }
 
     error_e chessopenfilter::narrow(std::vector<chessmove> &filter)
     {
-        // if we are rewinding reset
-        if (filter.size() < m_last.size())
+        if ((!m_initialized) || (filter.size() < m_last.size()))
             reset();
         if (equals(filter, m_last))
             return e_none;
@@ -374,16 +367,22 @@ namespace chess
 
     std::vector<chessopening> chessopenfilter::possible_openings()
     {
+        if (!m_initialized)
+            reset();
         return m_filtered;
     }
 
     size_t chessopenfilter::possible_opening_count()
     {
+        if (!m_initialized)
+            reset();
         return m_filtered.size();
     }
 
     error_e chessopenfilter::next_opening_moves(color_e col, std::string eco, std::vector<chessmove> &possible)
     {
+        if (!m_initialized)
+            reset();
         size_t index = m_last.size();
         if ((col == c_black) && (index % 2 == 0))
             return e_out_of_turn;
@@ -413,6 +412,8 @@ namespace chess
 
     void chessopenfilter::find_best_opening_match()
     {
+        if (!m_initialized)
+            reset();
         // Don't do this repeatedly
         if (m_last_match_size == m_filtered.size())
             return;

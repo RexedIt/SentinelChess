@@ -552,7 +552,7 @@ size = Vector2i(640, 480)
 ok_button_text = "Open"
 file_mode = 0
 access = 2
-filters = PackedStringArray("*.chs ; Sentinel Chess Files")
+filters = PackedStringArray("*.chs ; Chess File", "*.pgn; PGN File")
 script = ExtResource("10_we7ge")
 
 [node name="popSave" type="FileDialog" parent="."]
@@ -560,13 +560,13 @@ position = Vector2i(640, 320)
 size = Vector2i(640, 480)
 ok_button_text = "Save"
 access = 2
-filters = PackedStringArray("*.chs ; Sentinel Chess Files")
+filters = PackedStringArray("*.chs ; Chess File", "*.pgn; PGN File")
 script = ExtResource("11_dt7qr")
 
 [node name="popSettings" type="Window" parent="."]
 title = "Settings"
-position = Vector2i(590, 325)
-size = Vector2i(750, 325)
+position = Vector2i(588, 360)
+size = Vector2i(750, 380)
 visible = false
 script = ExtResource("18_vfrru")
 
@@ -637,6 +637,14 @@ text = "SFX Volume
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 value = 50.0
+
+[node name="VSpacer2" type="Label" parent="popSettings/MC/VC"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+
+[node name="chkRotate" type="CheckBox" parent="popSettings/MC/VC"]
+layout_mode = 2
+text = " Auto Rotate Board for Human Players"
 
 [node name="btnOK" type="Button" parent="popSettings"]
 anchors_preset = 7

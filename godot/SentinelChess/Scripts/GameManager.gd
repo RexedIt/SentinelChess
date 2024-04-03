@@ -58,7 +58,7 @@ func _physics_process(delta):
 		match ce.event_type():
 			ChessEvent.ChessEventType.ceRefreshBoard:
 				print('ceRefreshBoard')
-				refresh_board(ce.color(), ce.board())
+				refresh_board(bottom_board(ce.color()), ce.board())
 			ChessEvent.ChessEventType.ceConsider:
 				board.thinking(ce.move().p1)
 			ChessEvent.ChessEventType.ceTurn:
@@ -97,7 +97,7 @@ func _gamestatereact(gs):
 		GameState.INIT:
 			# Initialization
 			print("GS: Initialization")
-			set_datafolder('..\\..\\ChessData\\')
+			initialize('..\\..\\ChessData\\')
 			# for now, we want to move to the new game prompt
 			# later we will select new or load
 			# _newgameprompt()
@@ -212,7 +212,7 @@ func _on_animated():
 	var c : ChessColor = turn_color();
 	if is_local_active(c):
 		var b : ChessBoard = get_board()
-		refresh_board(c, b)
+		refresh_board(bottom_board(c), b)
 		gameUI.refreshPrompt(c)
 	_gamestatereact(GameState.PLAY)
 	
@@ -229,6 +229,11 @@ func _on_closed_new(_cancelled, _title, _white, _black, _clock):
 	gameUI.initialize('New Game')
 	statewait = false
 	_gamestatereact(GameState.PLAY)
+
+func bottom_board(c : ChessColor) ->ChessColor:
+	if skin.rotateBoard:
+		return c
+	return preferred_board_color()
 
 func _on_closed_puzzle(_cancelled, _player, _keywords, _rating):
 	print("on_closed_puzzle")
@@ -284,9 +289,9 @@ func _on_closed_promote(_cancelled, _color, _piece):
 		promotemove.set_promote(_piece)
 		user_move(_color,promotemove,false)
 
-func _on_closed_settings(_cancelled, _skin, _voice, _music, _sfx):
+func _on_closed_settings(_cancelled, _skin, _voice, _music, _sfx, _rot):
 	if !_cancelled:
-		skin.applysettings(_skin,_voice,_music,_sfx)
+		skin.applysettings(_skin,_voice,_music,_sfx,_rot)
 		applyskin()
 			
 func _on_new_game():
@@ -333,7 +338,7 @@ func _draw_move(n, m, b, c):
 	
 func _on_turn(n, b, c):
 	if is_local_active(c) and gamestate != GameState.END:
-		refresh_board(c, b)
+		refresh_board(bottom_board(c), b)
 	else:
 		refresh_board(preferred_board_color(), b)
 	gameUI.refreshPrompt(c)

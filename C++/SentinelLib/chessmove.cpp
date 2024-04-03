@@ -12,6 +12,7 @@ namespace chess
         promote = p_none;
         check = false;
         mate = false;
+        kill = false;
         error = e_none;
     }
 
@@ -27,6 +28,7 @@ namespace chess
         promote = p_none;
         check = false;
         mate = false;
+        kill = false;
         error = e_none;
     }
 
@@ -39,6 +41,7 @@ namespace chess
         promote = p_none;
         check = false;
         mate = false;
+        kill = false;
         error = e_none;
     }
     chessmove::chessmove(coord_s _p0, coord_s _p1, piece_e _promote)
@@ -50,6 +53,7 @@ namespace chess
         promote = _promote;
         check = false;
         mate = false;
+        kill = false;
         error = e_none;
     }
 
@@ -84,6 +88,9 @@ namespace chess
         p1.x = -1;
         p1.y = -1;
         cx = -1;
+        mate = false;
+        check = false;
+        kill = false;
         en_passant = false;
         promote = p_none;
         error = e_none;
@@ -128,6 +135,75 @@ namespace chess
             ret += move_str_c4(m);
         }
         return ret;
+    }
+
+    std::string move_str(chessmove m, chessboard &b)
+    {
+        chesspiece p(b.get(m.p0));
+
+        std::string ms = "";
+        if (m.cx != -1) // castling moves
+        {
+            if (m.cx == 6)
+                ms = "O-O";
+            else
+                ms = "O-O-O";
+        }
+        else
+        {
+            if (p.ptype != p_pawn)
+            {
+                char pc = p.abbr;
+                if (pc >= 'a')
+                    pc -= 32;
+                ms += pc;
+            }
+            // disambiguate now.
+            std::vector<chessmove> da_vec = b.possible_moves(p.color, false);
+            std::string da = "";
+            unsigned char my_piece = p.value & piece_and_color_mask;
+            for (size_t i = 0; i < da_vec.size(); i++)
+            {
+                unsigned char other_piece = b.get(da_vec[i].p0) & piece_and_color_mask;
+                if ((my_piece == other_piece) && (da_vec[i].p0 != m.p0) && (da_vec[i].p1 == m.p1))
+                {
+                    std::string ret = "";
+                    if (da_vec[i].p0.x != m.p0.x)
+                        da = 'a' + m.p0.x;
+                    else if (da_vec[i].p0.y != m.p0.y)
+                        da = '1' + m.p0.y;
+                    break;
+                }
+            }
+            if (p.ptype == p_pawn)
+            {
+                if ((m.kill) && (da == ""))
+                    da = 'a' + m.p0.x;
+            }
+            ms += da;
+            if (m.kill)
+                ms += "x";
+            ms += coord_str(m.p1);
+            if (m.promote)
+            {
+                char pc = abbr_char(m.promote, p.color);
+                if (pc >= 'a')
+                    pc -= 32;
+                ms += "=";
+                ms += pc;
+            }
+            if (m.mate)
+                ms += "#";
+        }
+        color_e tc = b.turn_color();
+        chessmove m1 = b.attempt_move(tc, m);
+        if (m1.error != e_none)
+            return "";
+        if (m1.mate)
+            ms += "#";
+        else if (b.check_state(other(tc)))
+            ms += "+";
+        return ms;
     }
 
     error_e str_move(std::string s, chessmove &m)
@@ -197,9 +273,10 @@ namespace chess
         return false;
     }
 
-    error_e str_move(std::string s, color_e col, chessboard &b, chessmove &m)
+    error_e str_move(std::string s0, color_e col, chessboard &b, chessmove &m)
     {
         // Is it a coordinate move?
+        std::string s = s0;
         size_t l = s.length();
         if (l < 2)
             return e_invalid_move;
@@ -209,6 +286,10 @@ namespace chess
         // Handle castlingit is vastly different
         // note we are using 'contains move' to
         // find and conform a move with the necessary details for our engine
+        bool check = ends_with(s, "+");
+        m.check = false;
+        if (check)
+            s = s.substr(0, s.length() - 1);
         int8_t our_cx = -1;
         if ((s == "O-O") || (s == "0-0"))
             our_cx = 6;
@@ -228,6 +309,7 @@ namespace chess
         // and checkmate etc as those are determined by
         // our engine and can be rebuilt
         std::string si;
+        bool kill = false;
         for (size_t i = 0; i < l; i++)
         {
             char c = s[i];
@@ -238,6 +320,8 @@ namespace chess
                 inc = true;
             if ((c == 'N') || (c == 'B') || (c == 'R') || (c == 'Q') || (c == 'K'))
                 inc = true;
+            if (c == 'x')
+                kill = true;
             if (inc)
                 si += c;
         }
@@ -300,6 +384,8 @@ namespace chess
                     // and en-passant
                     // *** REM *** TODO
                 }
+                m.check = check;
+                m.kill = kill;
                 return e_none;
             }
         }
@@ -391,5 +477,4 @@ namespace chess
         m.error = err;
         return m;
     }
-
 }

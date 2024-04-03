@@ -28,6 +28,7 @@ namespace chess
         bool en_passant;
         bool check;
         bool mate;
+        bool kill;
         error_e error;
     };
 
@@ -39,6 +40,7 @@ namespace chess
     std::string move_str(chessmove m);
     std::string move_str_c4(chessmove m);
     std::string move_str_c4(std::vector<chessmove> v);
+    std::string move_str(chessmove m, chessboard &b);
     error_e str_move(std::string s, chessmove &m);
     error_e str_move(std::string s, color_e c, chessboard &b, chessmove &m);
     bool equals(std::vector<chessmove> &a, std::vector<chessmove> &b);

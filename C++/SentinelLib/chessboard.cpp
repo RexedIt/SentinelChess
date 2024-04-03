@@ -682,7 +682,7 @@ namespace chess
     {
         chessmove m1 = m0;
         chesspiece piece(m_cells[m0.p0.y][m0.p0.x]);
-        move_piece(m0);
+        move_piece(m1);
         if (m_cells[m0.p0.y][m0.p0.x] & piece_mask)
         {
             m_halfmove = 0; // resets on any capture
@@ -725,7 +725,7 @@ namespace chess
                 m_ep.y = m0.p1.y;
             }
             if (m0.en_passant)
-                capture_piece(m0.p0.y, m0.p1.x);
+                m1.kill = capture_piece(m0.p0.y, m0.p1.x);
             if (m0.promote != p_none)
                 m_cells[m0.p1.y][m0.p1.x] = m0.promote + piece.color;
             m_halfmove = 0; // resets
@@ -742,28 +742,27 @@ namespace chess
         return m1;
     }
 
-    void chessboard::move_piece(chessmove m)
+    void chessboard::move_piece(chessmove &m)
     {
         unsigned char dest = m_cells[m.p1.y][m.p1.x] & piece_and_color_mask;
         m_cells[m.p1.y][m.p1.x] = m_cells[m.p0.y][m.p0.x];
         if (dest != 0)
+        {
+            m.kill = true;
             add_captured(dest);
+        }
     }
 
-    void chessboard::capture_piece(coord_s &c)
-    {
-        unsigned char dest = m_cells[c.y][c.x] & piece_and_color_mask;
-        m_cells[c.y][c.x] = 0;
-        if (dest != 0)
-            add_captured(dest);
-    }
-
-    void chessboard::capture_piece(int8_t y, int8_t x)
+    bool chessboard::capture_piece(int8_t y, int8_t x)
     {
         unsigned char dest = m_cells[y][x] & piece_and_color_mask;
         m_cells[y][x] = 0;
         if (dest != 0)
+        {
             add_captured(dest);
+            return true;
+        }
+        return false;
     }
 
     void chessboard::add_captured(unsigned char piece)

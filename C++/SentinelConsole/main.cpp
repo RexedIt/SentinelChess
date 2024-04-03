@@ -80,14 +80,14 @@ bool load_game(std::string cmd, chesslobby &lobby)
     std::string filename = get_arg(cmd);
     if (filename == "")
         return print_error(e_missing_filename);
-    bool pgn = ends_with(uppercase(filename), ".PGN");
-    bool chs = ends_with(uppercase(filename), ".CHS");
-    if ((!pgn) && (!chs))
-        return print_error(e_invalid_extension);
     std::string errextra;
-    error_e err = pgn ? lobby.load_pgn(filename, errextra) : lobby.load_game(filename);
+    error_e err = lobby.load_game(filename, errextra);
     if (err != e_none)
+    {
+        if (errextra != "")
+            print_error(errextra);
         return print_error(e_loading);
+    }
     refresh_data(lobby);
     return true;
 }

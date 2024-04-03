@@ -112,9 +112,8 @@ namespace chess
 
         void evaluate_check_and_mate(color_e col, std::vector<chessmove> &possible, chessmove &m);
         void possible_moves(std::vector<chessmove> &possible, coord_s c);
-        void move_piece(chessmove m);
-        void capture_piece(coord_s &c);
-        void capture_piece(int8_t y, int8_t x);
+        void move_piece(chessmove &m);
+        bool capture_piece(int8_t y, int8_t x);
         void add_captured(unsigned char dest);
         void update_kill_bits();
         void update_check(color_e col);

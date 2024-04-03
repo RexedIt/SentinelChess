@@ -71,13 +71,12 @@ namespace chess
         error_e next_opening_moves(color_e col, std::string eco, std::vector<chessmove> &possible);
 
     private:
-        std::vector<chessopening> m_openings;
-        std::vector<chessopening> m_filtered;
+            std::vector<chessopening> m_filtered;
         std::string m_eco;
         std::string m_title;
         std::vector<chessmove> m_last;
         int m_last_match_size;
-
+        bool m_initialized;
         void find_best_opening_match();
     };
 }

@@ -525,7 +525,9 @@ namespace chess
         while (pos != std::string::npos)
         {
             last_div = (pos == rem.length() - 1);
-            ret.push_back(trim(rem.substr(0, pos)));
+            std::string trimmed = trim(rem.substr(0, pos));
+            if ((div != ' ') || (trimmed != ""))
+                ret.push_back(trim(rem.substr(0, pos)));
             rem = rem.substr(pos + 1);
             pos = rem.find(div);
         }

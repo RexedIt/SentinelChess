@@ -25,13 +25,11 @@ namespace chess
 
         error_e new_game(std::string title, const chessclock_s &clock);
         error_e new_game(std::string title, color_e user_color, std::string name, int skill, chessplayertype_e ptype, const chessclock_s &clock);
-        error_e load_game(std::string filename);
+        error_e load_game(std::string filename, std::string &errextra);
         error_e save_game(std::string filename);
         error_e load_puzzle(std::string name, int skill, chesspuzzle p);
         error_e load_puzzle(std::string name, int skill, std::string filename, std::string keywords, int rating);
         error_e load_puzzle(std::string name, int skill, std::string contents);
-        error_e save_pgn(std::string filename);
-        error_e load_pgn(std::string filename, std::string &errextra);
         error_e add_player(color_e color, std::string name, int skill, chessplayertype_e ptype);
         error_e drop_player(color_e color);
         error_e clear_players();
@@ -57,6 +55,11 @@ namespace chess
         std::map<color_e, std::shared_ptr<chessplayer>> mp_players;
         std::shared_ptr<chessgame> mp_game;
         std::set<color_e> m_locals;
+
+        error_e load_chs(std::string filename, std::string &errextra);
+        error_e load_pgn(std::string filename, std::string &errextra);
+        error_e save_chs(std::string filename);
+        error_e save_pgn(std::string filename);
 
         void attach_to_game();
         void detach_from_game();

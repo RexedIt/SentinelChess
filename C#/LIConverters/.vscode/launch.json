@@ -22,14 +22,16 @@
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/LIPGNConverter/bin/Debug/net5.0/LIPGNConverter.exe",
             "args": [
-                "C:\\Users\\Rex\\Downloads\\lichess_db_standard_rated_2013-01.pgn",
+                "Zvjaginsev.pgn",
                 "-maxItems",
-                "100",
+                "10",
                 "-minrating",
-                "1500",
+                "2400",
+				"-startat",
+				"71",
                 "-out",
                 "C:\\Users\\Rex\\Downloads\\PGN"
-            ]
+            ],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
             "console": "internalConsole"

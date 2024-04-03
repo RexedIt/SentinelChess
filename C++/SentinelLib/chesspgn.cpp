@@ -1,5 +1,6 @@
 #include "chesspgn.h"
 #include "chessboard.h"
+#include "chesspiece.h"
 
 #include <fstream>
 #include <iostream>
@@ -8,6 +9,24 @@ namespace chess
 {
     chesspgn::chesspgn()
     {
+        reset_tags();
+    }
+
+    void chesspgn::reset_tags()
+    {
+        // we do this to preserve order for a few tags which are almost
+        // always given.
+        m_tags.clear();
+        write_tag("Event", "???");
+        write_tag("White", "???");
+        write_tag("Black", "???");
+        write_tag("Result", "???");
+        write_tag("UTCDate", "???");
+        write_tag("UTCTime", "???");
+        write_tag("WhiteElo", "???");
+        write_tag("BlackElo", "???");
+        write_tag("ECO", "???");
+        write_tag("Opening", "???");
     }
 
     std::string chesspgn::event()
@@ -98,6 +117,20 @@ namespace chess
         }
     }
 
+    void chesspgn::set_final_state(game_state_e g, color_e wc)
+    {
+        std::string result = "1/2-1/2";
+        std::string termination = "Normal";
+        if (wc == c_white)
+            result = "1-0";
+        else if (wc == c_black)
+            result = "0-1";
+        if (g == time_up_e)
+            termination = "Time forfeit";
+        write_tag("Result", result);
+        write_tag("Termination", termination);
+    }
+
     error_e chesspgn::read_tag(std::string line)
     {
         size_t l = line.length();
@@ -118,7 +151,7 @@ namespace chess
             if ((rhs[0] == '"') && (rhs[l - 1] == '"'))
             {
                 rhs = trim(rhs.substr(1, l - 2));
-                m_tags[lhs] = rhs;
+                write_tag(lhs, rhs);
                 return e_none;
             }
             return e_pgn_parse;
@@ -139,7 +172,8 @@ namespace chess
             std::string line;
             error_e err = e_none;
 
-            m_tags.clear();
+            reset_tags();
+
             m_moves.clear();
             m_moves_str = "";
 
@@ -147,13 +181,13 @@ namespace chess
 
             while (std::getline(pf, line))
             {
-                if (has_moves)
-                    break; // may be multi file break here
                 line = trim(line);
                 if (line == "")
                     continue;
                 if (starts_with(line, "["))
                 {
+                    if (m_moves_str != "")
+                        break; // may be multi-PGN file.
                     err = read_tag(line);
                     if (err != e_none)
                     {
@@ -163,18 +197,24 @@ namespace chess
                 }
                 else
                 {
-                    has_moves = true;
-                    m_moves_str = line;
-                    error_e err = read_pgn_moves(m_moves_str, m_moves, m_xfen, errextra);
-                    if (err != e_none)
-                    {
-                        // remove
-                        std::cout << "chesspgn::load error " << errextra << std::endl;
-                        return err;
-                    }
-                    if (m_moves.size() == 0)
-                        return e_loading;
+                    if (m_moves_str != "")
+                        m_moves_str += " ";
+                    m_moves_str += line;
                 }
+            }
+            if (m_moves_str != "")
+            {
+                if (!ends_with(m_moves_str, tag("Result")))
+                    return e_loading;
+                error_e err = read_pgn_moves(m_moves_str, m_moves, m_xfen, errextra);
+                if (err != e_none)
+                {
+                    // remove
+                    std::cout << "chesspgn::load error " << errextra << std::endl;
+                    return err;
+                }
+                if (m_moves.size() == 0)
+                    return e_loading;
             }
             return e_none;
         }
@@ -190,17 +230,139 @@ namespace chess
         return tag(key);
     }
 
+    bool chesspgn::remove_tag(std::string key)
+    {
+        for (std::vector<std::pair<std::string, std::string>>::iterator it = m_tags.begin(); it != m_tags.end(); ++it)
+        {
+            std::pair<std::string, std::string> pair = *it;
+            if (pair.first == key)
+            {
+                m_tags.erase(it);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool chesspgn::write_tag(std::string key, std::string value)
+    {
+        if (key == "")
+            return false;
+        if (value == "")
+            return remove_tag(key);
+        for (size_t i = 0; i < m_tags.size(); i++)
+        {
+            std::pair<std::string, std::string> pair = m_tags[i];
+            if (pair.first == key)
+            {
+                pair.second = value;
+                m_tags[i] = pair;
+                return true;
+            }
+        }
+        m_tags.push_back(std::pair<std::string, std::string>(key, value));
+        return true;
+    }
+
+    bool chesspgn::write_tag(std::string key, int value)
+    {
+        return write_tag(key, std::to_string(value));
+    }
+
     std::string chesspgn::tag(std::string key)
     {
-        if (m_tags.count(key))
-            return m_tags[key];
+        for (size_t i = 0; i < m_tags.size(); i++)
+        {
+            std::pair<std::string, std::string> pair = m_tags[i];
+            if (pair.first == key)
+                return pair.second;
+        }
         return "";
+    }
+
+    std::string disambiguate_piece(chessboard &b, coord_s p0, std::vector<chessmove> &m, coord_s p1)
+    {
+        std::string ret = "";
+        unsigned char my_piece = b.get(p0) & piece_and_color_mask;
+        for (size_t i = 0; i < m.size(); i++)
+        {
+            unsigned other_piece = b.get(m[i].p0) & piece_and_color_mask;
+            if ((my_piece == other_piece) && (m[i].p0 != p0) && (m[i].p1 == p1))
+            {
+                std::string ret = "";
+                if (m[i].p0.x != p0.x)
+                    ret = 'a' + p0.x;
+                else if (m[i].p0.y != p0.y)
+                    ret = '1' + p0.y;
+                break;
+            }
+        }
+        return ret;
+    }
+
+    error_e chesspgn::write_moves(std::vector<chessmove> &move_vec)
+    {
+        chessboard b;
+        b.load_xfen(c_open_board);
+        color_e tc = b.turn_color();
+
+        int ft = 0;
+
+        std::string moves_str = "";
+        for (chessmove m : move_vec)
+        {
+            int idx = ft / 2 + 1;
+            if (ft > 0)
+                moves_str += " ";
+            if ((ft++ % 2) == 0)
+                moves_str += std::to_string(idx) + ". ";
+            moves_str += move_str(m, b);
+            if (moves_str == "")
+                return e_saving;
+        }
+
+        if (game_state() == checkmate_e)
+        {
+            if (!ends_with(moves_str, "#"))
+                moves_str += "#";
+        }
+        if (win_color() == c_white)
+            moves_str += " 1-0";
+        else if (win_color() == c_black)
+            moves_str += " 0-1";
+        else
+            moves_str += " 1/2-1/2";
+
+        m_moves_str = moves_str;
+        return e_none;
     }
 
     error_e chesspgn::save(std::string filename)
     {
-        // *** REM *** TODO
-        return e_none;
+        try
+        {
+            std::ofstream pf(filename);
+            if (!pf.is_open())
+                return e_saving;
+
+            for (size_t i = 0; i < m_tags.size(); i++)
+            {
+                std::pair<std::string, std::string> pair = m_tags[i];
+                pf << "[" << pair.first << " \"" << pair.second << "\"]" << std::endl;
+            }
+
+            pf << std::endl;
+
+            pf << m_moves_str << std::endl;
+
+            pf.close();
+            return e_none;
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
+            return e_saving;
+        }
     }
 
     error_e load_move(std::string s, color_e tc, chessboard &b, chessmove &m, std::string &errextra)
@@ -313,5 +475,4 @@ namespace chess
         }
         return err;
     }
-
 }

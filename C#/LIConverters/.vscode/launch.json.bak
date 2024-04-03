@@ -1,0 +1,40 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "LIPuzzleConverter",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/LIPuzzleConverter/bin/Debug/net5.0/LIPuzzleConverter.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "LIPGNConverter",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/LIPGNConverter/bin/Debug/net5.0/LIPGNConverter.exe",
+            "args": [
+                "Zvjaginsev.pgn.pgn",
+                "-maxItems",
+                "10",
+                "-minrating",
+                "2400",
+				"-startat",
+				"71",
+                "-out",
+                "C:\\Users\\Rex\\Downloads\\PGN"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        }
+    ]
+}

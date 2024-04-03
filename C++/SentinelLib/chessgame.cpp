@@ -438,7 +438,7 @@ namespace chess
         m_turn.clear();
         m_play_pos = -1;
         m_title = title;
-        m_open_filter.initialize();
+        m_open_filter.reset();
         add_clock(clock);
         refresh_board_positions();
         set_state(play_e, true);
@@ -455,7 +455,7 @@ namespace chess
             m_state = str_game_state(jsonf["state"]);
             m_win_color = str_color(jsonf["win_color"]);
 
-            m_open_filter.initialize();
+            m_open_filter.reset();
             add_clock(chessclock::load(jsonf["Clock"], this));
 
             auto turns = jsonf["turns"];
@@ -557,7 +557,7 @@ namespace chess
 
         color_e tc = b.turn_color();
         std::vector<chessturn> turns;
-        m_open_filter.initialize();
+        m_open_filter.reset();
 
         int16_t n = 0;
         chessturn t;
@@ -603,6 +603,7 @@ namespace chess
             if (detect_state == play_e)
                 detect_state = lt.g = p.game_state();
             turns[last_turn - 1] = lt;
+            narrow_moves();
         }
         set_state(detect_state, true);
         // and set it.
@@ -612,8 +613,16 @@ namespace chess
 
     error_e chessgame::save_pgn(chesspgn &p)
     {
-        // *** REM *** TODO
-        return e_none;
+        p.write_tag("Event", m_title);
+        int last_turn = playmax();
+        if (last_turn >= 1)
+        {
+            chessturn lt = m_turn[last_turn - 1];
+            p.set_final_state(lt.g, lt.wc);
+        }
+        p.write_tag("ECO", m_open_filter.eco());
+        p.write_tag("Opening", m_open_filter.title());
+        return p.write_moves(moves());
     }
 
     error_e chessgame::save_game(json &jsonf)

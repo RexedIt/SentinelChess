@@ -91,8 +91,21 @@ namespace chess
         return err;
     }
 
-    error_e chesslobby::load_game(std::string filename)
+    error_e chesslobby::load_game(std::string filename, std::string &errextra)
     {
+        bool pgn = ends_with(uppercase(filename), ".PGN");
+        return pgn ? load_pgn(filename, errextra) : load_chs(filename, errextra);
+    }
+
+    error_e chesslobby::save_game(std::string filename)
+    {
+        bool pgn = ends_with(uppercase(filename), ".PGN");
+        return pgn ? save_pgn(filename) : save_chs(filename);
+    }
+
+    error_e chesslobby::load_chs(std::string filename, std::string &errextra)
+    {
+        errextra = "";
         backup();
         try
         {
@@ -138,7 +151,7 @@ namespace chess
         }
     }
 
-    error_e chesslobby::save_game(std::string filename)
+    error_e chesslobby::save_chs(std::string filename)
     {
         try
         {
@@ -239,12 +252,33 @@ namespace chess
 
     error_e chesslobby::save_pgn(std::string filename)
     {
+        try
+        {
+            chesspgn p;
+
+            for (const auto &kv : mp_players)
+            {
+                std::string colname = color_str(kv.second->playercolor());
+                p.write_tag(colname, kv.second->playername());
+                p.write_tag(colname + "Elo", kv.second->playerskill());
+            }
+
+            error_e err = mp_game->save_pgn(p);
+            if (err == e_none)
+                err = p.save(filename);
+            return err;
+        }
+        catch (const std::exception &)
+        {
+            return e_saving;
+        }
         return e_none;
     }
 
     error_e chesslobby::load_pgn(std::string filename, std::string &errextra)
     {
         // Load the pgn first
+        errextra = "";
         chesspgn p;
         error_e err = p.load(filename, errextra);
         if (err != e_none)

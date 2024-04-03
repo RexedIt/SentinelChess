@@ -2,7 +2,7 @@
 
 namespace chess
 {
-    const size_t cx_pgn_count = 50;
+    const size_t cx_pgn_count = 80;
     const char *cx_pgn_final_xfen[] = {
         "r2kQb1r/pbpp3p/1pn1p3/7B/3PP2q/P1N5/1PP2PPP/R3K2R b KQ - 0 26",          // 00000001.pgn
         "7B/pppk1p2/3bp1p1/8/3nN3/3B4/PPPK1PP1/R7 b - - 0 36",                    // 00000002.pgn
@@ -54,6 +54,36 @@ namespace chess
         "5rk1/pp3ppp/2n5/8/8/P3P3/1P3P1P/2Kq4 w - - 0 43",                        // 00000048.pgn
         "2kr1bnr/ppp1p1p1/n5pp/3NP3/3P2B1/8/PP3PPP/R1BQK2R b KQ - 0 24",          // 00000049.pgn
         "r4rk1/3Q1pbp/P3p1p1/3pP3/2nP4/4PN2/1P2N1PP/R4RK1 b - - 0 44",            // 00000050.pgn
+        "6k1/2P5/6pp/8/pp4PP/4R3/6BK/3r4 b - - 0 82",                             // 00000051.pgn
+        "8/1R6/8/8/2KB4/k7/6r1/8 b - - 0 280",                                    // 00000052.pgn
+        "R3bk2/5p1p/3p1P2/3P2p1/6P1/2P1K2P/1r2B3/8 b - - 0 88",                   // 00000053.pgn
+        "8/8/1p6/bBrk2p1/P2Rp3/4K2P/8/8 b - - 0 110",                             // 00000054.pgn
+        "2R5/4ppkp/5bp1/8/3p1P2/P2P1RP1/6qr/3QK3 w - - 0 65",                     // 00000055.pgn
+        "8/8/5k2/6p1/3N1pK1/8/r7/6R1 b - - 0 132",                                // 00000056.pgn
+        "6b1/4K1P1/p4P2/P7/6k1/8/8/8 b - - 0 148",                                // 00000057.pgn
+        "4bk2/R3P3/5K2/7p/p3B3/5Pr1/8/8 b - - 0 104",                             // 00000058.pgn
+        "8/6k1/4R3/6p1/5p2/4p3/r7/4K3 w - - 0 115",                               // 00000059.pgn
+        "3qrb2/3nNp1k/ppb5/2p1B2p/P1P2P2/1P6/2B3PP/3R2K1 b - - 0 64",             // 00000060.pgn
+        "8/1Q6/p7/8/8/P5qP/5p1p/k6K w - - 0 113",                                 // 00000061.pgn
+        "1nr3k1/2q1b1pp/3rp3/1QB1p3/4P3/2P2N2/5PPP/1RR3K1 w - - 0 77",            // 00000062.pgn
+        "8/pQ4p1/2n2k1p/8/5P2/6K1/PP5P/2q5 w - - 0 81",                           // 00000063.pgn
+        "r1b1rk2/1p2qpp1/2p3n1/p3P2Q/P2NpP2/1B5P/1PP2BP1/4R1K1 b - - 0 44",       // 00000064.pgn
+        "5rk1/p4ppp/1p2p3/3b4/2BNn3/1P2P1P1/PB2RK1P/2Q4q w - - 0 45",             // 00000065.pgn
+        "4r1k1/2R3pp/p7/2bBp3/8/1PP3P1/P3bP1P/6K1 b - - 0 46",                    // 00000066.pgn
+        "5k2/5p1B/2n1b2p/3p2bP/2pP3p/2R5/5P2/3N2K1 w - - 0 63",                   // 00000067.pgn
+        "8/2q2kb1/3p1pp1/3Pp2p/1QN1P3/1P5P/5PP1/6K1 b - - 0 104",                 // 00000068.pgn
+        "r3r1k1/p4pbp/3p2p1/1Pq3B1/2bN1P2/3R4/1P4PP/3QR1K1 w - - 0 65",           // 00000069.pgn
+        "4r2k/1pp3pp/1n6/p7/P7/2PN4/1P3q1N/R1BQ3K b - - 0 52",                    // 00000070.pgn
+        "8/p7/1p3p2/2p1k1pp/P1R1P3/2PK2P1/4P3/2r5 w - - 0 109",                   // 00000071.pgn
+        "8/2k5/5Rp1/p1p4p/K1P2P2/2Pb2P1/8/8 b - - 0 104",                         // 00000072.pgn
+        "8/6p1/8/1k4p1/1p2p1P1/1Pp1P3/2K2P2/8 w - - 0 151",                       // 00000073.pgn
+        "5r2/p2R1pk1/2p3pp/8/8/3R2P1/PP1n1PKP/3r4 b - - 0 60",                    // 00000074.pgn
+        "8/7p/4b1p1/4k3/4p2P/4K1P1/4NP2/8 w - - 0 85",                            // 00000075.pgn
+        "8/1p2k3/p2p1np1/B1pP1p1p/P1PbnP1P/3B1KP1/1P6/3N4 b - - 0 80",            // 00000076.pgn
+        "8/p1r5/1p2kP2/8/5Rn1/2B4p/bPP4P/2K2B2 b - - 0 78",                       // 00000077.pgn
+        "8/p4r2/6pQ/1P1pR3/3P1pk1/q7/6P1/6K1 b - - 0 84",                         // 00000078.pgn
+        "4k3/R6R/5p2/2p1p2p/4P1p1/6P1/1r1r3P/4K3 b - - 0 98",                     // 00000079.pgn
+        "8/5pk1/1q6/5R2/6P1/5B2/4PK2/8 w - - 0 107"                               // 00000080.pgn
     };
 
     std::string pgn_final_xfen(int fileno)
