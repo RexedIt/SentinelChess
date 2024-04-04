@@ -29,6 +29,7 @@ namespace chess
 
         friend class chessplayer;
         friend class chesscomputer;
+        friend class chesspuzzleplayer;
         friend class chessgamelistener;
         friend class chesslobby;
         friend class chessclock;
@@ -136,6 +137,8 @@ namespace chess
         int m_hints;
         int m_points;
         std::string m_title;
+        std::string m_puzzle_id;
+        std::string m_puzzle_open;
 
         color_e m_win_color;
 

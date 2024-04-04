@@ -83,10 +83,10 @@ TEST_F(ChessPGNTest, SaveLobbyTest)
 {
     chesslobby l;
     std::string errextra;
-    EXPECT_EQ(e_none, l.load_pgn(test_file("00000002.pgn"), errextra));
+    EXPECT_EQ(e_none, l.load_game(test_file("00000002.pgn"), errextra));
     EXPECT_EQ("", errextra);
-    EXPECT_EQ(e_none, l.save_pgn("s0000002.pgn"));
-    EXPECT_EQ(e_none, l.load_pgn("s0000002.pgn", errextra));
+    EXPECT_EQ(e_none, l.save_game("s0000002.pgn"));
+    EXPECT_EQ(e_none, l.load_game("s0000002.pgn", errextra));
     std::map<color_e, std::string> player_names = l.player_names();
     EXPECT_EQ(2, player_names.size());
     EXPECT_EQ("Desmond_Wilson", player_names[c_white]);
@@ -114,7 +114,7 @@ TEST_F(ChessPGNTest, LobbyLoad)
 {
     chesslobby l;
     std::string errextra;
-    EXPECT_EQ(e_none, l.load_pgn(test_file("00000002.pgn"), errextra));
+    EXPECT_EQ(e_none, l.load_game(test_file("00000002.pgn"), errextra));
     EXPECT_EQ("", errextra);
     std::map<color_e, std::string> player_names = l.player_names();
     EXPECT_EQ(2, player_names.size());
@@ -124,7 +124,7 @@ TEST_F(ChessPGNTest, LobbyLoad)
     EXPECT_EQ(c_white, l.game()->win_color());
     EXPECT_EQ(forfeit_e, l.game()->state());
     // Now, do 00000009.pgn which ends on a checkmate
-    EXPECT_EQ(e_none, l.load_pgn(test_file("00000009.pgn"), errextra));
+    EXPECT_EQ(e_none, l.load_game(test_file("00000009.pgn"), errextra));
     EXPECT_EQ("", errextra);
     player_names = l.player_names();
     EXPECT_EQ(2, player_names.size());
@@ -164,7 +164,7 @@ TEST_F(ChessPGNTest, Abdusattorov)
     // multiline
     chesslobby l;
     std::string errextra;
-    EXPECT_EQ(e_none, l.load_pgn(test_file("00000051.pgn"), errextra));
+    EXPECT_EQ(e_none, l.load_game(test_file("00000051.pgn"), errextra));
     EXPECT_EQ("", errextra);
     std::map<color_e, std::string> player_names = l.player_names();
     EXPECT_EQ(2, player_names.size());
@@ -178,7 +178,7 @@ TEST_F(ChessPGNTest, Grenkeop)
     // multiline
     chesslobby l;
     std::string errextra;
-    EXPECT_EQ(e_none, l.load_pgn(test_file("00000061.pgn"), errextra));
+    EXPECT_EQ(e_none, l.load_game(test_file("00000061.pgn"), errextra));
     EXPECT_EQ("", errextra);
     std::map<color_e, std::string> player_names = l.player_names();
     EXPECT_EQ(2, player_names.size());

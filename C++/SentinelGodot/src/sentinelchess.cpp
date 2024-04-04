@@ -44,6 +44,7 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("player_name", "col"), &SentinelChess::player_name);
     ClassDB::bind_method(D_METHOD("player_names"), &SentinelChess::player_names);
     ClassDB::bind_method(D_METHOD("preferred_board_color"), &SentinelChess::preferred_board_color);
+    ClassDB::bind_method(D_METHOD("lone_local_color"), &SentinelChess::lone_local_color);
 
     ClassDB::bind_method(D_METHOD("state"), &SentinelChess::state);
     ClassDB::bind_method(D_METHOD("check_state"), &SentinelChess::check_state);
@@ -55,6 +56,8 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("win_points", "col"), &SentinelChess::win_points);
     ClassDB::bind_method(D_METHOD("initialize", "f"), &SentinelChess::initialize);
     ClassDB::bind_method(D_METHOD("get_meta"), &SentinelChess::get_meta);
+    ClassDB::bind_method(D_METHOD("eco"), &SentinelChess::eco);
+    ClassDB::bind_method(D_METHOD("open_title"), &SentinelChess::open_title);
     ClassDB::bind_method(D_METHOD("forfeit"), &SentinelChess::forfeit);
     ClassDB::bind_method(D_METHOD("move_m", "col", "m"), &SentinelChess::move_m);
     ClassDB::bind_method(D_METHOD("move_c", "col", "p0", "p1", "promote"), &SentinelChess::move_c);
@@ -135,20 +138,42 @@ Ref<ChessEvent> SentinelChess::popevent()
 
 Ref<ChessMove> SentinelChess::lastmove()
 {
-    chessturn t = mp_game->play_turn();
+    chessturn t;
+    if (mp_game)
+        t = mp_game->play_turn();
     Ref<ChessMove> cm(memnew(ChessMove(t.m)));
     return cm;
 }
 
 Ref<ChessMeta> SentinelChess::get_meta()
 {
-    Ref<ChessMeta> cm(memnew(ChessMeta(mp_game, m_lobby)));
-    return cm;
+    if (mp_game)
+    {
+        Ref<ChessMeta> cm(memnew(ChessMeta(mp_game, m_lobby)));
+        return cm;
+    }
+    return nullptr;
+}
+
+String SentinelChess::eco()
+{
+    if (mp_game)
+        return String(mp_game->eco().c_str());
+    return "";
+}
+
+String SentinelChess::open_title()
+{
+    if (mp_game)
+        return String(mp_game->open_title().c_str());
+    return "";
 }
 
 ChessColor SentinelChess::lastcolor()
 {
-    chessturn t = mp_game->play_turn();
+    chessturn t;
+    if (mp_game)
+        t = mp_game->play_turn();
     return (ChessColor)t.c;
 }
 
@@ -247,18 +272,23 @@ String SentinelChess::save_xfen()
 
 ChessColor SentinelChess::turn_color()
 {
-    return (ChessColor)mp_game->turn_color();
+    if (mp_game)
+        return (ChessColor)mp_game->turn_color();
+    return cNone;
 }
 
 ChessColor SentinelChess::win_color()
 {
-    return (ChessColor)mp_game->win_color();
+    if (mp_game)
+        return (ChessColor)mp_game->win_color();
+    return cNone;
 }
 
 bool SentinelChess::computer_moving()
 {
-    if (mp_game->state() == play_e)
-        return !m_lobby.is_local_turn();
+    if (mp_game)
+        if (mp_game->state() == play_e)
+            return !m_lobby.is_local_turn();
     return false;
 }
 
@@ -337,6 +367,14 @@ ChessColor SentinelChess::preferred_board_color()
     return (ChessColor)c_white;
 }
 
+ChessColor SentinelChess::lone_local_color()
+{
+    std::set<color_e> locals = m_lobby.local_players();
+    if (locals.size() == 1)
+        return (ChessColor)(*(locals.begin()));
+    return (ChessColor)c_none;
+}
+
 bool SentinelChess::check_state(ChessColor col)
 {
     if (mp_game)
@@ -367,13 +405,19 @@ int SentinelChess::hints()
 
 Ref<ChessMove> SentinelChess::hint()
 {
-    Ref<ChessMove> cm(memnew(ChessMove(mp_game->hint())));
-    return cm;
+    if (mp_game)
+    {
+        Ref<ChessMove> cm(memnew(ChessMove(mp_game->hint())));
+        return cm;
+    }
+    return nullptr;
 }
 
 String SentinelChess::hintstr()
 {
-    return String(mp_game->hintstr().c_str());
+    if (mp_game)
+        return String(mp_game->hintstr().c_str());
+    return "";
 }
 
 int SentinelChess::win_points(ChessColor col)
@@ -397,7 +441,7 @@ int SentinelChess::forfeit(ChessColor col)
 
 int SentinelChess::move_c(ChessColor col, const Ref<ChessCoord> &p0, const Ref<ChessCoord> &p1, ChessPiece promote)
 {
-    if ((p0.is_valid()) && (p1.is_valid()))
+    if ((mp_game) && (p0.is_valid()) && (p1.is_valid()))
         return mp_game->move((color_e)col, p0->get(), p1->get(), (piece_e)promote);
     else
         return e_invalid_reference;
@@ -405,7 +449,7 @@ int SentinelChess::move_c(ChessColor col, const Ref<ChessCoord> &p0, const Ref<C
 
 int SentinelChess::move_m(ChessColor col, const Ref<ChessMove> &m)
 {
-    if (m.is_valid())
+    if ((mp_game) && (m.is_valid()))
         return mp_game->move((color_e)col, m->get());
     else
         return e_invalid_reference;
@@ -422,12 +466,16 @@ Array SentinelChess::possible_moves(ChessColor col)
 {
     Array a;
 
-    std::vector<chessmove> sv = mp_game->possible_moves((color_e)col);
-    for (int i = 0; i < sv.size(); i++)
+    if (mp_game)
     {
-        Ref<ChessMove> cm(memnew(ChessMove(sv[i])));
-        a.push_back(cm);
+        std::vector<chessmove> sv = mp_game->possible_moves((color_e)col);
+        for (int i = 0; i < sv.size(); i++)
+        {
+            Ref<ChessMove> cm(memnew(ChessMove(sv[i])));
+            a.push_back(cm);
+        }
     }
+
     return a;
 }
 

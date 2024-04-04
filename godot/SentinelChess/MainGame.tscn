@@ -679,14 +679,15 @@ script = ExtResource("10_0mwoa")
 step = 16
 
 [node name="pnlScore" type="Panel" parent="GameUI"]
-offset_left = 16.0
+offset_left = 10.0
 offset_top = 968.0
-offset_right = 419.0
+offset_right = 413.0
 offset_bottom = 1071.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_ck3d1")
 script = ExtResource("18_m2w67")
 
 [node name="sprPuzzle" type="Sprite2D" parent="GameUI/pnlScore"]
+visible = false
 texture_filter = 1
 position = Vector2(5, 8)
 texture = ExtResource("20_bw7a2")
@@ -720,11 +721,20 @@ vertical_alignment = 1
 offset_left = 1516.0
 offset_top = 10.0
 offset_right = 1903.0
-offset_bottom = 169.0
+offset_bottom = 135.0
 theme_type_variation = &"LargeFont"
 theme_override_colors/font_color = Color(0.890196, 0.890196, 0.890196, 1)
 text = "No Game"
 horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="lblEco" type="Label" parent="GameUI"]
+offset_left = 1518.0
+offset_top = 135.0
+offset_right = 1901.0
+offset_bottom = 177.0
+theme_type_variation = &"SmallFont"
 vertical_alignment = 1
 autowrap_mode = 3
 

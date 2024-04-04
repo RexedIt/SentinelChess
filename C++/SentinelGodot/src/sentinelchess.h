@@ -52,6 +52,9 @@ private:
     // For getting high level info about the game, useful one time
     Ref<ChessMeta> get_meta();
 
+    String eco();
+    String open_title();
+
     int forfeit(ChessColor col);
     int move_c(ChessColor col, const Ref<ChessCoord> &p0, const Ref<ChessCoord> &p1, ChessPiece promote);
     int move_m(ChessColor col, const Ref<ChessMove> &m);
@@ -88,6 +91,7 @@ private:
     String player_name(ChessColor col);
     Dictionary player_names();
     ChessColor preferred_board_color();
+    ChessColor lone_local_color();
 
     // Board helpers
     bool cell_interactive(int y, int x);

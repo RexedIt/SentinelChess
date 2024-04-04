@@ -16,3 +16,5 @@ HugeFont/base_type = &"Label"
 HugeFont/font_sizes/font_size = 46
 LargeFont/base_type = &"Label"
 LargeFont/font_sizes/font_size = 34
+SmallFont/base_type = &"Label"
+SmallFont/font_sizes/font_size = 22

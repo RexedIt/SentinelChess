@@ -78,6 +78,12 @@ namespace chess
             cancel_execution();
     }
 
+    void chesscomputer::stop_listening()
+    {
+        if (mp_game)
+            mp_game->unlisten(id());
+    }
+
     float chesscomputer::weight(chessboard &board, color_e col)
     {
         const float kc_weight = 0.25f;

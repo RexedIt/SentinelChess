@@ -306,7 +306,7 @@ namespace chess
         if (moves == "*")
             return e_none;
 
-        title = clean_title(trim(title.substr(0, q)));
+        title = trim(title.substr(0, q)); // clean_title(trim(title.substr(0, q)));
 
         std::vector<chessmove> move_vec;
         std::string xfen;
@@ -337,6 +337,23 @@ namespace chess
         m_initialized = true;
     }
 
+    bool chessopenfilter::narrow_increment(std::vector<chessmove> &outer_filter, size_t to_pos)
+    {
+        std::vector<chessmove> filter;
+        std::copy(outer_filter.begin(), outer_filter.begin() + to_pos, back_inserter(filter));
+
+        std::vector<chessopening> refilter;
+        for (size_t i = 0; i < m_filtered.size(); i++)
+            if (m_filtered[i].startswith(filter))
+                refilter.push_back(m_filtered[i]);
+        if (refilter.size() > 0)
+        {
+            m_filtered = refilter;
+            return true;
+        }
+        return false;
+    }
+
     error_e chessopenfilter::narrow(std::vector<chessmove> &filter)
     {
         if ((!m_initialized) || (filter.size() < m_last.size()))
@@ -344,11 +361,14 @@ namespace chess
         if (equals(filter, m_last))
             return e_none;
         // Okay we can refilter
-        std::vector<chessopening> refilter;
-        for (size_t i = 0; i < m_filtered.size(); i++)
-            if (m_filtered[i].startswith(filter))
-                refilter.push_back(m_filtered[i]);
-        m_filtered = refilter;
+        // we will do this on the basis of last ... and incrementally
+        size_t base = m_last.size();
+        size_t high = filter.size();
+        while (base++ < high)
+        {
+            if (!narrow_increment(filter, base))
+                break;
+        }
         m_last = filter;
         return e_none;
     }

@@ -5,6 +5,7 @@ extends CanvasLayer
 
 @onready var pnlScore : Panel = get_node('pnlScore')
 @onready var lblTitle : Label = get_node('lblTitle')
+@onready var lblEco : Label = get_node('lblEco')
 @onready var pnlPlayerTop : Panel = get_node('pnlPlayerTop')
 @onready var pnlPlayerBottom : Panel = get_node('pnlPlayerBottom')
 @onready var pnlCaptured : Panel = get_node('pnlCaptured')
@@ -74,6 +75,7 @@ func applyskin():
 	lblWhiteClock.set_theme(skin.theme)
 	lblBlackClock.set_theme(skin.theme)
 	lblTitle.set_theme(skin.theme)
+	lblEco.set_theme(skin.theme)
 	lblHistory.set_theme(skin.theme)
 	lblCmd.set_theme(skin.theme)
 	txtCmd.set_theme(skin.theme)
@@ -122,6 +124,7 @@ func initialize(msg : String):
 	meta = game_manager.get_meta()
 	var tc = game_manager.turn_color()
 	lblTitle.text = meta.title()
+	setEcoValues(meta.eco(), meta.open_title())
 	puzzle = meta.puzzle()
 	hints = meta.hints()
 	points = meta.points()
@@ -142,6 +145,14 @@ func initialize(msg : String):
 	append_history(msg)
 	#update_players(tc)
 	announceTurn(tc)
+	
+func setEcoValues(eco : String, open_title : String):
+	var s : String = eco
+	if open_title != '':
+		if s != '':
+			s = s + ' - '
+		s = s + open_title
+	lblEco.text = s
 	
 func clear_history():
 	lblHistory.clear()
@@ -211,7 +222,8 @@ func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.Che
 	if (b.check_state(SentinelChess.White)):
 		append_history('White in Check.', 'white')
 		add_voice('Check')
-		
+	setEcoValues(game_manager.eco(), game_manager.open_title())
+	
 # UI Handlers
 func show_error(msg : String):
 	errortime = 3

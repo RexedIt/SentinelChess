@@ -200,10 +200,11 @@ namespace chess
         color_e tc = b.turn_color();
 
         backup();
-
         // create game object early
         mp_game = std::shared_ptr<chessgame>(new chessgame());
         attach_to_game();
+
+        clear_players();
 
         err = add_player(other(tc), name, skill, t_human);
         if (err != e_none)
@@ -290,6 +291,8 @@ namespace chess
         mp_game = std::shared_ptr<chessgame>(new chessgame());
         attach_to_game();
 
+        clear_players();
+
         err = add_player(c_white, p.white(), p.whiteelo(), t_human);
         if (err != e_none)
             return restore(err);
@@ -357,11 +360,7 @@ namespace chess
         std::lock_guard<std::mutex> guard(m_mutex);
         if (mp_game)
             for (const auto &kv : mp_players)
-            {
-                std::shared_ptr<chesscomputer> pc = std::dynamic_pointer_cast<chesscomputer>(kv.second);
-                if (pc)
-                    mp_game->unlisten(pc->id());
-            }
+                kv.second->stop_listening();
 
         mp_players.clear();
         m_locals.clear();

@@ -22,6 +22,7 @@ namespace chess
         virtual void signal_refresh_board(int16_t, chessboard &) { ; }
         virtual void signal_on_consider(chessmove, color_e, int8_t pct = -1) { ; }
         virtual void signal_chat(std::string, color_e) { ; }
+        virtual void stop_listening();
 
     private:
         float weight(chessboard &board, color_e col);

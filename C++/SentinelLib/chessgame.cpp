@@ -36,13 +36,19 @@ namespace chess
     std::string chessgame::eco()
     {
         // depends on state of eco database and move history
-        return m_open_filter.eco();
+        if (m_puzzle)
+            return m_puzzle_id;
+        else
+            return m_open_filter.eco();
     }
 
     std::string chessgame::open_title()
     {
         // depends on state of eco database and move history
-        return m_open_filter.title();
+        if (m_puzzle)
+            return m_puzzle_open;
+        else
+            return m_open_filter.title();
     }
 
     int chessgame::possible_opening_count()
@@ -434,6 +440,9 @@ namespace chess
     {
         m_win_color = c_none;
         m_init_board = c_open_board;
+        m_puzzle = false;
+        m_puzzle_id = "";
+        m_puzzle_open = "";
         m_board.load_xfen(m_init_board);
         m_turn.clear();
         m_play_pos = -1;
@@ -471,6 +480,8 @@ namespace chess
 
             JSON_LOAD(jsonf, "init_board", m_init_board, c_open_board);
             JSON_LOAD(jsonf, "puzzle", m_puzzle, false);
+            JSON_LOAD(jsonf, "puzzle_id", m_puzzle_id, "");
+            JSON_LOAD(jsonf, "puzzle_open", m_puzzle_open, "");
             JSON_LOAD(jsonf, "hints", m_hints, 0);
             JSON_LOAD(jsonf, "title", m_title, "");
             JSON_LOAD(jsonf, "points", m_points, 0);
@@ -540,7 +551,9 @@ namespace chess
         m_play_pos = -1;
         m_board.load_xfen(p.fen);
         m_puzzle = true;
-        m_title = p.title();
+        m_title = p.themes;
+        m_puzzle_id = p.puzzleid;
+        m_puzzle_open = p.openingtags;
         m_hints = turns.size() / 4;
         refresh_board_positions();
         set_state(play_e, true);
@@ -585,7 +598,10 @@ namespace chess
         m_play_pos = -1;
         m_board.load_xfen(c_open_board);
         m_puzzle = false;
+        m_puzzle_id = "";
+        m_puzzle_open = "";
         m_title = p.event();
+
         refresh_board_positions();
 
         // update the last turn.
@@ -603,8 +619,8 @@ namespace chess
             if (detect_state == play_e)
                 detect_state = lt.g = p.game_state();
             turns[last_turn - 1] = lt;
-            narrow_moves();
         }
+        narrow_moves();
         set_state(detect_state, true);
         // and set it.
         signal_on_turn();
@@ -652,6 +668,8 @@ namespace chess
 
             jsonf["init_board"] = m_init_board;
             jsonf["puzzle"] = m_puzzle;
+            jsonf["puzzle_id"] = m_puzzle_id;
+            jsonf["puzzle_open"] = m_puzzle_open;
             jsonf["hints"] = m_hints;
             jsonf["title"] = m_title;
             jsonf["play_pos"] = m_play_pos;

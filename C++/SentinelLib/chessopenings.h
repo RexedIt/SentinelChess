@@ -64,6 +64,7 @@ namespace chess
         void initialize();
         void reset();
         error_e narrow(std::vector<chessmove> &filter);
+        bool narrow_increment(std::vector<chessmove> &filter, size_t to_pos);
         std::string eco();
         std::string title();
         std::vector<chessopening> possible_openings();
@@ -71,7 +72,7 @@ namespace chess
         error_e next_opening_moves(color_e col, std::string eco, std::vector<chessmove> &possible);
 
     private:
-            std::vector<chessopening> m_filtered;
+        std::vector<chessopening> m_filtered;
         std::string m_eco;
         std::string m_title;
         std::vector<chessmove> m_last;
