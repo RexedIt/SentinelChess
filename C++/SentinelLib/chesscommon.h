@@ -17,6 +17,10 @@ namespace chess
 #define JSON_GET(o, k, d) \
     (o.contains(k) ? o[k] : d)
 
+#define JSON_LOADC(o, k, v) \
+    if (o.contains(k))      \
+        v = o[k];
+
     typedef enum error_e
     {
         e_none,

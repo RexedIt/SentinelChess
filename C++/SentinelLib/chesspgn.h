@@ -1,13 +1,13 @@
 #pragma once
 
-#include <map>
 #include "chesscommon.h"
 #include "chessmove.h"
+#include "chessmeta.h"
 
 namespace chess
 {
 
-    class chesspgn
+    class chesspgn : public chessmeta
     {
     public:
         chesspgn();
@@ -27,21 +27,15 @@ namespace chess
         game_state_e game_state();
         void set_final_state(game_state_e, color_e);
 
-        std::string operator[](const char *);
-        bool remove_tag(std::string key);
-        bool write_tag(std::string key, std::string value);
-        bool write_tag(std::string key, int value);
-
         error_e write_moves(std::vector<chessmove> &move_vec);
         error_e load(std::string filename, std::string &errextra);
         error_e save(std::string filename);
 
-    private:
-        void reset_tags();
-        error_e read_tag(std::string line);
-        std::string tag(std::string key);
+    protected:
+        virtual void reset_tags();
 
-        std::vector<std::pair<std::string, std::string>> m_tags;
+    private:
+        error_e read_tag(std::string line);
         std::string m_moves_str;
         std::string m_xfen;
         std::vector<chessmove> m_moves;

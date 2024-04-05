@@ -37,7 +37,7 @@ namespace chess
     {
         // depends on state of eco database and move history
         if (m_puzzle)
-            return m_puzzle_id;
+            return tag("puzzle_id");
         else
             return m_open_filter.eco();
     }
@@ -46,7 +46,7 @@ namespace chess
     {
         // depends on state of eco database and move history
         if (m_puzzle)
-            return m_puzzle_open;
+            return tag("puzzle_open");
         else
             return m_open_filter.title();
     }
@@ -324,12 +324,12 @@ namespace chess
 
     std::string chessgame::title()
     {
-        return m_title;
+        return tag("Event");
     }
 
     void chessgame::set_title(std::string t)
     {
-        m_title = t;
+        write_tag("Event", t);
     }
 
     bool chessgame::check_state(color_e col)
@@ -441,12 +441,12 @@ namespace chess
         m_win_color = c_none;
         m_init_board = c_open_board;
         m_puzzle = false;
-        m_puzzle_id = "";
-        m_puzzle_open = "";
+        remove_tag("puzzle_id");
+        remove_tag("puzzle_open");
         m_board.load_xfen(m_init_board);
         m_turn.clear();
         m_play_pos = -1;
-        m_title = title;
+        write_tag("Event", title);
         m_open_filter.reset();
         add_clock(clock);
         refresh_board_positions();
@@ -480,11 +480,16 @@ namespace chess
 
             JSON_LOAD(jsonf, "init_board", m_init_board, c_open_board);
             JSON_LOAD(jsonf, "puzzle", m_puzzle, false);
-            JSON_LOAD(jsonf, "puzzle_id", m_puzzle_id, "");
-            JSON_LOAD(jsonf, "puzzle_open", m_puzzle_open, "");
             JSON_LOAD(jsonf, "hints", m_hints, 0);
-            JSON_LOAD(jsonf, "title", m_title, "");
             JSON_LOAD(jsonf, "points", m_points, 0);
+
+            auto meta = json::object();
+            JSON_LOADC(jsonf, "meta", meta);
+            if (!meta.is_null())
+            {
+                for (auto el : meta.items())
+                    write_tag(el.key(), el.value().dump());
+            }
 
             m_play_pos = jsonf["play_pos"];
             if (m_play_pos < 0)
@@ -551,10 +556,12 @@ namespace chess
         m_play_pos = -1;
         m_board.load_xfen(p.fen);
         m_puzzle = true;
-        m_title = p.themes;
-        m_puzzle_id = p.puzzleid;
-        m_puzzle_open = p.openingtags;
         m_hints = turns.size() / 4;
+        write_tag("Event", p.themes);
+        write_tag("puzzle_id", p.puzzleid);
+        write_tag("puzzle_open", p.openingtags);
+        write_tag("puzzle_themes", p.themes);
+        write_tag("puzzle_ratings", p.rating);
         refresh_board_positions();
         set_state(play_e, true);
         signal_on_turn();
@@ -598,10 +605,8 @@ namespace chess
         m_play_pos = -1;
         m_board.load_xfen(c_open_board);
         m_puzzle = false;
-        m_puzzle_id = "";
-        m_puzzle_open = "";
-        m_title = p.event();
 
+        copy_tags_from(p);
         refresh_board_positions();
 
         // update the last turn.
@@ -629,15 +634,15 @@ namespace chess
 
     error_e chessgame::save_pgn(chesspgn &p)
     {
-        p.write_tag("Event", m_title);
+        write_tag("ECO", m_open_filter.eco());
+        write_tag("Opening", m_open_filter.title());
+        p.copy_tags_from(*this);
         int last_turn = playmax();
         if (last_turn >= 1)
         {
             chessturn lt = m_turn[last_turn - 1];
             p.set_final_state(lt.g, lt.wc);
         }
-        p.write_tag("ECO", m_open_filter.eco());
-        p.write_tag("Opening", m_open_filter.title());
         return p.write_moves(moves());
     }
 
@@ -668,12 +673,19 @@ namespace chess
 
             jsonf["init_board"] = m_init_board;
             jsonf["puzzle"] = m_puzzle;
-            jsonf["puzzle_id"] = m_puzzle_id;
-            jsonf["puzzle_open"] = m_puzzle_open;
             jsonf["hints"] = m_hints;
-            jsonf["title"] = m_title;
             jsonf["play_pos"] = m_play_pos;
             jsonf["points"] = m_points;
+
+            auto meta = json::object();
+            
+            write_tag("ECO", m_open_filter.eco());
+            write_tag("Opening", m_open_filter.title());
+
+            for (auto tag_pair : m_tags)
+                meta[tag_pair.first] = tag_pair.second;
+
+            jsonf["meta"] = meta;
 
             auto board = json::object();
             if (m_board.save(board) != e_none)

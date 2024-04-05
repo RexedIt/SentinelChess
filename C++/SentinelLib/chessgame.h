@@ -21,7 +21,7 @@ namespace chess
     class chessgamelistener;
     class chessclock;
 
-    class chessgame
+    class chessgame : chessmeta
     {
     public:
         chessgame();
@@ -136,9 +136,6 @@ namespace chess
         bool m_puzzle;
         int m_hints;
         int m_points;
-        std::string m_title;
-        std::string m_puzzle_id;
-        std::string m_puzzle_open;
 
         color_e m_win_color;
 
