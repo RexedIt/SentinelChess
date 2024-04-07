@@ -390,6 +390,8 @@ namespace chess
 
     error_e chessgame::rewind_game()
     {
+        if (m_state == play_e)
+            return e_play_not_paused;
         int idx = m_play_pos - 1;
         if (idx < -1)
             return e_rewind_failed;
@@ -399,6 +401,8 @@ namespace chess
 
     error_e chessgame::advance_game()
     {
+        if (m_state == play_e)
+            return e_play_not_paused;
         int idx = m_play_pos + 1;
         if (idx >= playmax())
             return e_advance_failed;
@@ -408,6 +412,8 @@ namespace chess
 
     error_e chessgame::goto_turn(int turn_no)
     {
+        if (m_state == play_e)
+            return e_play_not_paused;
         int idx = turn_no - 1;
         if ((idx < -1) || (idx >= playmax()))
             return e_advance_failed;
@@ -678,7 +684,7 @@ namespace chess
             jsonf["points"] = m_points;
 
             auto meta = json::object();
-            
+
             write_tag("ECO", m_open_filter.eco());
             write_tag("Opening", m_open_filter.title());
 

@@ -18,10 +18,14 @@ extends CanvasLayer
 @onready var btnNewPuzzle : Button = get_node('btnNewPuzzle')
 @onready var btnOpen : Button = get_node('btnOpen')
 @onready var btnSave : Button = get_node('btnSave')
+@onready var btnStart : Button = get_node('btnStart')
 @onready var btnRewind : Button = get_node('btnRewind')
 @onready var btnPause : Button = get_node('btnPause')
 @onready var btnAdvance : Button = get_node('btnAdvance')
-@onready var btnHelp : Button = get_node('btnHelp')
+@onready var btnEnd : Button = get_node('btnEnd')
+@onready var btnForfeit : Button = get_node('btnForfeit')
+@onready var btnHint : Button = get_node('btnHint')
+@onready var btnChat : Button = get_node('btnChat')
 @onready var btnSettings : Button = get_node('btnSettings')
 @onready var lblWhiteClock : Label = get_node('lblWhiteClock')
 @onready var lblBlackClock : Label = get_node('lblBlackClock')
@@ -63,10 +67,14 @@ func applyskin():
 	btnNewPuzzle.icon = skin.sprite('NewPuzzle.png')
 	btnOpen.icon = skin.sprite('Open.png')
 	btnSave.icon = skin.sprite('Save.png')
+	btnStart.icon = skin.sprite('Start.png')
 	btnRewind.icon = skin.sprite('Rewind.png')
 	btnPause.icon = skin.sprite('Pause.png')
 	btnAdvance.icon = skin.sprite('Advance.png')
-	btnHelp.icon = skin.sprite('Help.png')
+	btnEnd.icon = skin.sprite('End.png')
+	btnForfeit.icon = skin.sprite('Forfeit.png')
+	btnHint.icon = skin.sprite('Help.png')
+	btnChat.icon = skin.sprite('Chat.png')
 	btnSettings.icon = skin.sprite('Gear.png')
 	PauseTexture = btnPause.icon
 	PlayTexture = skin.sprite('Play.png')
@@ -135,10 +143,8 @@ func initialize(msg : String):
 		pnlScore.setPuzzleValues(points,hints,true)
 	else:
 		pnlScore.setScoreValues(white_points,black_points);
-	btnHelp.disabled = (not puzzle) or hints <= 0
-	btnRewind.disabled = puzzle
-	btnPause.disabled = puzzle
-	btnAdvance.disabled = puzzle
+	btnHint.disabled = (not puzzle) or hints <= 0
+	enableplaybuttons()
 	lblWhiteClock.visible = false
 	lblBlackClock.visible = false
 	clear_history()
@@ -281,6 +287,27 @@ func handle_rewind() -> bool:
 		show_error('!' + game_manager.errorstr(err))
 		return false
 	append_history('Rewind')
+	enableplaybuttons()
+	return true
+
+func enableplaybuttons():
+	if btnRewind:
+		var no_game = game_manager == null
+		var atbeg = false
+		var atend = false
+		var is_play = true
+		if !no_game:
+			no_game = game_manager.gamestate < GameState.PLAY
+			is_play = game_manager.state() == SentinelChess.Play
+			atbeg = game_manager.playno()==0
+			atend = game_manager.playno() == game_manager.playmax()
+		var disp : bool = no_game or puzzle
+		btnStart.disabled = is_play or disp or atbeg
+		btnRewind.disabled = is_play or disp or atbeg
+		btnPause.disabled = disp
+		btnAdvance.disabled = is_play or disp or atend
+		btnEnd.disabled = is_play or disp or atend
+	
 	#game_manager.refresh_turn(game_manager.get_board())
 	return true
 
@@ -293,13 +320,14 @@ func handle_advance() -> bool:
 		show_error('!' + game_manager.errorstr(err))
 		return false
 	append_history('Advance')
+	enableplaybuttons()
 	#game_manager.refresh_turn(game_manager.get_board())
 	return true
 
 func refreshhints():
 	hints = game_manager.hints()
 	points = game_manager.win_points(SentinelChess.cNone)
-	btnHelp.disabled =(not puzzle) or hints <= 0
+	btnHint.disabled =(not puzzle) or hints <= 0
 	pnlScore.setPuzzleValues(points,hints,false)
 
 func handle_hint() -> bool:
@@ -458,11 +486,11 @@ func gamestate(gs):
 	if btnRewind:
 		var no_game = gs < GameState.PLAY
 		var puzzle = game_manager.puzzle()
-		btnRewind.disabled = no_game or puzzle
-		btnPause.disabled = no_game or puzzle
-		btnAdvance.disabled = no_game or puzzle
-		btnHelp.disabled = no_game or (not puzzle) or hints <= 0
+		btnHint.disabled = no_game or (not puzzle) or hints <= 0
 		btnSave.disabled = no_game
+		btnForfeit.disabled = no_game
+		btnChat.disabled = no_game
+		enableplaybuttons()
 		do_voice = game_manager.has_local()
 		do_sfx = do_voice
 		

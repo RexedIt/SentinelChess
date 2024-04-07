@@ -1,4 +1,4 @@
-[gd_scene load_steps=46 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=50 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="PackedScene" uid="uid://b3vb7tg7wpihs" path="res://Skins/Skin.tscn" id="2_rnrr5"]
@@ -33,12 +33,16 @@
 [ext_resource type="Texture2D" uid="uid://vq1q11npiu6s" path="res://Skins/RetroWood/Sprites/Save.png" id="26_ayax4"]
 [ext_resource type="Script" path="res://Scripts/popPromote.gd" id="27_e8o3p"]
 [ext_resource type="Texture2D" uid="uid://ccf8ty052kus7" path="res://Skins/RetroWood/Sprites/Rewind.png" id="27_jv8pw"]
+[ext_resource type="Texture2D" uid="uid://b23rxnsh2bbkf" path="res://Skins/RetroWood/Sprites/Start.png" id="28_emaok"]
 [ext_resource type="Texture2D" uid="uid://4j8ue2gagp0f" path="res://Skins/RetroWood/Sprites/Pause.png" id="28_ywkm3"]
 [ext_resource type="Texture2D" uid="uid://7fgvufhrp72y" path="res://Skins/RetroWood/Sprites/Advance.png" id="29_6dddg"]
 [ext_resource type="Texture2D" uid="uid://b1olcgy66sy6s" path="res://Skins/RetroWood/Sprites/Help.png" id="30_nm5rb"]
 [ext_resource type="Texture2D" uid="uid://du707gome4ovn" path="res://Skins/RetroWood/Sprites/SmallPieces.png" id="32_ho85t"]
+[ext_resource type="Texture2D" uid="uid://bhosq5y7jgctp" path="res://Skins/RetroWood/Sprites/End.png" id="32_x747r"]
 [ext_resource type="Texture2D" uid="uid://bq02l5rbsofim" path="res://Skins/RetroWood/Sprites/Gear.png" id="33_a1gye"]
+[ext_resource type="Texture2D" uid="uid://d1uy0ysa7sw4w" path="res://Skins/RetroWood/Sprites/Forfeit.png" id="33_djlwf"]
 [ext_resource type="Texture2D" uid="uid://dxfliisa8rgvg" path="res://Skins/RetroWood/Sprites/WhiteWin.jpg" id="34_gycr6"]
+[ext_resource type="Texture2D" uid="uid://du0w8l4rgfprg" path="res://Skins/RetroWood/Sprites/Chat.png" id="35_wk70r"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_55xmw"]
 size = Vector2(122.5, 123)
@@ -680,9 +684,9 @@ step = 16
 
 [node name="pnlScore" type="Panel" parent="GameUI"]
 offset_left = 10.0
-offset_top = 968.0
+offset_top = 898.0
 offset_right = 413.0
-offset_bottom = 1071.0
+offset_bottom = 1001.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_ck3d1")
 script = ExtResource("18_m2w67")
 
@@ -837,40 +841,76 @@ disabled = true
 icon = ExtResource("26_ayax4")
 flat = true
 
+[node name="btnStart" type="Button" parent="GameUI"]
+offset_left = 17.0
+offset_top = 1000.0
+offset_right = 94.0
+offset_bottom = 1073.0
+disabled = true
+icon = ExtResource("28_emaok")
+flat = true
+
 [node name="btnRewind" type="Button" parent="GameUI"]
-offset_left = 32.0
-offset_top = 520.0
-offset_right = 118.0
-offset_bottom = 603.0
+offset_left = 93.0
+offset_top = 1000.0
+offset_right = 170.0
+offset_bottom = 1073.0
 disabled = true
 icon = ExtResource("27_jv8pw")
 flat = true
 
 [node name="btnPause" type="Button" parent="GameUI"]
-offset_left = 32.0
-offset_top = 605.0
-offset_right = 118.0
-offset_bottom = 688.0
+offset_left = 170.0
+offset_top = 1000.0
+offset_right = 247.0
+offset_bottom = 1073.0
 disabled = true
 icon = ExtResource("28_ywkm3")
 flat = true
 
 [node name="btnAdvance" type="Button" parent="GameUI"]
-offset_left = 32.0
-offset_top = 690.0
-offset_right = 118.0
-offset_bottom = 773.0
+offset_left = 246.0
+offset_top = 1000.0
+offset_right = 323.0
+offset_bottom = 1073.0
 disabled = true
 icon = ExtResource("29_6dddg")
 flat = true
 
-[node name="btnHelp" type="Button" parent="GameUI"]
+[node name="btnEnd" type="Button" parent="GameUI"]
+offset_left = 322.0
+offset_top = 1000.0
+offset_right = 399.0
+offset_bottom = 1073.0
+disabled = true
+icon = ExtResource("32_x747r")
+flat = true
+
+[node name="btnForfeit" type="Button" parent="GameUI"]
 offset_left = 32.0
-offset_top = 775.0
-offset_right = 118.0
-offset_bottom = 858.0
+offset_top = 543.0
+offset_right = 256.0
+offset_bottom = 626.0
+disabled = true
+icon = ExtResource("33_djlwf")
+flat = true
+
+[node name="btnHint" type="Button" parent="GameUI"]
+offset_left = 32.0
+offset_top = 628.0
+offset_right = 256.0
+offset_bottom = 711.0
 disabled = true
 icon = ExtResource("30_nm5rb")
+flat = true
+
+[node name="btnChat" type="Button" parent="GameUI"]
+offset_left = 32.0
+offset_top = 715.0
+offset_right = 256.0
+offset_bottom = 798.0
+disabled = true
+icon = ExtResource("35_wk70r")
 flat = true
 
 [node name="lblHistory" type="RichTextLabel" parent="GameUI"]
@@ -1070,10 +1110,14 @@ offset_bottom = 168.0
 [connection signal="pressed" from="GameUI/btnNewPuzzle" to="GameUI" method="_on_btn_puzzle_pressed"]
 [connection signal="pressed" from="GameUI/btnOpen" to="GameUI" method="_on_btn_load_pressed"]
 [connection signal="pressed" from="GameUI/btnSave" to="GameUI" method="_on_btn_save_pressed"]
+[connection signal="pressed" from="GameUI/btnStart" to="GameUI" method="_on_btn_rewind_pressed"]
 [connection signal="pressed" from="GameUI/btnRewind" to="GameUI" method="_on_btn_rewind_pressed"]
 [connection signal="pressed" from="GameUI/btnPause" to="GameUI" method="_on_btn_pause_pressed"]
 [connection signal="pressed" from="GameUI/btnAdvance" to="GameUI" method="_on_btn_advance_pressed"]
-[connection signal="pressed" from="GameUI/btnHelp" to="GameUI" method="_on_btn_hint_pressed"]
+[connection signal="pressed" from="GameUI/btnEnd" to="GameUI" method="_on_btn_advance_pressed"]
+[connection signal="pressed" from="GameUI/btnForfeit" to="GameUI" method="_on_btn_hint_pressed"]
+[connection signal="pressed" from="GameUI/btnHint" to="GameUI" method="_on_btn_hint_pressed"]
+[connection signal="pressed" from="GameUI/btnChat" to="GameUI" method="_on_btn_hint_pressed"]
 [connection signal="text_submitted" from="GameUI/txtCmd" to="GameUI" method="_on_txt_cmd_text_submitted"]
 [connection signal="pressed" from="GameUI/btnSettings" to="GameUI" method="_on_btn_settings_pressed"]
 [connection signal="pressed" from="popPromote/Cancel" to="popPromote" method="_on_cancel_pressed"]

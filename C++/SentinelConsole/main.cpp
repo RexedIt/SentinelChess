@@ -68,6 +68,8 @@ bool get_promotion(chessmove &m)
 // *** Callbacks from Player Object(s)
 std::shared_ptr<chessgame> p_game = NULL;
 std::set<color_e> locals;
+int32_t time_rem = 0;
+bool is_idle = false;
 
 void refresh_data(chesslobby &lobby)
 {
@@ -276,6 +278,7 @@ bool new_game(chesslobby &lobby)
     if (err != e_none)
         return print_error(err);
     refresh_data(lobby);
+    is_idle = false;
     return true;
 }
 
@@ -295,9 +298,6 @@ void on_consider(chessmove m, color_e c, int8_t p)
 {
     std::cout << ".";
 }
-
-int32_t time_rem = 0;
-bool is_idle = false;
 
 void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_state_e g, color_e wc, int32_t wt, int32_t bt)
 {
@@ -326,10 +326,10 @@ void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_st
 std::string prompt()
 {
     if (is_idle)
-        return "Command (Idle) > ";
+        return "\r\nCommand (Idle) > ";
     color_e c = p_game->turn_color();
     bool ch = p_game->check_state(c);
-    std::string s;
+    std::string s = "\r\n";
     if (time_rem > 0)
         s += "[" + time_str(time_rem) + "] ";
     s += color_str(c) + " move ";
@@ -487,17 +487,19 @@ int main(void)
             }
             else if (cmdl == "<")
             {
-                if (p_game->rewind_game() != e_none)
+                error_e err = p_game->rewind_game();
+                if (err != e_none)
                 {
-                    print_error(e_rewind_failed);
+                    print_error(err);
                     continue;
                 }
             }
             else if (cmdl == ">")
             {
-                if (p_game->advance_game() != e_none)
+                error_e err = p_game->advance_game();
+                if (err != e_none)
                 {
-                    print_error(e_advance_failed);
+                    print_error(err);
                     continue;
                 }
             }
@@ -510,9 +512,10 @@ int main(void)
                     continue;
                 }
                 int turnno = atoi(cmdu.c_str());
-                if (p_game->goto_turn(turnno) != e_none)
+                error_e err = p_game->goto_turn(turnno);
+                if (err != e_none)
                 {
-                    print_error(e_advance_failed);
+                    print_error(err);
                     continue;
                 }
             }

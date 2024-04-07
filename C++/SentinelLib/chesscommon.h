@@ -66,6 +66,7 @@ namespace chess
         e_no_openings,
         e_pgn_parse,
         e_invalid_extension,
+        e_play_not_paused,
     } error_e;
 
     std::string errorstr(error_e num);

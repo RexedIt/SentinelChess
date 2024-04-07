@@ -100,6 +100,8 @@ namespace chess
             return "PGN Parsing Error";
         case e_invalid_extension:
             return "Invalid Extension, must be CHS or PGN";
+        case e_play_not_paused:
+            return "Play not paused";
         default:
             return "Unknown Error";
         }
