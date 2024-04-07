@@ -248,6 +248,12 @@ func _on_btn_save_pressed():
 func _on_btn_rewind_pressed():
 	handle_rewind()
 
+func _on_btn_start_pressed():
+	handle_start()
+
+func _on_btn_end_pressed():
+	handle_end()
+
 func _on_btn_pause_pressed():
 	if is_idle:
 		handle_play()
@@ -290,6 +296,30 @@ func handle_rewind() -> bool:
 	enableplaybuttons()
 	return true
 
+func handle_start() -> bool:
+	if puzzle:
+		show_error('In Puzzle')
+		true
+	var err : int = game_manager.goto_turn(0)
+	if err != 0:
+		show_error('!' + game_manager.errorstr(err))
+		return false
+	append_history('Start')
+	enableplaybuttons()
+	return true
+
+func handle_end() -> bool:
+	if puzzle:
+		show_error('In Puzzle')
+		true
+	var err : int = game_manager.goto_turn(game_manager.playmax())
+	if err != 0:
+		show_error('!' + game_manager.errorstr(err))
+		return false
+	append_history('End')
+	enableplaybuttons()
+	return true
+		
 func enableplaybuttons():
 	if btnRewind:
 		var no_game = game_manager == null
@@ -380,10 +410,14 @@ func _on_txt_cmd_text_submitted(new_text):
 			if s == '':
 				show_error('Need Turn Number')
 			handled=handle_goto(turn_no)
+		'[':
+			handled = handle_start()
 		'<':
 			handled = handle_rewind()
 		'>':
 			handled = handle_advance()
+		']':
+			handled = handle_end()
 		'P':
 			handled = handle_play()
 		'I':
@@ -550,3 +584,4 @@ func play_promote_sfx():
 	if do_sfx:
 		voice.stream = PromoteSound
 		voice.play()
+

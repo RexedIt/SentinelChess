@@ -457,7 +457,7 @@ int main(void)
                 std::cout << "\t(P)LAY, (I)DLE, (Q)UIT, ";
                 if (!is_idle)
                     std::cout << "(M)OVE MoveStr, HINT, ";
-                std::cout << "<, >, T Turn PIECE Coord Piece, - [Coord], (X)FEN [String] " << std::endl;
+                std::cout << "[, <, >, ], T Turn PIECE Coord Piece, - [Coord], (X)FEN [String] " << std::endl;
                 continue;
             }
             if (cmdl == "N")
@@ -485,6 +485,15 @@ int main(void)
             {
                 exit(EXIT_SUCCESS);
             }
+            else if (cmdl == "[")
+            {
+                error_e err = p_game->goto_turn(0);
+                if (err != e_none)
+                {
+                    print_error(err);
+                    continue;
+                }
+            }
             else if (cmdl == "<")
             {
                 error_e err = p_game->rewind_game();
@@ -497,6 +506,15 @@ int main(void)
             else if (cmdl == ">")
             {
                 error_e err = p_game->advance_game();
+                if (err != e_none)
+                {
+                    print_error(err);
+                    continue;
+                }
+            }
+            else if (cmdl == "]")
+            {
+                error_e err = p_game->goto_turn(p_game->playmax());
                 if (err != e_none)
                 {
                     print_error(err);
