@@ -109,7 +109,7 @@ namespace chess
 
     private:
         void set_state(game_state_e g, bool force_notify = false);
-        void set_turn_to(int idx);
+        void set_turn_to(int idx, bool activate = false);
         void push_new_turn(chessmove m);
         void refresh_board_positions();
         int prev_position_count();

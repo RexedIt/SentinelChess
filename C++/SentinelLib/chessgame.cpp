@@ -363,9 +363,9 @@ namespace chess
         return e_adding;
     }
 
-    void chessgame::set_turn_to(int idx)
+    void chessgame::set_turn_to(int idx, bool activate)
     {
-        if (idx != m_play_pos)
+        if ((idx != m_play_pos) || (activate))
         {
             bool turn_rw = (m_state == play_e && !m_puzzle);
             if ((idx >= 0) && (m_turn.size() > 0))
@@ -428,7 +428,7 @@ namespace chess
             // accomplishes a trim
             m_win_color = c_none;
             set_state(play_e);
-            set_turn_to(m_play_pos);
+            set_turn_to(m_play_pos, true);
         }
         return e_none;
     }
