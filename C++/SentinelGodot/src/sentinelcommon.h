@@ -184,11 +184,14 @@ public:
     int get_skill();
     void set_playertype(ChessPlayerType t);
     ChessPlayerType get_playertype();
+    ChessColor get_playercolor();
+    void set_playercolor(const ChessColor c);
     void get(std::string &, int &, chessplayertype_e &);
 
 private:
     std::string m_name;
     chessplayertype_e m_playertype;
+    color_e m_playercolor;
     int m_skill;
 
 protected:
@@ -214,6 +217,8 @@ public:
     int black_points();
     int turns();
     int playno();
+    String eco();
+    String open_title();
 
 private:
     std::string m_title;
@@ -230,6 +235,8 @@ private:
     int m_b_points;
     int m_turns;
     int m_playno;
+    std::string m_eco;
+    std::string m_open_title;
 
 protected:
     static void _bind_methods();

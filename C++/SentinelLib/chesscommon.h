@@ -17,6 +17,10 @@ namespace chess
 #define JSON_GET(o, k, d) \
     (o.contains(k) ? o[k] : d)
 
+#define JSON_LOADC(o, k, v) \
+    if (o.contains(k))      \
+        v = o[k];
+
     typedef enum error_e
     {
         e_none,
@@ -58,7 +62,11 @@ namespace chess
         e_listener_already_registered,
         e_listener_not_found,
         e_none_found,
-        e_incorrect_move
+        e_incorrect_move,
+        e_no_openings,
+        e_pgn_parse,
+        e_invalid_extension,
+        e_play_not_paused,
     } error_e;
 
     std::string errorstr(error_e num);
@@ -213,6 +221,7 @@ namespace chess
     color_e other(color_e c);
 
     float get_rand();
+    int get_rand_int(int min, int max);
 
     std::string trim(std::string s);
     std::vector<std::string> split_string(std::string cmd, char div);
@@ -220,6 +229,8 @@ namespace chess
     unsigned char read_hex_uchar(std::string line);
     std::string uppercase(std::string l);
     std::string lowercase(std::string u);
+    bool starts_with(std::string a, std::string b);
+    bool ends_with(std::string a, std::string b);
     uintmax_t get_file_size(std::string f);
     bool get_dir_exists(std::string dirname);
 
@@ -230,4 +241,16 @@ namespace chess
     std::string data_file(std::string f);
     uint32_t hash(unsigned char *, size_t);
     uint32_t hash(std::vector<chessmove>);
+
+    bool save_binary(std::ofstream &of, size_t v);
+    bool load_binary(std::ifstream &inf, size_t &v);
+    bool load_binary_u(std::ifstream &inf, uint32_t &v);
+    bool save_binary(std::ofstream &of, uint32_t &v);
+    bool save_binary(std::ofstream &of, std::string &v);
+    bool load_binary(std::ifstream &inf, std::string &v);
+    bool save_binary(std::ofstream &of, chessmove v);
+    bool load_binary(std::ifstream &inf, chessmove &v);
+    bool save_binary(std::ofstream &of, std::vector<chessmove> &v);
+    bool load_binary(std::ifstream &inf, std::vector<chessmove> &v);
+
 }

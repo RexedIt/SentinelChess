@@ -68,6 +68,8 @@ bool get_promotion(chessmove &m)
 // *** Callbacks from Player Object(s)
 std::shared_ptr<chessgame> p_game = NULL;
 std::set<color_e> locals;
+int32_t time_rem = 0;
+bool is_idle = false;
 
 void refresh_data(chesslobby &lobby)
 {
@@ -80,9 +82,14 @@ bool load_game(std::string cmd, chesslobby &lobby)
     std::string filename = get_arg(cmd);
     if (filename == "")
         return print_error(e_missing_filename);
-    error_e err = lobby.load_game(filename);
+    std::string errextra;
+    error_e err = lobby.load_game(filename, errextra);
     if (err != e_none)
+    {
+        if (errextra != "")
+            print_error(errextra);
         return print_error(e_loading);
+    }
     refresh_data(lobby);
     return true;
 }
@@ -111,7 +118,7 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
     if (args.size() > 2)
         rating = atoi(args[2].c_str());
     std::string keywords = "";
-    for (int i = 3; i < args.size(); i++)
+    for (size_t i = 3; i < args.size(); i++)
     {
         if (keywords != "")
             keywords += ",";
@@ -271,6 +278,7 @@ bool new_game(chesslobby &lobby)
     if (err != e_none)
         return print_error(err);
     refresh_data(lobby);
+    is_idle = false;
     return true;
 }
 
@@ -290,9 +298,6 @@ void on_consider(chessmove m, color_e c, int8_t p)
 {
     std::cout << ".";
 }
-
-int32_t time_rem = 0;
-bool is_idle = false;
 
 void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_state_e g, color_e wc, int32_t wt, int32_t bt)
 {
@@ -321,10 +326,10 @@ void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_st
 std::string prompt()
 {
     if (is_idle)
-        return "Command (Idle) > ";
+        return "\r\nCommand (Idle) > ";
     color_e c = p_game->turn_color();
     bool ch = p_game->check_state(c);
-    std::string s;
+    std::string s = "\r\n";
     if (time_rem > 0)
         s += "[" + time_str(time_rem) + "] ";
     s += color_str(c) + " move ";
@@ -393,10 +398,11 @@ int main(void)
                                      &on_state,
                                      &on_chat)); */
 
-    // chessopenings co;
-    // co.load_scid_eco(data_file("scid.eco"));
+    // Initialize the eco db
+    chessecodb co;
+    // co.load_scid_eco(data_file("..\\SourceData\\scid.eco"));
     // co.save_binary(data_file("scid.bin"));
-    // co.load_binary(data_file("scid.bin"));
+    co.load_binary(data_file("scid.bin"));
 
     std::shared_ptr<chessgamelistener_queue> p_listener(
         new chessgamelistener_queue(cl_user));
@@ -451,7 +457,7 @@ int main(void)
                 std::cout << "\t(P)LAY, (I)DLE, (Q)UIT, ";
                 if (!is_idle)
                     std::cout << "(M)OVE MoveStr, HINT, ";
-                std::cout << "<, >, T Turn PIECE Coord Piece, - [Coord], (X)FEN [String] " << std::endl;
+                std::cout << "[, <, >, ], T Turn PIECE Coord Piece, - [Coord], (X)FEN [String] " << std::endl;
                 continue;
             }
             if (cmdl == "N")
@@ -479,19 +485,39 @@ int main(void)
             {
                 exit(EXIT_SUCCESS);
             }
+            else if (cmdl == "[")
+            {
+                error_e err = p_game->goto_turn(0);
+                if (err != e_none)
+                {
+                    print_error(err);
+                    continue;
+                }
+            }
             else if (cmdl == "<")
             {
-                if (p_game->rewind_game() != e_none)
+                error_e err = p_game->rewind_game();
+                if (err != e_none)
                 {
-                    print_error(e_rewind_failed);
+                    print_error(err);
                     continue;
                 }
             }
             else if (cmdl == ">")
             {
-                if (p_game->advance_game() != e_none)
+                error_e err = p_game->advance_game();
+                if (err != e_none)
                 {
-                    print_error(e_advance_failed);
+                    print_error(err);
+                    continue;
+                }
+            }
+            else if (cmdl == "]")
+            {
+                error_e err = p_game->goto_turn(p_game->playmax());
+                if (err != e_none)
+                {
+                    print_error(err);
                     continue;
                 }
             }
@@ -504,9 +530,10 @@ int main(void)
                     continue;
                 }
                 int turnno = atoi(cmdu.c_str());
-                if (p_game->goto_turn(turnno) != e_none)
+                error_e err = p_game->goto_turn(turnno);
+                if (err != e_none)
                 {
-                    print_error(e_advance_failed);
+                    print_error(err);
                     continue;
                 }
             }
@@ -636,7 +663,7 @@ int main(void)
                     is_idle = true;
                 }
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(25));
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
     }
 }

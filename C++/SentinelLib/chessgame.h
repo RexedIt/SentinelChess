@@ -5,6 +5,9 @@
 #include "chessgamelistener.h"
 #include "chessturn.h"
 #include "chesspuzzle.h"
+#include "chesspgn.h"
+#include "chessopenings.h"
+
 #include <fstream>
 #include <mutex>
 #include <map>
@@ -18,7 +21,7 @@ namespace chess
     class chessgamelistener;
     class chessclock;
 
-    class chessgame
+    class chessgame : chessmeta
     {
     public:
         chessgame();
@@ -26,6 +29,7 @@ namespace chess
 
         friend class chessplayer;
         friend class chesscomputer;
+        friend class chesspuzzleplayer;
         friend class chessgamelistener;
         friend class chesslobby;
         friend class chessclock;
@@ -53,6 +57,12 @@ namespace chess
 
         std::string title();
         void set_title(std::string t);
+
+        // relating to opening move system
+        std::string eco();
+        std::string open_title();
+        int possible_opening_count();
+        error_e next_opening_moves(color_e col, std::string eco, std::vector<chessmove> &m);
 
         // Any Player
         error_e forfeit(color_e col);
@@ -86,6 +96,8 @@ namespace chess
         error_e load_game(json &j);
         error_e save_game(json &j);
         error_e load_puzzle(chesspuzzle &p);
+        error_e load_pgn(chesspgn &p);
+        error_e save_pgn(chesspgn &p);
 
         error_e listen(std::shared_ptr<chessgamelistener>);
         error_e unlisten(int);
@@ -97,12 +109,13 @@ namespace chess
 
     private:
         void set_state(game_state_e g, bool force_notify = false);
-        void set_turn_to(int idx);
+        void set_turn_to(int idx, bool activate = false);
         void push_new_turn(chessmove m);
         void refresh_board_positions();
         int prev_position_count();
         void add_board_position();
         chessturn new_turn(chessmove);
+        std::vector<chessmove> moves();
 
         // Signallers
         void signal_refresh_board();
@@ -115,18 +128,20 @@ namespace chess
         void add_clock(std::shared_ptr<chessclock>);
         void remove_clock();
 
+        void narrow_moves();
+
         game_state_e m_state;
         std::vector<chessturn> m_turn;
         int m_play_pos;
         bool m_puzzle;
         int m_hints;
         int m_points;
-        std::string m_title;
 
         color_e m_win_color;
 
         chessboard m_board;
         std::string m_init_board;
+        chessopenfilter m_open_filter;
 
         std::mutex m_mutex;
         std::map<int, std::shared_ptr<chessgamelistener>> mp_listeners;

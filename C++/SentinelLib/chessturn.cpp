@@ -54,6 +54,7 @@ namespace chess
         move["cx"] = m.cx;
         move["en_passant"] = m.en_passant;
         move["mate"] = m.mate;
+        move["kill"] = m.kill;
 
         turn["move"] = move;
 
@@ -87,6 +88,7 @@ namespace chess
         m.cx = move["cx"];
         m.en_passant = move["en_passant"];
         m.mate = move["mate"];
+        m.kill = JSON_GET(move, "kill", false);
 
         t = turn["turn_no"];
         ch = turn["check"];

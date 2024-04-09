@@ -2,6 +2,7 @@
 #include "chessplayer.h"
 #include "chesscomputer.h"
 #include "chesspuzzleplayer.h"
+#include "chesspgn.h"
 
 namespace chess
 {
@@ -90,8 +91,21 @@ namespace chess
         return err;
     }
 
-    error_e chesslobby::load_game(std::string filename)
+    error_e chesslobby::load_game(std::string filename, std::string &errextra)
     {
+        bool pgn = ends_with(uppercase(filename), ".PGN");
+        return pgn ? load_pgn(filename, errextra) : load_chs(filename, errextra);
+    }
+
+    error_e chesslobby::save_game(std::string filename)
+    {
+        bool pgn = ends_with(uppercase(filename), ".PGN");
+        return pgn ? save_pgn(filename) : save_chs(filename);
+    }
+
+    error_e chesslobby::load_chs(std::string filename, std::string &errextra)
+    {
+        errextra = "";
         backup();
         try
         {
@@ -137,7 +151,7 @@ namespace chess
         }
     }
 
-    error_e chesslobby::save_game(std::string filename)
+    error_e chesslobby::save_chs(std::string filename)
     {
         try
         {
@@ -186,10 +200,11 @@ namespace chess
         color_e tc = b.turn_color();
 
         backup();
-
         // create game object early
         mp_game = std::shared_ptr<chessgame>(new chessgame());
         attach_to_game();
+
+        clear_players();
 
         err = add_player(other(tc), name, skill, t_human);
         if (err != e_none)
@@ -234,6 +249,64 @@ namespace chess
         if (err != e_none)
             return err;
         return load_puzzle(name, skill, p);
+    }
+
+    error_e chesslobby::save_pgn(std::string filename)
+    {
+        try
+        {
+            chesspgn p;
+
+            for (const auto &kv : mp_players)
+            {
+                std::string colname = color_str(kv.second->playercolor());
+                p.write_tag(colname, kv.second->playername());
+                p.write_tag(colname + "Elo", kv.second->playerskill());
+            }
+
+            error_e err = mp_game->save_pgn(p);
+            if (err == e_none)
+                err = p.save(filename);
+            return err;
+        }
+        catch (const std::exception &)
+        {
+            return e_saving;
+        }
+        return e_none;
+    }
+
+    error_e chesslobby::load_pgn(std::string filename, std::string &errextra)
+    {
+        // Load the pgn first
+        errextra = "";
+        chesspgn p;
+        error_e err = p.load(filename, errextra);
+        if (err != e_none)
+            return err;
+
+        backup();
+
+        // create game object early
+        mp_game = std::shared_ptr<chessgame>(new chessgame());
+        attach_to_game();
+
+        clear_players();
+
+        err = add_player(c_white, p.white(), p.whiteelo(), t_human);
+        if (err != e_none)
+            return restore(err);
+
+        err = add_player(c_black, p.black(), p.blackelo(), t_human);
+        if (err != e_none)
+            return restore(err);
+
+        err = mp_game->load_pgn(p);
+        if (err != e_none)
+            return restore(err);
+
+        attach_to_game();
+        return err;
     }
 
     error_e chesslobby::add_player(color_e color, std::string name, int skill, chessplayertype_e ptype)
@@ -287,11 +360,7 @@ namespace chess
         std::lock_guard<std::mutex> guard(m_mutex);
         if (mp_game)
             for (const auto &kv : mp_players)
-            {
-                std::shared_ptr<chesscomputer> pc = std::dynamic_pointer_cast<chesscomputer>(kv.second);
-                if (pc)
-                    mp_game->unlisten(pc->id());
-            }
+                kv.second->stop_listening();
 
         mp_players.clear();
         m_locals.clear();

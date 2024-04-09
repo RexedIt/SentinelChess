@@ -214,6 +214,7 @@ ChessPlayer::ChessPlayer()
     m_name = "";
     m_skill = 600;
     m_playertype = t_none;
+    m_playercolor = c_none;
 }
 
 ChessPlayer::ChessPlayer(std::shared_ptr<chessplayer> p)
@@ -223,6 +224,7 @@ ChessPlayer::ChessPlayer(std::shared_ptr<chessplayer> p)
         m_name = p->playername();
         m_skill = p->playerskill();
         m_playertype = p->playertype();
+        m_playercolor = p->playercolor();
     }
 }
 
@@ -231,6 +233,7 @@ ChessPlayer::ChessPlayer(std::string name, int skill, chessplayertype_e ptype)
     m_name = name;
     m_skill = skill;
     m_playertype = ptype;
+    m_playercolor = c_none;
 }
 
 ChessPlayer::~ChessPlayer()
@@ -248,6 +251,9 @@ void ChessPlayer::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_playertype"), &ChessPlayer::get_playertype);
     ClassDB::bind_method(D_METHOD("set_playertype", "t"), &ChessPlayer::set_playertype);
     ClassDB::add_property("ChessPlayer", PropertyInfo(Variant::INT, "PlayerType"), "set_playertype", "get_playertype");
+    ClassDB::bind_method(D_METHOD("get_playercolor"), &ChessPlayer::get_playercolor);
+    ClassDB::bind_method(D_METHOD("set_playercolor", "t"), &ChessPlayer::set_playercolor);
+    ClassDB::add_property("ChessPlayer", PropertyInfo(Variant::INT, "PlayerColor"), "set_playercolor", "get_playercolor");
 
     // ChessPlayerType
     BIND_ENUM_CONSTANT(tNone);
@@ -284,6 +290,16 @@ void ChessPlayer::set_playertype(ChessPlayerType t)
 ChessPlayerType ChessPlayer::get_playertype()
 {
     return (ChessPlayerType)m_playertype;
+}
+
+void ChessPlayer::set_playercolor(ChessColor c)
+{
+    m_playercolor = (color_e)c;
+}
+
+ChessColor ChessPlayer::get_playercolor()
+{
+    return (ChessColor)m_playercolor;
 }
 
 void ChessPlayer::get(std::string &n, int &s, chessplayertype_e &t)
@@ -438,6 +454,8 @@ ChessMeta::ChessMeta(std::shared_ptr<chessgame> g, chesslobby &l)
         m_hints = g->hints();
         m_turns = g->playmax();
         m_playno = g->playno();
+        m_eco = g->eco();
+        m_open_title = g->open_title();
     }
     m_w_points = l.win_points(c_white);
     m_b_points = l.win_points(c_black);
@@ -472,6 +490,8 @@ void ChessMeta::_bind_methods()
     ClassDB::bind_method(D_METHOD("black_points"), &ChessMeta::black_points);
     ClassDB::bind_method(D_METHOD("turns"), &ChessMeta::turns);
     ClassDB::bind_method(D_METHOD("playno"), &ChessMeta::playno);
+    ClassDB::bind_method(D_METHOD("eco"), &ChessMeta::eco);
+    ClassDB::bind_method(D_METHOD("open_title"), &ChessMeta::open_title);
 }
 
 String ChessMeta::title()
@@ -524,4 +544,14 @@ int ChessMeta::turns()
 int ChessMeta::playno()
 {
     return m_playno;
+}
+
+String ChessMeta::eco()
+{
+    return String(m_eco.c_str());
+}
+
+String ChessMeta::open_title()
+{
+    return String(m_open_title.c_str());
 }

@@ -5,6 +5,7 @@ var _skin : String
 var _voice : int
 var _music : int
 var _sfx : int
+var _rot : bool
 
 @onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var btnOK : Button = get_node("btnOK")
@@ -15,9 +16,10 @@ var _sfx : int
 @onready var sldVoice : HSlider = get_node("MC/VC/sldVoice")
 @onready var sldMusic : HSlider = get_node("MC/VC/sldMusic")
 @onready var sldSfx : HSlider = get_node("MC/VC/sldSfx")
+@onready var chkRotate : CheckBox = get_node('MC/VC/chkRotate')
 
 # outbound signal
-signal on_closed(_cancelled, _skin, _voice, _music, _sfx)
+signal on_closed(_cancelled, _skin, _voice, _music, _sfx, _rot)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -31,12 +33,12 @@ func _process(delta):
 
 func _VisibilityChanged():
 	if (visible):
-		initialize(skin.skinname, skin.voicelvl, skin.musiclvl, skin.sfxlvl)
+		initialize(skin.skinname, skin.voicelvl, skin.musiclvl, skin.sfxlvl, skin.rotateBoard)
 		cancelled = false
 	else:
 		if cancelled == false:
 			readsettings()
-		on_closed.emit(cancelled, _skin, _voice, _music, _sfx)
+		on_closed.emit(cancelled, _skin, _voice, _music, _sfx, _rot)
 
 func readsettings():
 	if optRetro.button_pressed:
@@ -48,6 +50,7 @@ func readsettings():
 	_voice = sldVoice.value
 	_music = sldMusic.value
 	_sfx = sldSfx.value
+	_rot = chkRotate.button_pressed
 	
 func _OnCancel():
 	cancelled = true
@@ -57,10 +60,11 @@ func _OnOK():
 	cancelled = false
 	visible = false
 
-func initialize(s, v, m, f):
+func initialize(s, v, m, f, r):
 	_skin = s
 	_voice = v
 	_music = m
+	_rot = r
 	if s=="RetroWood":
 		optRetro.button_pressed = true
 	if s == "PhotoBoard":
@@ -70,4 +74,5 @@ func initialize(s, v, m, f):
 	sldVoice.value = v
 	sldMusic.value = m
 	sldSfx.value = f
+	chkRotate.button_pressed = r
 	

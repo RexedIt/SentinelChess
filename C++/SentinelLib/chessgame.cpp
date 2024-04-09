@@ -1,6 +1,7 @@
 #include "chessgame.h"
 #include "chesscomputer.h"
 #include "chessclock.h"
+// #include <iostream>
 
 namespace chess
 {
@@ -30,6 +31,42 @@ namespace chess
     game_state_e chessgame::state()
     {
         return m_state;
+    }
+
+    std::string chessgame::eco()
+    {
+        // depends on state of eco database and move history
+        if (m_puzzle)
+            return tag("puzzle_id");
+        else
+            return m_open_filter.eco();
+    }
+
+    std::string chessgame::open_title()
+    {
+        // depends on state of eco database and move history
+        if (m_puzzle)
+            return tag("puzzle_open");
+        else
+            return m_open_filter.title();
+    }
+
+    int chessgame::possible_opening_count()
+    {
+        // depends on state of eco database and move history
+        return m_open_filter.possible_opening_count();
+    }
+
+    error_e chessgame::next_opening_moves(color_e col, std::string eco, std::vector<chessmove> &m)
+    {
+        // depends on state of eco database and move history
+        return m_open_filter.next_opening_moves(col, eco, m);
+    }
+
+    void chessgame::narrow_moves()
+    {
+        m_open_filter.narrow(moves());
+        // std::cout << "ECO: " << m_open_filter.eco() << " Title: " << m_open_filter.title() << std::endl;
     }
 
     color_e chessgame::turn_color()
@@ -90,21 +127,26 @@ namespace chess
                 m.mate = true;
                 m.check = check_state(opponent);
                 if (!m.check)
-                    m.mate = false;
-                // Check all moves
-                std::vector<chessmove> pm = possible_moves(opponent);
-                for (size_t i = 0; i < pm.size(); i++)
                 {
-                    chessboard b(m_board);
-                    chessmove m0 = b.attempt_move(opponent, pm[i]);
-                    if (m0.is_valid())
-                    {
-                        m.mate = false;
-                        break;
-                    }
+                    m.mate = false;
                 }
-                if (m.mate)
-                    winner_col = col;
+                else
+                {
+                    // Check all moves
+                    std::vector<chessmove> pm = possible_moves(opponent);
+                    for (size_t i = 0; i < pm.size(); i++)
+                    {
+                        chessboard b(m_board);
+                        chessmove m0 = b.attempt_move(opponent, pm[i]);
+                        if (m0.is_valid())
+                        {
+                            m.mate = false;
+                            break;
+                        }
+                    }
+                    if (m.mate)
+                        winner_col = col;
+                }
             }
             // Conclusion
             if (m.mate)
@@ -282,12 +324,12 @@ namespace chess
 
     std::string chessgame::title()
     {
-        return m_title;
+        return tag("Event");
     }
 
     void chessgame::set_title(std::string t)
     {
-        m_title = t;
+        write_tag("Event", t);
     }
 
     bool chessgame::check_state(color_e col)
@@ -321,9 +363,9 @@ namespace chess
         return e_adding;
     }
 
-    void chessgame::set_turn_to(int idx)
+    void chessgame::set_turn_to(int idx, bool activate)
     {
-        if (idx != m_play_pos)
+        if ((idx != m_play_pos) || (activate))
         {
             bool turn_rw = (m_state == play_e && !m_puzzle);
             if ((idx >= 0) && (m_turn.size() > 0))
@@ -348,6 +390,8 @@ namespace chess
 
     error_e chessgame::rewind_game()
     {
+        if (m_state == play_e)
+            return e_play_not_paused;
         int idx = m_play_pos - 1;
         if (idx < -1)
             return e_rewind_failed;
@@ -357,6 +401,8 @@ namespace chess
 
     error_e chessgame::advance_game()
     {
+        if (m_state == play_e)
+            return e_play_not_paused;
         int idx = m_play_pos + 1;
         if (idx >= playmax())
             return e_advance_failed;
@@ -366,6 +412,8 @@ namespace chess
 
     error_e chessgame::goto_turn(int turn_no)
     {
+        if (m_state == play_e)
+            return e_play_not_paused;
         int idx = turn_no - 1;
         if ((idx < -1) || (idx >= playmax()))
             return e_advance_failed;
@@ -380,7 +428,7 @@ namespace chess
             // accomplishes a trim
             m_win_color = c_none;
             set_state(play_e);
-            set_turn_to(m_play_pos);
+            set_turn_to(m_play_pos, true);
         }
         return e_none;
     }
@@ -398,10 +446,14 @@ namespace chess
     {
         m_win_color = c_none;
         m_init_board = c_open_board;
+        m_puzzle = false;
+        remove_tag("puzzle_id");
+        remove_tag("puzzle_open");
         m_board.load_xfen(m_init_board);
         m_turn.clear();
         m_play_pos = -1;
-        m_title = title;
+        write_tag("Event", title);
+        m_open_filter.reset();
         add_clock(clock);
         refresh_board_positions();
         set_state(play_e, true);
@@ -418,6 +470,7 @@ namespace chess
             m_state = str_game_state(jsonf["state"]);
             m_win_color = str_color(jsonf["win_color"]);
 
+            m_open_filter.reset();
             add_clock(chessclock::load(jsonf["Clock"], this));
 
             auto turns = jsonf["turns"];
@@ -434,8 +487,15 @@ namespace chess
             JSON_LOAD(jsonf, "init_board", m_init_board, c_open_board);
             JSON_LOAD(jsonf, "puzzle", m_puzzle, false);
             JSON_LOAD(jsonf, "hints", m_hints, 0);
-            JSON_LOAD(jsonf, "title", m_title, "");
             JSON_LOAD(jsonf, "points", m_points, 0);
+
+            auto meta = json::object();
+            JSON_LOADC(jsonf, "meta", meta);
+            if (!meta.is_null())
+            {
+                for (auto el : meta.items())
+                    write_tag(el.key(), el.value().dump());
+            }
 
             m_play_pos = jsonf["play_pos"];
             if (m_play_pos < 0)
@@ -446,7 +506,7 @@ namespace chess
             auto board = jsonf["board"];
             if (m_board.load(board) != e_none)
                 return e_loading;
-
+            narrow_moves();
             refresh_board_positions();
             // when we load any game, if it's state
             // is play we turn to idle (review mode)
@@ -502,12 +562,94 @@ namespace chess
         m_play_pos = -1;
         m_board.load_xfen(p.fen);
         m_puzzle = true;
-        m_title = p.title();
         m_hints = turns.size() / 4;
+        write_tag("Event", p.themes);
+        write_tag("puzzle_id", p.puzzleid);
+        write_tag("puzzle_open", p.openingtags);
+        write_tag("puzzle_themes", p.themes);
+        write_tag("puzzle_ratings", p.rating);
         refresh_board_positions();
         set_state(play_e, true);
         signal_on_turn();
         return e_none;
+    }
+
+    error_e chessgame::load_pgn(chesspgn &p)
+    {
+        chessboard b;
+        error_e err = b.load_xfen(c_open_board);
+        if (err != e_none)
+            return err;
+
+        color_e tc = b.turn_color();
+        std::vector<chessturn> turns;
+        m_open_filter.reset();
+
+        int16_t n = 0;
+        chessturn t;
+
+        for (chessmove m : p.moves())
+        {
+            m = b.attempt_move(tc, m);
+            if (m.error != e_none)
+                return err;
+            tc = b.turn_color();
+            t.t = n++;
+            t.b = b;
+            t.c = tc;
+            t.m = m;
+            t.ch = b.check_state(tc);
+            t.g = play_e;
+            t.wc = c_none;
+            turns.push_back(t);
+        }
+
+        mp_clock = nullptr;
+        m_init_board = c_open_board;
+        m_turn = turns;
+
+        m_play_pos = -1;
+        m_board.load_xfen(c_open_board);
+        m_puzzle = false;
+
+        copy_tags_from(p);
+        refresh_board_positions();
+
+        // update the last turn.
+        int last_turn = playmax();
+        game_state_e detect_state = idle_e;
+        if (last_turn >= 1)
+        {
+            // We want to replay the last move for state sake and load position
+            goto_turn(last_turn);
+            chessturn lt = turns[last_turn - 1];
+            m_state = play_e;
+            detect_state = is_game_over(other(lt.c), lt.m);
+            if (m_win_color == c_none)
+                m_win_color = lt.wc = p.win_color();
+            if (detect_state == play_e)
+                detect_state = lt.g = p.game_state();
+            turns[last_turn - 1] = lt;
+        }
+        narrow_moves();
+        set_state(detect_state, true);
+        // and set it.
+        signal_on_turn();
+        return e_none;
+    }
+
+    error_e chessgame::save_pgn(chesspgn &p)
+    {
+        write_tag("ECO", m_open_filter.eco());
+        write_tag("Opening", m_open_filter.title());
+        p.copy_tags_from(*this);
+        int last_turn = playmax();
+        if (last_turn >= 1)
+        {
+            chessturn lt = m_turn[last_turn - 1];
+            p.set_final_state(lt.g, lt.wc);
+        }
+        return p.write_moves(moves());
     }
 
     error_e chessgame::save_game(json &jsonf)
@@ -538,9 +680,18 @@ namespace chess
             jsonf["init_board"] = m_init_board;
             jsonf["puzzle"] = m_puzzle;
             jsonf["hints"] = m_hints;
-            jsonf["title"] = m_title;
             jsonf["play_pos"] = m_play_pos;
             jsonf["points"] = m_points;
+
+            auto meta = json::object();
+
+            write_tag("ECO", m_open_filter.eco());
+            write_tag("Opening", m_open_filter.title());
+
+            for (auto tag_pair : m_tags)
+                meta[tag_pair.first] = tag_pair.second;
+
+            jsonf["meta"] = meta;
 
             auto board = json::object();
             if (m_board.save(board) != e_none)
@@ -665,6 +816,14 @@ namespace chess
         return chess::new_turn(n, m, ch, m_board, c, g, wc, wt, bt);
     }
 
+    std::vector<chessmove> chessgame::moves()
+    {
+        std::vector<chessmove> ret;
+        for (int i = 0; i <= m_play_pos; i++)
+            ret.push_back(m_turn[i].m);
+        return ret;
+    }
+
     void chessgame::push_new_turn(chessmove m)
     {
         if (m.is_valid())
@@ -674,6 +833,7 @@ namespace chess
                 add_board_position();
                 m_turn.push_back(new_turn(m));
                 m_play_pos = (int)m_turn.size() - 1;
+                narrow_moves();
             }
             else
             {

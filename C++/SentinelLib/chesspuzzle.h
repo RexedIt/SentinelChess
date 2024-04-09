@@ -25,7 +25,5 @@ namespace chess
         int nbplays;
         std::string themes;
         std::string openingtags;
-
-        std::string title();
     };
 }

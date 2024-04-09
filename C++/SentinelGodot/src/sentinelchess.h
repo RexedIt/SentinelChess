@@ -5,6 +5,7 @@
 #include <godot_cpp/variant/typed_array.hpp>
 
 #include "chesslobby.h"
+#include "chessopenings.h"
 #include "chessgame.h"
 #include "chessgamelistener.h"
 
@@ -46,11 +47,13 @@ private:
     Ref<ChessMove> hint();
     String hintstr();
     int win_points(ChessColor col);
-    bool set_datafolder(const String &);
-    String get_datafolder();
+    bool initialize(const String &);
 
     // For getting high level info about the game, useful one time
     Ref<ChessMeta> get_meta();
+
+    String eco();
+    String open_title();
 
     int forfeit(ChessColor col);
     int move_c(ChessColor col, const Ref<ChessCoord> &p0, const Ref<ChessCoord> &p1, ChessPiece promote);
@@ -88,6 +91,7 @@ private:
     String player_name(ChessColor col);
     Dictionary player_names();
     ChessColor preferred_board_color();
+    ChessColor lone_local_color();
 
     // Board helpers
     bool cell_interactive(int y, int x);
@@ -100,6 +104,8 @@ private:
     void refresh_data();
     std::shared_ptr<chessgamelistener_queue> mp_listener;
     chesslobby m_lobby;
+    chessecodb m_ecodb;
+
     std::shared_ptr<chessgame> mp_game;
 };
 

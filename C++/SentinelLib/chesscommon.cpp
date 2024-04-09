@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
+#include <chrono>
 
 #include "chesscommon.h"
 #include "chesspiece.h"
@@ -93,6 +94,14 @@ namespace chess
             return "Nothing found";
         case e_incorrect_move:
             return "Incorrect move";
+        case e_no_openings:
+            return "No Chess Opening Data";
+        case e_pgn_parse:
+            return "PGN Parsing Error";
+        case e_invalid_extension:
+            return "Invalid Extension, must be CHS or PGN";
+        case e_play_not_paused:
+            return "Play not paused";
         default:
             return "Unknown Error";
         }
@@ -444,10 +453,19 @@ namespace chess
     {
         if (!_sinit)
         {
-            srand((int)time(NULL));
+            using namespace std::chrono;
+            milliseconds ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+            srand((unsigned int)ms.count());
             _sinit = true;
         }
         return (float)rand() / (float)RAND_MAX;
+    }
+
+    int get_rand_int(int min, int max)
+    {
+        float r = get_rand();
+        r = r * (float)(max - min);
+        return min + (int)r;
     }
 
     std::string uppercase(std::string l)
@@ -462,6 +480,20 @@ namespace chess
         std::string cmdu = u;
         std::transform(cmdu.begin(), cmdu.end(), cmdu.begin(), ::tolower);
         return cmdu;
+    }
+
+    bool starts_with(std::string a, std::string b)
+    {
+        if (a.length() < b.length())
+            return false;
+        return (a.substr(0, b.length()) == b);
+    }
+
+    bool ends_with(std::string a, std::string b)
+    {
+        if (a.length() < b.length())
+            return false;
+        return (a.substr(a.length() - b.length(), b.length()) == b);
     }
 
     const char *ws = " \t\n\r\f\v";
@@ -495,7 +527,9 @@ namespace chess
         while (pos != std::string::npos)
         {
             last_div = (pos == rem.length() - 1);
-            ret.push_back(trim(rem.substr(0, pos)));
+            std::string trimmed = trim(rem.substr(0, pos));
+            if ((div != ' ') || (trimmed != ""))
+                ret.push_back(trim(rem.substr(0, pos)));
             rem = rem.substr(pos + 1);
             pos = rem.find(div);
         }
@@ -608,6 +642,136 @@ namespace chess
             buf[p++] = moves[i].p1.x;
         }
         return hash(buf, moves.size() * 4);
+    }
+
+    bool little_endian()
+    {
+        int n = 1;
+        return (*(char *)&n == 1);
+    }
+
+    void save_nl(std::ofstream &of, char *c, size_t l)
+    {
+        if ((little_endian()) && (l <= 8))
+        {
+            char d[8];
+            size_t i = l;
+            size_t j = 0;
+            while (i > 0)
+                d[--i] = c[j++];
+            of.write(d, l);
+        }
+        else
+        {
+            of.write(c, l);
+        }
+    }
+
+    void load_nl(std::ifstream &inf, char *c, size_t l)
+    {
+        if ((little_endian()) && (l <= 8))
+        {
+            char d[8];
+            inf.read(d, l);
+            size_t i = l;
+            size_t j = 0;
+            while (i > 0)
+                c[--i] = d[j++];
+        }
+        else
+        {
+            inf.read(c, l);
+        }
+    }
+
+    bool save_binary(std::ofstream &of, size_t v)
+    {
+        int32_t i = (int32_t)v;
+        save_nl(of, (char *)&i, sizeof(i));
+        return true;
+    }
+
+    bool load_binary(std::ifstream &inf, size_t &v)
+    {
+        int32_t i = 0;
+        load_nl(inf, (char *)&i, sizeof(i));
+        v = (size_t)i;
+        return true;
+    }
+
+    bool save_binary(std::ofstream &of, uint32_t &v)
+    {
+        save_nl(of, (char *)&v, sizeof(v));
+        return true;
+    }
+
+    bool load_binary_u(std::ifstream &inf, uint32_t &v)
+    {
+        load_nl(inf, (char *)&v, sizeof(v));
+        return true;
+    }
+
+    bool save_binary(std::ofstream &of, std::string &v)
+    {
+        save_binary(of, v.length());
+        of.write(v.c_str(), v.length());
+        return true;
+    }
+
+    bool load_binary(std::ifstream &inf, std::string &v)
+    {
+        size_t l = 0;
+        load_binary(inf, l);
+        char buf[256];
+        if ((l < 0) || (l > 255))
+            return false;
+        inf.read(buf, l);
+        buf[l] = 0;
+        v = std::string(buf);
+        return true;
+    }
+
+    bool save_binary(std::ofstream &of, chessmove v)
+    {
+        int8_t buf[5];
+        buf[0] = v.p0.y;
+        buf[1] = v.p0.x;
+        buf[2] = v.p1.y;
+        buf[3] = v.p1.x;
+        of.write((char *)buf, 4);
+        return true;
+    }
+
+    bool load_binary(std::ifstream &inf, chessmove &v)
+    {
+        int8_t buf[5];
+        inf.read((char *)&buf, 4);
+        v = new_move(buf[0], buf[1], buf[2], buf[3]);
+        return true;
+    }
+
+    bool save_binary(std::ofstream &of, std::vector<chessmove> &v)
+    {
+        save_binary(of, v.size());
+        for (size_t i = 0; i < v.size(); i++)
+            save_binary(of, v[i]);
+        return true;
+    }
+
+    bool load_binary(std::ifstream &inf, std::vector<chessmove> &v)
+    {
+        size_t l = 0;
+        load_binary(inf, l);
+        if ((l < 0) || (l > 64))
+            return false;
+        for (size_t i = 0; i < l; i++)
+        {
+            chessmove m;
+            if (!load_binary(inf, m))
+                return false;
+            v.push_back(m);
+        }
+        return true;
     }
 
 }

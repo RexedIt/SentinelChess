@@ -1,8 +1,8 @@
 {
   "profiles": {
-    "LIPuzzleConverter": {
+    "LIPGNConverter": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\Users\\N60390\\Downloads\\lichess_db_standard_rated_2013-01.pgn -maxItems 100 -minrating 2000 -guid -event \"Rated Bullet game\" -out C:\\Users\\N60390\\Downloads\\PGN"
+      "commandLineArgs": "lichess_db_standard_rated_2013-01.pgn -maxItems 50 -startat 51 -minrating 2000 -guid -event \"Rated Bullet game\" -out PGN"
     }
   }
 }

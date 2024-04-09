@@ -6,12 +6,57 @@ namespace LIPGNConverter
 {
     class Program
     {
+
+        static string FindSourceFolder(string subfolder)
+        {
+            string cd = Directory.GetCurrentDirectory();
+            string lcd = Path.Combine(cd, subfolder);
+            while(true)
+            {
+                if (Directory.Exists(lcd))
+                    return lcd;
+                var cdi = Directory.GetParent(cd);
+                if (cdi == null)
+                    return "";
+                cd = cdi.ToString();
+                if (cd == null)
+                    return "";
+                lcd = Path.Combine(cd, subfolder);
+            }
+        }
+
+        static string FindSourceFile(string infile)
+        {
+            if (File.Exists(infile))
+                return infile;
+            string lcd = FindSourceFolder("SourceData");
+            if (lcd != "")
+                return Path.Combine(lcd,Path.GetFileName(infile));
+            return infile;
+        }
+
+        static string FindDestFolder(string outDir)
+        {
+            if (Directory.Exists(outDir))
+                return outDir;
+            string lcd = FindSourceFolder("DestData");
+            if (lcd != "")
+            {
+                string candidate = Path.Combine(lcd,Path.GetFileName(outDir));
+                if (!Directory.Exists(candidate))
+                    Directory.CreateDirectory(candidate);
+                return candidate;
+            }
+            return outDir;
+        }
+
         static int ctr = 0;
-        static bool Save(string outDir, List<string> lines, bool guid)
+        static bool Save(string outDir, List<string> lines, bool guid, int startat)
         {
             try
             {
-                string fileName = (++ctr).ToString("D8") + ".pgn";
+                int idx = (ctr++) + startat;
+                string fileName = (idx).ToString("D8") + ".pgn";
                 if (guid)
                     fileName = Guid.NewGuid().ToString() + ".pgn";
                 fileName = Path.Combine(outDir, fileName);
@@ -123,6 +168,7 @@ namespace LIPGNConverter
             int maxItems = 100;
             bool count = false;
             bool guid = false;
+            int startat = 1;
 
             for(int i = 0; i < args.Length; i++)
             {
@@ -190,6 +236,13 @@ namespace LIPGNConverter
                 {
                     count = true;
                 }
+                else if (uarg == "-STARTAT")
+                {
+                    if (hasnext)
+                        startat = Convert.ToInt32(args[++i]);
+                    else
+                        help = true;
+                }
                 else if ((uarg == "-HELP") || (uarg == "-H") || (uarg == "?") || (uarg == "-?"))
                     help = true;
                 else
@@ -212,12 +265,14 @@ namespace LIPGNConverter
                 Environment.Exit(-1);
             }
 
+            inFile = FindSourceFile(inFile);
             if ((inFile == "")||(!File.Exists(inFile)))
             {
                 Console.WriteLine("Error - File not specified or does not exist!");
                 Environment.Exit(-1);
             }
 
+            outDir = FindDestFolder(outDir);
             if (outDir == "")
             {
                 Console.WriteLine("Error - Output Directory is not specified!");
@@ -248,7 +303,7 @@ namespace LIPGNConverter
                         {
                             if (Filter(lines, minRating, maxRating, user, eventname))
                             {
-                                if ((!count)&&(!Save(outDir, lines, guid)))
+                                if ((!count)&&(!Save(outDir, lines, guid, startat)))
                                     Environment.Exit(-1);
                                 else
                                     lw ++;

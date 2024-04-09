@@ -97,7 +97,7 @@ func _gamestatereact(gs):
 		GameState.INIT:
 			# Initialization
 			print("GS: Initialization")
-			set_datafolder('..\\..\\ChessData\\')
+			initialize('..\\..\\ChessData\\')
 			# for now, we want to move to the new game prompt
 			# later we will select new or load
 			# _newgameprompt()
@@ -224,8 +224,7 @@ func _on_closed_new(_cancelled, _title, _white, _black, _clock):
 		return
 	# start new game
 	new_game(_title, _white, _black, _clock)
-	board.setup(preferred_board_color())
-	pnlCaptured.setup(preferred_board_color())
+	refresh_board_color(preferred_board_color())
 	gameUI.initialize('New Game')
 	statewait = false
 	_gamestatereact(GameState.PLAY)
@@ -241,8 +240,7 @@ func _on_closed_puzzle(_cancelled, _player, _keywords, _rating):
 		_on_error(err)
 		_gamestatereact(prepopgamestate)
 		return
-	board.setup(preferred_board_color())
-	pnlCaptured.setup(preferred_board_color())
+	refresh_board_color(preferred_board_color())
 	gameUI.initialize('Load Puzzle')
 	statewait = false
 	_gamestatereact(GameState.PLAY)
@@ -284,9 +282,9 @@ func _on_closed_promote(_cancelled, _color, _piece):
 		promotemove.set_promote(_piece)
 		user_move(_color,promotemove,false)
 
-func _on_closed_settings(_cancelled, _skin, _voice, _music, _sfx):
+func _on_closed_settings(_cancelled, _skin, _voice, _music, _sfx, _rot):
 	if !_cancelled:
-		skin.applysettings(_skin,_voice,_music,_sfx)
+		skin.applysettings(_skin,_voice,_music,_sfx,_rot)
 		applyskin()
 			
 func _on_new_game():
@@ -332,10 +330,7 @@ func _draw_move(n, m, b, c):
 	pnlCaptured.refreshpieces(b)
 	
 func _on_turn(n, b, c):
-	if is_local_active(c) and gamestate != GameState.END:
-		refresh_board(c, b)
-	else:
-		refresh_board(preferred_board_color(), b)
+	refresh_board(c, b)
 	gameUI.refreshPrompt(c)
 
 func set_idle(b : bool):
@@ -361,10 +356,16 @@ func _on_state(s : ChessGameState, w : ChessColor):
 		finish_game(s, w)
 	
 func refresh_board(c : ChessColor, b : ChessBoard):
-	board.setup(c)
+	refresh_board_color(c)
 	board.refreshpieces(b)
-	pnlCaptured.setup(c)
 	pnlCaptured.refreshpieces(b)
+
+func refresh_board_color(c : ChessColor):
+	var c1 : ChessColor = c;
+	if !skin.rotateBoard or !is_local(c):
+		c1 = preferred_board_color()
+	board.setup(c1)
+	pnlCaptured.setup(c1)
 	
 func refresh_turn(c : ChessColor, b : ChessBoard):
 	board.refreshpieces(b)

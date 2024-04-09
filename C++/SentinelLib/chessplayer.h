@@ -45,6 +45,7 @@ namespace chess
 
     protected:
         virtual void set_game(std::shared_ptr<chessgame> p_game);
+        virtual void stop_listening() { ; }
 
         color_e m_color;
         std::string m_name;

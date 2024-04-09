@@ -6,6 +6,45 @@ namespace LIPuzzleConverter
 {
     class Program
     {
+
+                static string FindSourceFolder(string subfolder)
+        {
+            string cd = Directory.GetCurrentDirectory();
+            string lcd = Path.Combine(cd, subfolder);
+            while(true)
+            {
+                if (Directory.Exists(lcd))
+                    return lcd;
+                var cdi = Directory.GetParent(cd);
+                if (cdi == null)
+                    return "";
+                cd = cdi.ToString();
+                if (cd == null)
+                    return "";
+                lcd = Path.Combine(cd, subfolder);
+            }
+        }
+
+        static string FindSourceFile(string infile)
+        {
+            if (File.Exists(infile))
+                return infile;
+            string lcd = FindSourceFolder("SourceData");
+            if (lcd != "")
+                return Path.Combine(lcd,Path.GetFileName(infile));
+            return infile;
+        }
+
+        static string FindDestFile(string infile)
+        {
+            if (File.Exists(infile))
+                return infile;
+            string lcd = FindSourceFolder("DestData");
+            if (lcd != "")
+                return Path.Combine(lcd,Path.GetFileName(infile));
+            return infile;
+        }
+
         static string convertLine(string[] s)
         {
             if (s.Length != 10)
@@ -129,12 +168,14 @@ namespace LIPuzzleConverter
                 Environment.Exit(-1);
             }
 
+            inFile = FindSourceFile(inFile);
             if ((inFile == "")||(!File.Exists(inFile)))
             {
                 Console.WriteLine("Error - File not specified or does not exist!");
                 Environment.Exit(-1);
             }
 
+            outFile = FindDestFile(outFile);
             if (outFile == "")
                 outFile = inFile + ".out.csv";
 

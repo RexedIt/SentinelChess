@@ -14,6 +14,7 @@
     <ClCompile Include="chesspuzzle.cpp" />
     <ClCompile Include="chesspuzzleplayer.cpp" />
     <ClCompile Include="chessclock.cpp" />
+    <ClCompile Include="chessopenings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="chessboard.h" />
@@ -29,5 +30,6 @@
     <ClInclude Include="chesspuzzle.h" />
     <ClInclude Include="chesspuzzleplayer.h" />
     <ClInclude Include="chessclock.h" />
+    <ClInclude Include="chessopenings.h" />
   </ItemGroup>
 </Project>
