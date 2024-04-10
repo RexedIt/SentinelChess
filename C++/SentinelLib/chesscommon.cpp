@@ -3,6 +3,7 @@
 #include <fstream>
 #include <algorithm>
 #include <chrono>
+#include <regex>
 
 #include "chesscommon.h"
 #include "chesspiece.h"
@@ -102,6 +103,8 @@ namespace chess
             return "Invalid Extension, must be CHS or PGN";
         case e_play_not_paused:
             return "Play not paused";
+        case e_pgn_overflow:
+            return "PGN Buffer Overflow";
         default:
             return "Unknown Error";
         }
@@ -496,6 +499,15 @@ namespace chess
         return (a.substr(a.length() - b.length(), b.length()) == b);
     }
 
+    bool book_end(std::string s, char b, char e)
+    {
+        if (s != "")
+            if (s[0] == b)
+                if (s[s.length() - 1] == e)
+                    return true;
+        return false;
+    }
+
     const char *ws = " \t\n\r\f\v";
 
     // trim from end of string (right)
@@ -573,6 +585,12 @@ namespace chess
         std::string ret = s;
         std::replace(ret.begin(), ret.end(), o, n);
         return ret;
+    }
+
+    std::string string_replace(std::string s, std::string o, std::string n)
+    {
+        std::string ret = s;
+        return std::regex_replace(ret, std::regex(o), n);
     }
 
     inline char separator()

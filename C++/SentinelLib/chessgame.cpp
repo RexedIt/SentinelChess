@@ -612,7 +612,7 @@ namespace chess
         m_board.load_xfen(c_open_board);
         m_puzzle = false;
 
-        copy_tags_from(p);
+        copy_from(p);
         refresh_board_positions();
 
         // update the last turn.
@@ -642,7 +642,7 @@ namespace chess
     {
         write_tag("ECO", m_open_filter.eco());
         write_tag("Opening", m_open_filter.title());
-        p.copy_tags_from(*this);
+        p.copy_from(*this);
         int last_turn = playmax();
         if (last_turn >= 1)
         {

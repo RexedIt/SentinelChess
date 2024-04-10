@@ -21,7 +21,6 @@ namespace chess
         std::string opening();
         std::string moves_str();
         std::string xfen();
-
         std::vector<chessmove> moves();
         color_e win_color();
         game_state_e game_state();
@@ -36,6 +35,7 @@ namespace chess
 
     private:
         error_e read_tag(std::string line);
+        error_e strip_comments(std::string move_buffer, std::string &errextra);
         std::string m_moves_str;
         std::string m_xfen;
         std::vector<chessmove> m_moves;

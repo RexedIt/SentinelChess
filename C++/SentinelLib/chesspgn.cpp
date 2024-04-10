@@ -7,6 +7,7 @@
 
 namespace chess
 {
+
     chesspgn::chesspgn()
     {
         reset_tags();
@@ -175,7 +176,9 @@ namespace chess
             reset_tags();
 
             m_moves.clear();
+            m_comments.clear();
             m_moves_str = "";
+            std::string move_buffer = "";
 
             bool has_moves = false;
 
@@ -184,9 +187,9 @@ namespace chess
                 line = trim(line);
                 if (line == "")
                     continue;
-                if (starts_with(line, "["))
+                if (book_end(line, '[', ']'))
                 {
-                    if (m_moves_str != "")
+                    if (move_buffer != "")
                         break; // may be multi-PGN file.
                     err = read_tag(line);
                     if (err != e_none)
@@ -197,16 +200,19 @@ namespace chess
                 }
                 else
                 {
-                    if (m_moves_str != "")
-                        m_moves_str += " ";
-                    m_moves_str += line;
+                    if (move_buffer != "")
+                        move_buffer += "\r\n";
+                    move_buffer += line;
                 }
             }
-            if (m_moves_str != "")
+            if (move_buffer != "")
             {
-                if (!ends_with(m_moves_str, tag("Result")))
+                if (!ends_with(move_buffer, tag("Result")))
                     return e_loading;
-                error_e err = read_pgn_moves(m_moves_str, m_moves, m_xfen, errextra);
+                std::string stripped_moves;
+                error_e err = strip_comments(move_buffer, errextra);
+                if (err == e_none)
+                    err = read_pgn_moves(m_moves_str, m_moves, m_xfen, errextra);
                 if (err != e_none)
                 {
                     // remove
@@ -223,6 +229,172 @@ namespace chess
             std::cerr << e.what() << '\n';
             return e_loading;
         }
+    }
+
+    void append_comment(int idx, std::string comment, std::map<int, std::string> &comments)
+    {
+        if (comments.count(idx))
+            comments[idx] = comments[idx] + " " + trim(comment);
+        else
+            comments[idx] = trim(comment);
+    }
+
+    void append_move(std::string word, std::string &move_str)
+    {
+        if (move_str != "")
+            move_str += ' ';
+        move_str += word;
+    }
+
+    error_e parse_comment(std::string &fwd_buffer, int turn_no, std::string &moves_str, std::map<int, std::string> &comments)
+    {
+        std::string token = std::to_string(turn_no) + ".";
+        size_t t1 = fwd_buffer.find(token);
+        if (t1 == std::string::npos)
+        {
+            fwd_buffer = "";
+            return e_pgn_parse;
+        }
+
+        std::string token_term = std::to_string(turn_no) + "...";
+        std::string next_token = std::to_string(turn_no + 1) + ".";
+
+        std::string move_str = "";
+        std::string comment = "";
+        std::string word = "";
+
+        size_t t2 = fwd_buffer.rfind(" " + next_token);
+        size_t t3 = fwd_buffer.rfind("\n" + next_token);
+        if (t2 == std::string::npos)
+            t2 = t3;
+        if (t3 != std::string::npos)
+            if (t3 > t2)
+                t2 = t3;
+
+        size_t buffer_max = (t2 == std::string::npos) ? fwd_buffer.length() : t2;
+        int inc = 0;
+        int sc = (turn_no - 1) * 2 - 1;
+
+        for (size_t i = 0; i < buffer_max; i++)
+        {
+            char c = fwd_buffer[i];
+            if (c == '\r')
+                continue;
+            if (c == '\n')
+                c = ' ';
+            if ((c == '{') || (c == '('))
+            {
+                inc++;
+            }
+            else if ((c == '}') || (c == ')'))
+            {
+                comment += c;
+                inc--;
+                if (inc < 0)
+                    return e_pgn_parse;
+                if (inc == 0)
+                {
+                    append_comment(sc, comment, comments);
+                    comment = "";
+                    continue;
+                }
+            }
+            if (inc)
+            {
+                comment += c;
+            }
+            else
+            {
+                if (c == ' ')
+                {
+                    if (word != "")
+                    {
+                        char wc = word[0];
+                        if (word == next_token)
+                        {
+                            t2 = i - next_token.length() - 1;
+                            if (fwd_buffer[i - 1] == '\r')
+                                t2--;
+                            word = "";
+                            break;
+                        }
+                        if (word == token_term)
+                        {
+                            append_comment(sc, word, comments);
+                        }
+                        else if (wc == '$')
+                        {
+                            append_comment(sc, word, comments);
+                        }
+                        else
+                        {
+                            append_move(word, move_str);
+                            if (((wc >= '0') && (wc <= '9')) ||
+                                ((wc >= 'A') && (wc <= 'Z')) ||
+                                ((wc >= 'a') && (wc <= 'z')))
+                                sc++;
+                            if (sc > turn_no * 2 + 1)
+                                return e_pgn_parse;
+                        }
+                        word = "";
+                    }
+                }
+                else
+                {
+                    word += c;
+                }
+            }
+        }
+
+        if (word != "")
+        {
+            char wc = word[0];
+            if (word == token_term)
+                append_comment(sc, word, comments);
+            else if (wc == '$')
+                append_comment(sc, word, comments);
+            else
+                append_move(word, move_str);
+        }
+
+        // add to the whole kit n kboodle
+        append_move(move_str, moves_str);
+
+        if (t2 == std::string::npos)
+            fwd_buffer = "";
+        else
+            fwd_buffer = fwd_buffer.substr(t2 + 1);
+        return e_none;
+    }
+
+    error_e chesspgn::strip_comments(std::string move_buffer, std::string &errextra)
+    {
+        if (move_buffer.find_first_of("{()}$") == std::string::npos)
+        {
+            m_comments.clear();
+            m_moves_str = string_replace(move_buffer, "\r\n", " ");
+            return e_none;
+        }
+
+        // now we want to split in to a vector of 'lines' or move sets
+        std::string fwd_buffer = move_buffer;
+        std::string moves_str = "";
+        std::map<int, std::string> comments;
+        error_e err = e_none;
+        int turn_no = 0;
+        while (fwd_buffer != "")
+        {
+            err = parse_comment(fwd_buffer, ++turn_no, moves_str, comments);
+            if (err != e_none)
+                break;
+        }
+
+        if (err == e_none)
+        {
+            m_moves_str = moves_str;
+            m_comments = comments;
+        }
+        return err;
     }
 
     std::string disambiguate_piece(chessboard &b, coord_s p0, std::vector<chessmove> &m, coord_s p1)
@@ -342,6 +514,8 @@ namespace chess
         }
         return false;
     }
+
+    // this function parses a pgn sequence from a line or lines
     error_e read_pgn_moves(std::string moves_str, std::vector<chessmove> &move_vec, std::string &xfen, std::string &errextra)
     {
         chessboard b;
