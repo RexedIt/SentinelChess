@@ -145,9 +145,9 @@ namespace chess
         if (m.cx != -1) // castling moves
         {
             if (m.cx == 6)
-                ms = "O-O";
-            else
                 ms = "O-O-O";
+            else
+                ms = "O-O";
         }
         else
         {

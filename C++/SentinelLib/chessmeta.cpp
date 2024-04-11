@@ -83,7 +83,10 @@ namespace chess
 
     void chessmeta::comment(int index, std::string val)
     {
-        m_comments[index] = val;
+        if (book_end(val, "${(", ".})"))
+            m_comments[index] = val;
+        else
+            m_comments[index] = "{" + val + "}";
     }
 
     std::string chessmeta::tag(std::string key)

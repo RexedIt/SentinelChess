@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <chrono>
 #include <regex>
+#include <sstream>
 
 #include "chesscommon.h"
 #include "chesspiece.h"
@@ -508,6 +509,18 @@ namespace chess
         return false;
     }
 
+    bool book_end(std::string s, std::string b, std::string e)
+    {
+        if (s != "")
+        {
+            size_t li = s.length() - 1;
+            size_t bi = s.find_first_of(b);
+            size_t ei = s.find_last_of(e);
+            return ((bi == 0) && (ei == li));
+        }
+        return false;
+    }
+
     const char *ws = " \t\n\r\f\v";
 
     // trim from end of string (right)
@@ -660,6 +673,22 @@ namespace chess
             buf[p++] = moves[i].p1.x;
         }
         return hash(buf, moves.size() * 4);
+    }
+
+    std::string file_to_string(std::string f)
+    {
+        try
+        {
+            std::ifstream af(f, std::ios::binary);
+            std::stringstream buffer;
+            buffer << af.rdbuf();
+            af.close();
+            return buffer.str();
+        }
+        catch (const std::exception &e)
+        {
+            return e.what();
+        }
     }
 
     bool little_endian()

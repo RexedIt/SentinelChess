@@ -21,7 +21,7 @@ namespace chess
     class chessgamelistener;
     class chessclock;
 
-    class chessgame : chessmeta
+    class chessgame : public chessmeta
     {
     public:
         chessgame();

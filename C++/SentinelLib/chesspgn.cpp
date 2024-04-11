@@ -19,15 +19,18 @@ namespace chess
         // always given.
         m_tags.clear();
         write_tag("Event", "???");
-        write_tag("White", "???");
-        write_tag("Black", "???");
-        write_tag("Result", "???");
+        write_tag("Site", "???");
+        write_tag("Date", "???");
         write_tag("UTCDate", "???");
         write_tag("UTCTime", "???");
+        write_tag("Round", "???");
+        write_tag("White", "???");
+        write_tag("Black", "???");
         write_tag("WhiteElo", "???");
         write_tag("BlackElo", "???");
         write_tag("ECO", "???");
         write_tag("Opening", "???");
+        write_tag("Result", "???");
     }
 
     std::string chesspgn::event()
@@ -221,6 +224,7 @@ namespace chess
                 }
                 if (m_moves.size() == 0)
                     return e_loading;
+                m_moves_str = move_buffer; // preserve original format
             }
             return e_none;
         }
@@ -288,12 +292,12 @@ namespace chess
             }
             else if ((c == '}') || (c == ')'))
             {
-                comment += c;
                 inc--;
                 if (inc < 0)
                     return e_pgn_parse;
                 if (inc == 0)
                 {
+                    comment += c;
                     append_comment(sc, comment, comments);
                     comment = "";
                     continue;
@@ -417,6 +421,66 @@ namespace chess
         return ret;
     }
 
+    std::string split_lines(std::string orig, size_t width)
+    {
+        if (orig.find_first_of('\n') != std::string::npos)
+            return orig;
+        std::string word;
+        std::string multiline;
+        size_t last_line = 0;
+        size_t i = 0;
+        for (; i < orig.length(); i++)
+        {
+            char c = orig[i];
+            if (c == ' ')
+            {
+                size_t cp = multiline.length() - last_line;
+                size_t wl = word.length();
+                bool newline = cp + wl + 1 >= width;
+                if (newline)
+                {
+                    multiline += "\r\n";
+                    last_line = multiline.length();
+                }
+                else
+                {
+                    if (multiline != "")
+                        multiline += " ";
+                }
+                multiline += word;
+                word = "";
+            }
+            else
+            {
+                word += c;
+            }
+        }
+        if (word != "")
+        {
+            size_t cp = multiline.length() - last_line;
+            size_t wl = word.length();
+            if (cp + wl + 1 >= width)
+            {
+                multiline += "\r\n";
+            }
+            else
+            {
+                if (multiline != "")
+                    multiline += " ";
+            }
+            multiline += word;
+        }
+
+        return multiline;
+    }
+
+    void append_moves_str(std::string val, std::string &moves_str)
+    {
+        if (moves_str != "")
+            moves_str += " ";
+        moves_str += val;
+    }
+
     error_e chesspgn::write_moves(std::vector<chessmove> &move_vec)
     {
         chessboard b;
@@ -426,14 +490,19 @@ namespace chess
         int ft = 0;
 
         std::string moves_str = "";
+
+        // Heading comment?
+        if (m_comments.count(-1))
+            moves_str = m_comments[-1];
+
         for (chessmove m : move_vec)
         {
             int idx = ft / 2 + 1;
-            if (ft > 0)
-                moves_str += " ";
             if ((ft++ % 2) == 0)
-                moves_str += std::to_string(idx) + ". ";
-            moves_str += move_str(m, b);
+                append_moves_str(std::to_string(idx) + ".", moves_str);
+            append_moves_str(move_str(m, b), moves_str);
+            if (m_comments.count(ft))
+                append_moves_str(m_comments[ft], moves_str);
             if (moves_str == "")
                 return e_saving;
         }
@@ -450,7 +519,7 @@ namespace chess
         else
             moves_str += " 1/2-1/2";
 
-        m_moves_str = moves_str;
+        m_moves_str = split_lines(moves_str, 80);
         return e_none;
     }
 
@@ -458,19 +527,22 @@ namespace chess
     {
         try
         {
-            std::ofstream pf(filename);
+            std::ofstream pf(filename, std::ios::binary);
             if (!pf.is_open())
                 return e_saving;
 
             for (size_t i = 0; i < m_tags.size(); i++)
             {
                 std::pair<std::string, std::string> pair = m_tags[i];
-                pf << "[" << pair.first << " \"" << pair.second << "\"]" << std::endl;
+                std::string value = pair.second;
+                if (value != "")
+                    if (value != "???")
+                        pf << "[" << pair.first << " \"" << pair.second << "\"]\r\n";
             }
 
-            pf << std::endl;
+            pf << "\r\n";
 
-            pf << m_moves_str << std::endl;
+            pf << m_moves_str;
 
             pf.close();
             return e_none;

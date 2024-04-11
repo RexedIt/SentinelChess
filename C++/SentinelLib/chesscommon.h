@@ -233,6 +233,7 @@ namespace chess
     bool starts_with(std::string a, std::string b);
     bool ends_with(std::string a, std::string b);
     bool book_end(std::string s, char b, char e);
+    bool book_end(std::string s, std::string b, std::string e);
     uintmax_t get_file_size(std::string f);
     bool get_dir_exists(std::string dirname);
 
@@ -244,6 +245,8 @@ namespace chess
     std::string data_file(std::string f);
     uint32_t hash(unsigned char *, size_t);
     uint32_t hash(std::vector<chessmove>);
+
+    std::string file_to_string(std::string f);
 
     bool save_binary(std::ofstream &of, size_t v);
     bool load_binary(std::ifstream &inf, size_t &v);
