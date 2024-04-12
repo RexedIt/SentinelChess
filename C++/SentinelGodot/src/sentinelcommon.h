@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/ref_counted.hpp>
 
 #include "chesscommon.h"
+#include "chessplayerhub.h"
 #include "chessgamelistener.h"
 
 using namespace chess;
@@ -175,7 +176,7 @@ class ChessPlayer : public RefCounted
 public:
     ChessPlayer();
     ChessPlayer(std::shared_ptr<chessplayer>);
-    ChessPlayer(std::string name, int skill, chessplayertype_e ptype);
+    ChessPlayer(chessplayerdata &pd);
     ~ChessPlayer();
 
     void set_name(String s);
@@ -186,13 +187,20 @@ public:
     ChessPlayerType get_playertype();
     ChessColor get_playercolor();
     void set_playercolor(const ChessColor c);
-    void get(std::string &, int &, chessplayertype_e &);
+    // read only
+    String guid();
+    String fullname();
+    int puzzlepoints();
+    int gamepoints();
+    bool persistent();
+    String avatar();
+    String meta();
+    chessplayerdata get();
+    int refresh();
 
 private:
-    std::string m_name;
-    chessplayertype_e m_playertype;
     color_e m_playercolor;
-    int m_skill;
+    chessplayerdata m_playerdata;
 
 protected:
     static void _bind_methods();
@@ -222,12 +230,8 @@ public:
 
 private:
     std::string m_title;
-    std::string m_w_name;
-    int m_w_skill;
-    chessplayertype_e m_w_type;
-    std::string m_b_name;
-    int m_b_skill;
-    chessplayertype_e m_b_type;
+    chessplayerdata m_white;
+    chessplayerdata m_black;
     bool m_puzzle;
     int m_hints;
     int m_points;

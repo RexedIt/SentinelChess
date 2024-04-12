@@ -104,6 +104,14 @@ void move_to_console(chess::chessmove &m, std::string s)
     std::cout << s << " move " << m.to_string() << std::endl;
 }
 
+void move_to_console(chess::chessmove &m, chess::chessboard &b, std::string s)
+{
+    std::string movestr = move_str(m, b);
+    if (movestr == "")
+        movestr = m.to_string();
+    std::cout << s << " move " << movestr << std::endl;
+}
+
 void time_to_console(int32_t wt, int32_t bt)
 {
     if ((wt <= 0) && (bt <= 0))

@@ -338,7 +338,7 @@ void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_st
     {
         color_e c = other(tc);
         if (!locals.count(c))
-            move_to_console(m, color_str(c));
+            move_to_console(m, p_game->board(t - 1), color_str(c));
         if (b.check_state(c_black))
             std::cout << "Black in Check." << std::endl;
         else if (b.check_state(c_white))

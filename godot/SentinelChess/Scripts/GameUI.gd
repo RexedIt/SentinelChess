@@ -185,19 +185,12 @@ func strcoord(str: String) -> ChessCoord:
 				return cc
 	return null
 	
-func movestr(m : ChessMove) -> String:
-	var str : String = coordstr(m.p0) + '-' + coordstr(m.p1)
-	if m.en_passant():
-		str += ' EP'
-	if m.c!=-1:
-		str += ' CAST'
-	if m.get_promote() != 0:
-		str += ' PROM'
-	return str
+func movestr(n : int, m : ChessMove) -> String:
+	return game_manager.movestr(n, m);
 	
 func append_history(msg : String, color : String = 'blue'):
 	lblHistory.push_color(color)
-	lblHistory.add_text(msg.to_upper())
+	lblHistory.add_text(msg)
 	lblHistory.newline()
 	lblHistory.pop()
 
@@ -219,9 +212,8 @@ func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.Che
 	var color : String = 'white'
 	if col == SentinelChess.ChessColor.Black:
 		color = 'black'
-	#print(color + ' ' + movestr(m))
 	play_move_sfx()
-	append_history(str(n) + ' ' + color + ' ' + movestr(m), color)
+	append_history(str(n) + ' ' + movestr(n, m), color)
 	if (b.check_state(SentinelChess.Black)):
 		append_history('Black in Check.', 'black')	
 		add_voice('Check')

@@ -37,6 +37,7 @@ func _VisibilityChanged():
 	else:
 		_me.Name = txtName.text
 		_me.Skill = lvlSkill.value
+		_me.PlayerType = ChessPlayer.ChessPlayerType.Human
 		_keywords = txtKeywords.text
 		_rating = lvlRating.value
 		on_closed.emit(cancelled, _me, _keywords, _rating)

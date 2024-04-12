@@ -25,6 +25,7 @@ void SentinelChess::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("errorstr", "num"), &SentinelChess::errorstr);
     ClassDB::bind_method(D_METHOD("gamestatestr", "state"), &SentinelChess::gamestatestr);
+    ClassDB::bind_method(D_METHOD("movestr", "n", "m"), &SentinelChess::movestr);
     ClassDB::bind_method(D_METHOD("new_game", "white", "black"), &SentinelChess::new_game);
     ClassDB::bind_method(D_METHOD("save_game", "filename"), &SentinelChess::save_game);
     ClassDB::bind_method(D_METHOD("load_game", "filename"), &SentinelChess::load_game);
@@ -121,6 +122,15 @@ String SentinelChess::gamestatestr(ChessGameState state)
     return String(::game_state_str((game_state_e)state).c_str());
 }
 
+String SentinelChess::movestr(int t, const Ref<ChessMove> &m)
+{
+    if ((m.is_valid()) && (mp_game))
+    {
+        return String(::move_str(m->get(), mp_game->board(t - 1)).c_str());
+    }
+    return "";
+}
+
 bool SentinelChess::hasevent()
 {
     if (mp_listener)
@@ -206,15 +216,15 @@ int SentinelChess::new_game(String title, const Ref<ChessPlayer> &white, const R
     error_e err = e_none;
     if (white.is_valid())
     {
-        white->get(n, s, t);
-        err = m_lobby.add_player(c_white, n, s, t);
+        white->refresh();
+        err = m_lobby.add_player(c_white, white->get());
         if (err != e_none)
             return err;
     }
     if (black.is_valid())
     {
-        black->get(n, s, t);
-        err = m_lobby.add_player(c_black, n, s, t);
+        black->refresh();
+        err = m_lobby.add_player(c_black, black->get());
         if (err != e_none)
             return err;
     }
@@ -234,11 +244,11 @@ int SentinelChess::load_puzzle(const Ref<ChessPlayer> &player, String keywords, 
 {
     if (!player.is_valid())
         return -1;
-    std::string n = player->get_name().ascii().get_data();
+    player->refresh();
+    chessplayerdata pd = player->get();
     std::string k = keywords.ascii().get_data();
-    int s = player->get_skill();
     std::string f = chessengine::data_file("db_puzzles.csv");
-    int err = m_lobby.load_puzzle(n, s, f, k, rating);
+    int err = m_lobby.load_puzzle(player->get(), f, k, rating);
     refresh_data();
     return err;
 }

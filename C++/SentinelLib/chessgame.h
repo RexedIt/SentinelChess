@@ -39,7 +39,7 @@ namespace chess
         std::string save_xfen();
 
         chessboard board();
-
+        chessboard board(int16_t t);
         chessturn play_turn();
 
         game_state_e state();

@@ -1,4 +1,5 @@
 #include "sentinelcommon.h"
+#include "chessengine.h"
 #include "chesslobby.h"
 
 #include <godot_cpp/core/class_db.hpp>
@@ -211,9 +212,6 @@ bool ChessMove::is_valid()
 
 ChessPlayer::ChessPlayer()
 {
-    m_name = "";
-    m_skill = 600;
-    m_playertype = t_none;
     m_playercolor = c_none;
 }
 
@@ -221,18 +219,14 @@ ChessPlayer::ChessPlayer(std::shared_ptr<chessplayer> p)
 {
     if (p)
     {
-        m_name = p->playername();
-        m_skill = p->playerskill();
-        m_playertype = p->playertype();
+        m_playerdata = p->playerdata();
         m_playercolor = p->playercolor();
     }
 }
 
-ChessPlayer::ChessPlayer(std::string name, int skill, chessplayertype_e ptype)
+ChessPlayer::ChessPlayer(chessplayerdata &pd)
 {
-    m_name = name;
-    m_skill = skill;
-    m_playertype = ptype;
+    m_playerdata = pd;
     m_playercolor = c_none;
 }
 
@@ -254,6 +248,13 @@ void ChessPlayer::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_playercolor"), &ChessPlayer::get_playercolor);
     ClassDB::bind_method(D_METHOD("set_playercolor", "t"), &ChessPlayer::set_playercolor);
     ClassDB::add_property("ChessPlayer", PropertyInfo(Variant::INT, "PlayerColor"), "set_playercolor", "get_playercolor");
+    ClassDB::bind_method(D_METHOD("guid"), &ChessPlayer::guid);
+    ClassDB::bind_method(D_METHOD("fullname"), &ChessPlayer::fullname);
+    ClassDB::bind_method(D_METHOD("puzzlepoints"), &ChessPlayer::puzzlepoints);
+    ClassDB::bind_method(D_METHOD("gamepoints"), &ChessPlayer::gamepoints);
+    ClassDB::bind_method(D_METHOD("persistent"), &ChessPlayer::persistent);
+    ClassDB::bind_method(D_METHOD("avatar"), &ChessPlayer::avatar);
+    ClassDB::bind_method(D_METHOD("meta"), &ChessPlayer::meta);
 
     // ChessPlayerType
     BIND_ENUM_CONSTANT(tNone);
@@ -264,32 +265,32 @@ void ChessPlayer::_bind_methods()
 
 void ChessPlayer::set_name(String s)
 {
-    m_name = std::string(s.ascii().get_data());
+    m_playerdata.username = std::string(s.ascii().get_data());
 }
 
 String ChessPlayer::get_name()
 {
-    return String(m_name.c_str());
+    return String(m_playerdata.username.c_str());
 }
 
 void ChessPlayer::set_skill(const int s)
 {
-    m_skill = s;
+    m_playerdata.elo = s;
 }
 
 int ChessPlayer::get_skill()
 {
-    return m_skill;
+    return m_playerdata.elo;
 }
 
 void ChessPlayer::set_playertype(ChessPlayerType t)
 {
-    m_playertype = (chessplayertype_e)t;
+    m_playerdata.ptype = (chessplayertype_e)t;
 }
 
 ChessPlayerType ChessPlayer::get_playertype()
 {
-    return (ChessPlayerType)m_playertype;
+    return (ChessPlayerType)m_playerdata.ptype;
 }
 
 void ChessPlayer::set_playercolor(ChessColor c)
@@ -302,11 +303,49 @@ ChessColor ChessPlayer::get_playercolor()
     return (ChessColor)m_playercolor;
 }
 
-void ChessPlayer::get(std::string &n, int &s, chessplayertype_e &t)
+String ChessPlayer::guid()
 {
-    n = m_name;
-    s = m_skill;
-    t = m_playertype;
+    return String(m_playerdata.guid.c_str());
+}
+
+String ChessPlayer::fullname()
+{
+    return String(m_playerdata.fullname.c_str());
+}
+
+int ChessPlayer::puzzlepoints()
+{
+    return m_playerdata.puzzlepoints;
+}
+
+int ChessPlayer::gamepoints()
+{
+    return m_playerdata.gamepoints;
+}
+
+bool ChessPlayer::persistent()
+{
+    return m_playerdata.persistent;
+}
+
+String ChessPlayer::avatar()
+{
+    return String(m_playerdata.avatar.c_str());
+}
+
+String ChessPlayer::meta()
+{
+    return String(m_playerdata.meta.c_str());
+}
+
+int ChessPlayer::refresh()
+{
+    return chessengine::get_or_register_player(m_playerdata);
+}
+
+chessplayerdata ChessPlayer::get()
+{
+    return m_playerdata;
 }
 
 ChessClock::ChessClock()
@@ -431,10 +470,6 @@ chessclock_s ChessClock::get()
 
 ChessMeta::ChessMeta()
 {
-    m_w_skill = 0;
-    m_w_type = t_none;
-    m_b_skill = 0;
-    m_b_type = t_none;
     m_puzzle = false;
     m_hints = 0;
     m_points = 0;
@@ -461,17 +496,9 @@ ChessMeta::ChessMeta(std::shared_ptr<chessgame> g, chesslobby &l)
     m_b_points = l.win_points(c_black);
     std::map<color_e, std::shared_ptr<chessplayer>> pl = l.players();
     if (pl.count(c_white))
-    {
-        m_w_name = pl[c_white]->playername();
-        m_w_skill = pl[c_white]->playerskill();
-        m_w_type = pl[c_white]->playertype();
-    }
+        m_white = pl[c_white]->playerdata();
     if (pl.count(c_black))
-    {
-        m_b_name = pl[c_black]->playername();
-        m_b_skill = pl[c_black]->playerskill();
-        m_b_type = pl[c_black]->playertype();
-    }
+        m_black = pl[c_black]->playerdata();
 }
 
 ChessMeta::~ChessMeta()
@@ -501,13 +528,13 @@ String ChessMeta::title()
 
 Ref<ChessPlayer> ChessMeta::white()
 {
-    Ref<ChessPlayer> cp(memnew(ChessPlayer(m_w_name, m_w_skill, m_w_type)));
+    Ref<ChessPlayer> cp(memnew(ChessPlayer(m_white)));
     return cp;
 }
 
 Ref<ChessPlayer> ChessMeta::black()
 {
-    Ref<ChessPlayer> cp(memnew(ChessPlayer(m_b_name, m_b_skill, m_b_type)));
+    Ref<ChessPlayer> cp(memnew(ChessPlayer(m_black)));
     return cp;
 }
 

@@ -24,7 +24,16 @@ namespace chess
     chessboard chessgame::board()
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        chessboard b(m_board);
+        return m_board;
+    }
+
+    chessboard chessgame::board(int16_t t)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if ((t > 0) && (t < playmax()))
+            return m_turn[t - 1].b;
+        chessboard b;
+        b.load_xfen(m_init_board);
         return b;
     }
 
