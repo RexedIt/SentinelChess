@@ -111,6 +111,10 @@ namespace chess
             return "Data Folder not found";
         case e_user_not_found:
             return "User Folder not found";
+        case e_no_player_hub:
+            return "No Player Hub Exists";
+        case e_no_guid:
+            return "No GUID to Register";
         default:
             return "Unknown Error";
         }

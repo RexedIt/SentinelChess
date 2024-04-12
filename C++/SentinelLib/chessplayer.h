@@ -3,6 +3,7 @@
 #include "chesscommon.h"
 #include "chessgame.h"
 #include "chessboard.h"
+#include "chessplayerhub.h"
 
 #include <mutex>
 #include <memory>
@@ -21,7 +22,8 @@ namespace chess
 
     public:
         chessplayer();
-        chessplayer(color_e color, std::string name, int32_t skill, chessplayertype_e _type);
+        chessplayer(color_e color, chessplayerdata data);
+        chessplayer(color_e color, std::string name, int32_t skill, chessplayertype_e ptype);
         ~chessplayer();
 
         bool is(color_e);
@@ -40,6 +42,7 @@ namespace chess
         chessplayertype_e playertype();
         std::string playername();
         int32_t playerskill();
+        chessplayerdata playerdata();
 
         friend class chesslobby;
 
@@ -48,9 +51,7 @@ namespace chess
         virtual void stop_listening() { ; }
 
         color_e m_color;
-        std::string m_name;
-        int32_t m_skill;
-        chessplayertype_e m_playertype;
+        chessplayerdata m_data;
         // we do not use a shared pointer here as we do not want the
         // player to be able to dispose of the game inadvertently.
         std::mutex m_mutex;

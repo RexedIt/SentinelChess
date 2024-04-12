@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "chessengine.h"
 #include "chessopenings.h"
 #include "chessplayerhub.h"
@@ -67,7 +69,7 @@ namespace chess
 #ifdef _WIN32
         if (_user_folder == "")
         {
-            _user_folder = getenv("APPDATA");
+            _user_folder = std::getenv("APPDATA");
             _user_folder += "\\SentinelChess";
         }
         return _user_folder;
@@ -81,6 +83,7 @@ namespace chess
         return fix_path(user_folder() + "\\" + f);
     }
 
+    // static chessecodb calls
     error_e chessengine::chessopenings(std::vector<chessopening> &openings)
     {
         if (p_eco)
@@ -94,4 +97,28 @@ namespace chess
             return p_eco->preferredecos(col, ecos);
         return e_no_openings;
     }
+
+    // static chessplayerhub calls
+    error_e chessengine::get_or_register_player(std::string username, int32_t elo, chessplayertype_e ptype, chessplayerdata &data)
+    {
+        if (p_hub)
+            return p_hub->get_or_register_player(username, elo, ptype, data);
+        return e_no_player_hub;
+    }
+
+    error_e chessengine::get_or_register_player(chessplayerdata &data)
+    {
+        if (p_hub)
+            return p_hub->get_or_register_player(data);
+        return e_no_player_hub;
+    }
+
+    error_e chessengine::get_matching_computer_player(int32_t elo, chessplayerdata &data)
+    {
+        if (p_hub)
+            return p_hub->get_matching_computer_player(elo, data);
+        return e_no_player_hub;
+    }
 }
+
+#undef _CRT_SECURE_NO_WARNINGS

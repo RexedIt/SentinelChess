@@ -70,6 +70,8 @@ namespace chess
         e_pgn_overflow,
         e_data_not_found,
         e_user_not_found,
+        e_no_player_hub,
+        e_no_guid,
     } error_e;
 
     std::string errorstr(error_e num);

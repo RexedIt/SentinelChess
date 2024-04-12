@@ -8,20 +8,19 @@ namespace chess
 
     chesspuzzleplayer::chesspuzzleplayer()
     {
-        m_playertype = t_puzzle;
+        m_data.ptype = t_puzzle;
+        m_data.username = "Puzzle";
         m_listenertype = cl_computer;
-        m_name = "Puzzle";
         m_cancel = false;
         m_thread_running = false;
     }
 
-    chesspuzzleplayer::chesspuzzleplayer(color_e color, std::string name, int32_t skill)
+    chesspuzzleplayer::chesspuzzleplayer(color_e color, chessplayerdata data)
     {
         m_color = color;
-        m_playertype = t_puzzle;
+        m_data = data;
+        m_data.ptype = t_puzzle;
         m_listenertype = cl_computer;
-        m_name = name;
-        m_skill = skill;
         m_cancel = false;
         m_thread_running = false;
     }

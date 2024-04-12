@@ -37,17 +37,22 @@ namespace chess
     chessplayer::chessplayer()
     {
         m_color = c_none;
-        m_playertype = t_none;
         mp_game = NULL;
-        m_skill = 0;
     }
 
-    chessplayer::chessplayer(color_e color, std::string name, int32_t skill, chessplayertype_e _type)
+    chessplayer::chessplayer(color_e color, chessplayerdata data)
+    {
+        m_data = data;
+        m_color = color;
+        mp_game = NULL;
+    }
+
+    chessplayer::chessplayer(color_e color, std::string name, int32_t skill, chessplayertype_e ptype)
     {
         m_color = color;
-        m_name = name;
-        m_skill = skill;
-        m_playertype = _type;
+        m_data.username = name;
+        m_data.elo = skill;
+        m_data.ptype = ptype;
         mp_game = NULL;
     }
 
@@ -68,17 +73,22 @@ namespace chess
 
     chessplayertype_e chessplayer::playertype()
     {
-        return m_playertype;
+        return m_data.ptype;
     }
 
     std::string chessplayer::playername()
     {
-        return m_name;
+        return m_data.username;
     }
 
     int32_t chessplayer::playerskill()
     {
-        return m_skill;
+        return m_data.elo;
+    }
+
+    chessplayerdata chessplayer::playerdata()
+    {
+        return m_data;
     }
 
     bool chessplayer::is(color_e c)

@@ -554,6 +554,16 @@ namespace chess
         }
     }
 
+    chessplayerdata chesspgn::get_playerdata(color_e col)
+    {
+        chessplayerdata pd;
+        std::string pref = (col == c_white) ? "White" : "Black";
+        pd.username = (col == c_white) ? white() : black();
+        pd.elo = (col == c_white) ? whiteelo() : blackelo();
+        pd.ptype = t_human;
+        return pd;
+    }
+
     error_e load_move(std::string s, color_e tc, chessboard &b, chessmove &m, std::string &errextra)
     {
         error_e err = str_move(s, tc, b, m);

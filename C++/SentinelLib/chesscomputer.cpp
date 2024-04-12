@@ -11,8 +11,8 @@ namespace chess
     {
         m_level = 3;
         m_half_level = false;
-        m_name = "Computer";
-        m_playertype = t_computer;
+        m_data.username = "Computer";
+        m_data.ptype = t_computer;
         m_listenertype = cl_computer;
         m_cancel = false;
         m_thread_running = false;
@@ -21,21 +21,19 @@ namespace chess
         m_turn_no = 0;
     }
 
-    chesscomputer::chesscomputer(color_e color, std::string name, int32_t skill)
+    chesscomputer::chesscomputer(color_e color, chessplayerdata data)
     {
         m_color = color;
-        m_level = skill / 500 + 2;
+        m_data.ptype = t_computer;
+        m_data = data;
+        m_level = m_data.elo / 500 + 2;
         if (m_level < 1)
             m_level = 1;
         if (m_level > 6)
             m_level = 6;
         if (m_level < 4)
-            m_half_level = skill % 500 >= 250;
-
-        m_playertype = t_computer;
+            m_half_level = m_data.elo % 500 >= 250;
         m_listenertype = cl_computer;
-        m_name = name;
-        m_skill = skill;
         m_cancel = false;
         m_opening_weight = 0;
         m_opening_in_play = false;

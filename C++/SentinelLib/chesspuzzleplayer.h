@@ -13,7 +13,7 @@ namespace chess
 
     public:
         chesspuzzleplayer();
-        chesspuzzleplayer(color_e color, std::string name, int32_t skill);
+        chesspuzzleplayer(color_e color, chessplayerdata data);
         ~chesspuzzleplayer();
 
     protected:

@@ -13,7 +13,7 @@ namespace chess
 
     public:
         chesscomputer();
-        chesscomputer(color_e color, std::string name, int32_t skill);
+        chesscomputer(color_e color, chessplayerdata data);
         ~chesscomputer();
 
     protected:

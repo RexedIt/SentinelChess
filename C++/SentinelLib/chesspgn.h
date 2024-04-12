@@ -3,6 +3,7 @@
 #include "chesscommon.h"
 #include "chessmove.h"
 #include "chessmeta.h"
+#include "chessplayerhub.h"
 
 namespace chess
 {
@@ -29,6 +30,8 @@ namespace chess
         error_e write_moves(std::vector<chessmove> &move_vec);
         error_e load(std::string filename, std::string &errextra);
         error_e save(std::string filename);
+
+        chessplayerdata get_playerdata(color_e);
 
     protected:
         virtual void reset_tags();

@@ -127,9 +127,16 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
             keywords += ",";
         keywords += args[i];
     }
-    error_e err = lobby.load_puzzle(name, skill, filename, keywords, rating);
+
+    chessplayerdata player;
+    error_e err = chessengine::get_or_register_player(name, skill, t_human, player);
     if (err != e_none)
         return print_error(err);
+
+    err = lobby.load_puzzle(player, filename, keywords, rating);
+    if (err != e_none)
+        return print_error(err);
+
     refresh_data(lobby);
     std::cout << p_game->title() << std::endl;
     int p = p_game->points();
@@ -163,7 +170,7 @@ bool add_player(chesslobby &lobby, color_e color)
         if (args.size() > 3)
             continue;
         std::string name = "Computer";
-        int skill = 600;
+        int skill = 500;
         chessplayertype_e ptype = t_computer;
 
         if (args.size() >= 1)
@@ -190,11 +197,21 @@ bool add_player(chesslobby &lobby, color_e color)
             }
         }
 
-        if (lobby.add_player(color, name, skill, ptype) != e_none)
+        chessplayerdata player;
+        error_e err = chessengine::get_or_register_player(name, skill, ptype, player);
+        if (err != e_none)
         {
-            print_error("Error adding player");
+            print_error(err);
             return false;
         }
+
+        err = lobby.add_player(color, player);
+        if (err != e_none)
+        {
+            print_error(err);
+            return false;
+        }
+
         return true;
     }
 }
