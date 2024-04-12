@@ -47,7 +47,7 @@ private:
     Ref<ChessMove> hint();
     String hintstr();
     int win_points(ChessColor col);
-    bool initialize(const String &);
+    int initialize(const String &);
 
     // For getting high level info about the game, useful one time
     Ref<ChessMeta> get_meta();

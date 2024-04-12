@@ -7,11 +7,14 @@
 #include <thread>
 #include <set>
 
+#include "chessengine.h"
 #include "chesslobby.h"
 #include "console.h"
 #include "chessplayer.h"
 #include "chesspiece.h"
+
 #include "chessopenings.h"
+#include "chessplayerhub.h"
 
 using namespace chess;
 
@@ -98,7 +101,7 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
 {
     std::string filename = userfile;
     if (filename == "")
-        filename = data_file("db_puzzles.csv");
+        filename = chessengine::data_file("db_puzzles.csv");
     std::string name = "Human";
     int skill = 600;
     int rating = 700;
@@ -291,7 +294,17 @@ void refresh_board(int16_t t, chessboard &b)
     color_e turn_color = b.turn_color();
     if (locals.count(turn_color) > 0)
         bottom = turn_color;
-    board_to_console(t, b, bottom);
+    board_to_console(t + 1, b, bottom);
+}
+
+void refresh_comment(std::string comment)
+{
+    if (comment == "")
+        return;
+    std::string stripped = comment;
+    if (book_end(stripped, '{', '}'))
+        stripped = trim(stripped.substr(1, stripped.length() - 2));
+    std::cout << stripped << std::endl;
 }
 
 void on_consider(chessmove m, color_e c, int8_t p)
@@ -314,6 +327,7 @@ void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_st
         else if (b.check_state(c_white))
             std::cout << "White in Check." << std::endl;
     }
+    refresh_comment(p_game->comment(t + 1));
     if (g > play_e)
     {
         std::cout << game_state_str(g) << std::endl;
@@ -386,8 +400,12 @@ void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
 int main(void)
 {
 
-    if (!set_data_folder("..\\..\\..\\..\\ChessData\\"))
-        print_error("Data folder does not exist! Try SET command with path to ChessData");
+    error_e err = chessengine::initialize("..\\..\\..\\..\\ChessData\\");
+    if (err != e_none)
+    {
+        print_error(err);
+        return -1;
+    }
 
     /*
     std::shared_ptr<chessgamelistener_direct> p_listener(
@@ -397,12 +415,6 @@ int main(void)
                                      &on_turn,
                                      &on_state,
                                      &on_chat)); */
-
-    // Initialize the eco db
-    chessecodb co;
-    // co.load_scid_eco(data_file("..\\SourceData\\scid.eco"));
-    // co.save_binary(data_file("scid.bin"));
-    co.load_binary(data_file("scid.bin"));
 
     std::shared_ptr<chessgamelistener_queue> p_listener(
         new chessgamelistener_queue(cl_user));

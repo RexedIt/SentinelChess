@@ -68,6 +68,8 @@ namespace chess
         e_invalid_extension,
         e_play_not_paused,
         e_pgn_overflow,
+        e_data_not_found,
+        e_user_not_found,
     } error_e;
 
     std::string errorstr(error_e num);
@@ -240,9 +242,6 @@ namespace chess
     std::string string_replace(std::string s, char o, char n);
     std::string string_replace(std::string s, std::string o, std::string n);
     std::string fix_path(std::string f);
-    std::string get_data_folder();
-    bool set_data_folder(std::string f);
-    std::string data_file(std::string f);
     uint32_t hash(unsigned char *, size_t);
     uint32_t hash(std::vector<chessmove>);
 

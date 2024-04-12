@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <chrono>
 #include <regex>
+#include <iostream>
 #include <sstream>
 
 #include "chesscommon.h"
@@ -106,6 +107,10 @@ namespace chess
             return "Play not paused";
         case e_pgn_overflow:
             return "PGN Buffer Overflow";
+        case e_data_not_found:
+            return "Data Folder not found";
+        case e_user_not_found:
+            return "User Folder not found";
         default:
             return "Unknown Error";
         }
@@ -578,21 +583,6 @@ namespace chess
         return (stat(fixeddir.c_str(), &st) == 0);
     }
 
-    std::string data_folder = "..\\ChessData\\";
-
-    std::string get_data_folder()
-    {
-        return data_folder;
-    }
-
-    bool set_data_folder(std::string f)
-    {
-        if (!get_dir_exists(f))
-            return false;
-        data_folder = f;
-        return true;
-    }
-
     std::string string_replace(std::string s, char o, char n)
     {
         std::string ret = s;
@@ -622,16 +612,6 @@ namespace chess
 #else
         return string_replace(f, '\\', '/');
 #endif
-    }
-
-    std::string data_file(std::string f)
-    {
-        if (data_folder == "")
-            return f;
-        char lc = data_folder[data_folder.length() - 1];
-        if ((lc == '\\') || (lc == '/'))
-            return fix_path(data_folder + f);
-        return fix_path(data_folder + "\\" + f);
     }
 
     uint32_t hash(unsigned char *b, size_t l)
@@ -687,6 +667,7 @@ namespace chess
         }
         catch (const std::exception &e)
         {
+            std::cerr << e.what() << '\n';
             return e.what();
         }
     }

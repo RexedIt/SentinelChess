@@ -50,9 +50,7 @@ namespace chess
         std::map<color_e, std::vector<std::string>> m_preferred;
     };
 
-    // static calls dependent on instantiation of eco db
-    error_e get_chessopenings(std::vector<chessopening> &openings);
-    error_e get_preferredecos(color_e col, std::vector<std::string> &ecos);
+    // Preserved for unit testing
     error_e load_scid_line(std::string line, chessopening &open, std::string &errextra);
 
     class chessopenfilter

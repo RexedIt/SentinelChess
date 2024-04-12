@@ -1,5 +1,6 @@
 #include "sentinelchess.h"
 
+#include "chessengine.h"
 #include "chesspiece.h"
 
 #include <godot_cpp/core/class_db.hpp>
@@ -236,7 +237,7 @@ int SentinelChess::load_puzzle(const Ref<ChessPlayer> &player, String keywords, 
     std::string n = player->get_name().ascii().get_data();
     std::string k = keywords.ascii().get_data();
     int s = player->get_skill();
-    std::string f = data_file("db_puzzles.csv");
+    std::string f = chessengine::data_file("db_puzzles.csv");
     int err = m_lobby.load_puzzle(n, s, f, k, rating);
     refresh_data();
     return err;
@@ -425,11 +426,9 @@ int SentinelChess::win_points(ChessColor col)
     return m_lobby.win_points((color_e)col);
 }
 
-bool SentinelChess::initialize(const String &d)
+int SentinelChess::initialize(const String &d)
 {
-    if (set_data_folder(d.ascii().get_data()))
-        return (m_ecodb.load_binary(data_file("scid.bin")) == e_none);
-    return false;
+    return chessengine::initialize(d.ascii().get_data());
 }
 
 int SentinelChess::forfeit(ChessColor col)

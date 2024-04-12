@@ -1,4 +1,5 @@
 #include "chesscomputer.h"
+#include "chessengine.h"
 
 #include <chrono>
 #include <thread>
@@ -197,7 +198,7 @@ namespace chess
         if (m_opening == "")
         {
             std::vector<std::string> ecos;
-            if (get_preferredecos(m_color, ecos) == e_none)
+            if (chessengine::preferredecos(m_color, ecos) == e_none)
             {
                 // Select one from random
                 size_t idx = (size_t)get_rand_int(0, (int)(ecos.size() - 1));
