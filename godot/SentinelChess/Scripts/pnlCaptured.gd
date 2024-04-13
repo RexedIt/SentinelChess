@@ -4,7 +4,7 @@ extends Panel
 @onready var PieceProto : Sprite2D = get_node('Piece')
 
 const piece_arr_size = 26	
-const piece_delta = 30	
+const piece_delta = 29	
 var piece_arr = []
 var bottom_color : SentinelChess.ChessColor = SentinelChess.White
 

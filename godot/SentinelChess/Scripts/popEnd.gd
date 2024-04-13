@@ -26,6 +26,7 @@ func applyskin():
 	if loaded:
 		black.texture = skin.sprite('BlackKnight.png')
 		white.texture = skin.sprite('WhiteKnight.png')
+		music.volume_db = skin.music_db()
 		skinned = true
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.

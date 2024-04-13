@@ -975,11 +975,15 @@ vertical_alignment = 1
 volume_db = 6.0
 max_polyphony = 2
 
+[node name="sfx" type="AudioStreamPlayer" parent="GameUI"]
+volume_db = 6.0
+max_polyphony = 2
+
 [node name="pnlCaptured" type="Panel" parent="GameUI"]
 offset_left = 263.0
 offset_top = 150.0
 offset_right = 407.0
-offset_bottom = 930.0
+offset_bottom = 904.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_aqyli")
 script = ExtResource("23_422qp")
 

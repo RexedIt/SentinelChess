@@ -13,6 +13,8 @@ var possible_moves : Array
 var loaded : bool = false
 var skinned : bool = false
 
+var y_offset : int = 0
+
 @export var board_x0 : int = -560 # 156
 @export var board_y0 : int = 386 # 126
 @export var board_dx : int = 160
@@ -31,9 +33,11 @@ func applyskin():
 		return
 	skinned = true
 	texture = skin.sprite('Board.png')
+	y_offset = skin.y_offset()
 	for piece in piece_arr:
 		if piece:
 			piece.applyskin()
+	realignpieces()
 		
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -66,11 +70,18 @@ func refreshpieces(b : ChessBoard):
 					po.initialize(pc,pt,y,x,screen_y(y),screen_x(x),rotation_degrees)
 			piece_arr[y*8+x]=po
 
+func realignpieces():
+	for y in 8:
+		for x in 8:
+			var po = piece_arr[y*8+x]
+			if po!=null:
+				po.position.y = screen_y(y)
+	
 func screen_y(by : int) -> int:
 	var sy = board_y0 - by * board_dy
 	if sy < board_y0 - 8 * board_dy or sy > board_y0:
 		sy = board_y0
-	return sy
+	return sy - y_offset
 
 func screen_x(bx : int) -> int:
 	var sx = board_x0 + bx * board_dx
@@ -89,7 +100,8 @@ func screen_v(b: ChessCoord) -> Vector2:
 	return v
 	
 func board_y(sy : int) -> int:
-	var by = -1 * (sy - board_y0) / board_dy
+	var vsy = sy + y_offset
+	var by = -1 * (vsy - board_y0) / board_dy
 	if by < 0 or by > 7:
 		by = -1
 	return by

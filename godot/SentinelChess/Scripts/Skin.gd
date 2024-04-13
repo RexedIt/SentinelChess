@@ -35,6 +35,12 @@ func _notification(what: int) -> void:
 		config.set_value('Board', 'rotate', rotateBoard)
 		config.save('settings.cfg')      
 
+func _todb(lvl : int):
+		if lvl<1:
+			return -256.0
+		else:
+			return (float)(lvl-50) / 3.0
+
 func applysettings(_skinname, _voicelvl, _musiclvl, _sfxlvl, _rotateBoard):
 	skinname = _skinname
 	voicelvl = _voicelvl
@@ -64,6 +70,11 @@ func step() -> int:
 		return 16
 	return 1
 	
+func y_offset() -> int:
+	if skinname == 'PhotoBoard':
+		return 12
+	return 0
+	
 func load(filename):
 	return load(path() + filename)
 	
@@ -78,6 +89,15 @@ func sound(filename):
 	
 func voice(filename):
 	return load(path() + 'Voice/' + filename)
+
+func voice_db():
+	return _todb(voicelvl)
+	
+func sfx_db():
+	return _todb(sfxlvl)
+
+func music_db():
+	return _todb(musiclvl)	
 	
 func commonsound(filename):
 	return load(commonpath() + 'SFX/' + filename)

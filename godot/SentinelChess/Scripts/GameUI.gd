@@ -30,6 +30,7 @@ extends CanvasLayer
 @onready var lblWhiteClock : Label = get_node('lblWhiteClock')
 @onready var lblBlackClock : Label = get_node('lblBlackClock')
 @onready var voice : AudioStreamPlayer = get_node('voice')
+@onready var sfx : AudioStreamPlayer = get_node('sfx')
 @onready var MoveSound
 @onready var PromoteSound
 @export var step : int
@@ -91,7 +92,8 @@ func applyskin():
 	pnlPlayerTop.applyskin()
 	pnlPlayerBottom.applyskin()
 	pnlCaptured.applyskin()
-	
+	voice.volume_db = skin.voice_db()
+	sfx.volume_db = skin.sfx_db()	
 	skinned = true
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -583,15 +585,16 @@ func play_voice():
 			if has_voice():
 				var s = pop_voice()
 				voice.stream = skin.voice(s + '.mp3')
-				voice.play()
+				if game_manager.gamestate != GameState.IDLE:
+					voice.play()
 				
 func play_move_sfx():
-	if do_sfx:
-		voice.stream = MoveSound
-		voice.play()
+	if do_sfx and game_manager.gamestate != GameState.IDLE:
+		sfx.stream = MoveSound
+		sfx.play()
 	
 func play_promote_sfx():
-	if do_sfx:
-		voice.stream = PromoteSound
-		voice.play()
+	if do_sfx and game_manager.gamestate != GameState.IDLE:
+		sfx.stream = PromoteSound
+		sfx.play()
 
