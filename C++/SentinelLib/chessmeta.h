@@ -19,6 +19,7 @@ namespace chess
 
     protected:
         virtual void reset_tags();
+        void clear_comments();
         bool remove_tag(std::string key);
         std::string tag(std::string key);
         std::vector<std::pair<std::string, std::string>> m_tags;

@@ -25,7 +25,6 @@ namespace chess
         color_e wc;
         int32_t wt;
         int32_t bt;
-        std::string cm;
 
         error_e load(json &turn);
         error_e save(json &turn);

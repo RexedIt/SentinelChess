@@ -154,7 +154,7 @@ namespace chess
                     return restore(e_loading);
             }
 
-            err = mp_game->load_game(jsonf);
+            err = mp_game->load_chs(jsonf);
             if (err != e_none)
                 return restore(err);
 
@@ -188,7 +188,7 @@ namespace chess
 
             jsonf["Players"] = players;
 
-            error_e err = mp_game->save_game(jsonf);
+            error_e err = mp_game->save_chs(jsonf);
             if (err == e_none)
             {
                 std::ofstream os;

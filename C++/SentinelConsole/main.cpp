@@ -38,6 +38,14 @@ std::string get_arg(std::string cmdu)
     return cmdu.substr(pos + 1);
 }
 
+std::string get_arg_rem(std::string cmdu)
+{
+    size_t l = cmdu.find(' ');
+    if (l == std::string::npos)
+        return "";
+    return trim(cmdu.substr(l));
+}
+
 std::vector<std::string> get_args(std::string cmdu)
 {
     return split_string(get_arg(cmdu), ' ');
@@ -329,7 +337,7 @@ void on_consider(chessmove m, color_e c, int8_t p)
     std::cout << ".";
 }
 
-void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_state_e g, color_e wc, int32_t wt, int32_t bt)
+void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_state_e g, color_e wc, int32_t wt, int32_t bt, std::string cmt)
 {
     time_to_console(wt, bt);
     time_rem = (tc == c_black) ? bt : wt;
@@ -337,14 +345,14 @@ void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_st
     if (m.is_valid())
     {
         color_e c = other(tc);
-        if (!locals.count(c))
+        if ((!locals.count(c)) || is_idle)
             move_to_console(m, p_game->board(t - 1), color_str(c));
         if (b.check_state(c_black))
             std::cout << "Black in Check." << std::endl;
         else if (b.check_state(c_white))
             std::cout << "White in Check." << std::endl;
     }
-    refresh_comment(p_game->comment(t + 1));
+    refresh_comment(cmt);
     if (g > play_e)
     {
         std::cout << game_state_str(g) << std::endl;
@@ -402,7 +410,7 @@ void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
             on_consider(e.move, e.color, e.percent);
             break;
         case ce_turn:
-            on_turn(e.turn_no, e.move, e.check, e.board, e.color, e.game_state, e.win_color, e.wt, e.bt);
+            on_turn(e.turn_no, e.move, e.check, e.board, e.color, e.game_state, e.win_color, e.wt, e.bt, e.cmt);
             break;
         case ce_state:
             on_state(e.game_state, e.win_color);
@@ -486,7 +494,7 @@ int main(void)
                 std::cout << "\t(P)LAY, (I)DLE, (Q)UIT, ";
                 if (!is_idle)
                     std::cout << "(M)OVE MoveStr, HINT, ";
-                std::cout << "[, <, >, ], T Turn PIECE Coord Piece, - [Coord], (X)FEN [String] " << std::endl;
+                std::cout << "[, <, >, ], T Turn PIECE Coord Piece, - [Coord], (X)FEN [String] (C)OMMENT [String]" << std::endl;
                 continue;
             }
             if (cmdl == "N")
@@ -632,6 +640,12 @@ int main(void)
                     print_error(e_xfen_read);
                     continue;
                 }
+            }
+            if (cmdl == "C")
+            {
+                cmdu = get_arg_rem(cmd);
+                int t = p_game->playno();
+                p_game->comment(t + 1, cmdu);
             }
             else
             {

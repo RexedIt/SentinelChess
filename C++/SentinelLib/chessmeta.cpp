@@ -13,6 +13,11 @@ namespace chess
         m_tags.clear();
     }
 
+    void chessmeta::clear_comments()
+    {
+        m_comments.clear();
+    }
+
     std::string chessmeta::operator[](const char *key)
     {
         return tag(key);

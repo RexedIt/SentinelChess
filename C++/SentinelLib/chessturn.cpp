@@ -65,7 +65,6 @@ namespace chess
         turn["win_color"] = color_str(wc);
         turn["white_time_ms"] = wt;
         turn["black_time_ms"] = bt;
-        turn["comment"] = cm;
 
         return err;
     }
@@ -98,7 +97,6 @@ namespace chess
         wc = str_color(turn["win_color"]);
         wt = turn["white_time_ms"];
         bt = turn["black_time_ms"];
-        cm = JSON_GET(turn, "comment", "");
         return err;
     }
 

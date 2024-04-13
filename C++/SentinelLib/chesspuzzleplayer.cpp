@@ -39,7 +39,7 @@ namespace chess
         }
     }
 
-    void chesspuzzleplayer::signal_on_turn(int16_t turn_no, chessmove m, bool check, chessboard &board, color_e color, game_state_e game_state, color_e win_color, int32_t wt, int32_t bt)
+    void chesspuzzleplayer::signal_on_turn(int16_t turn_no, chessmove m, bool check, chessboard &board, color_e color, game_state_e game_state, color_e win_color, int32_t wt, int32_t bt, std::string cmt)
     {
         // This is where we will determine game state, move, or forfeit.
         // move:

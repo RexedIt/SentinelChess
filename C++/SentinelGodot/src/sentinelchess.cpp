@@ -50,6 +50,7 @@ void SentinelChess::_bind_methods()
 
     ClassDB::bind_method(D_METHOD("state"), &SentinelChess::state);
     ClassDB::bind_method(D_METHOD("check_state"), &SentinelChess::check_state);
+    ClassDB::bind_method(D_METHOD("comment", "turn", "cmt"), &SentinelChess::comment);
 
     ClassDB::bind_method(D_METHOD("puzzle"), &SentinelChess::puzzle);
     ClassDB::bind_method(D_METHOD("hints"), &SentinelChess::hints);
@@ -394,6 +395,12 @@ bool SentinelChess::check_state(ChessColor col)
     return false;
 }
 
+void SentinelChess::comment(int turn, String cmt)
+{
+    if (mp_game)
+        mp_game->comment(turn, cmt.ascii().get_data());
+}
+
 ChessGameState SentinelChess::state()
 {
     if (mp_game)
@@ -654,6 +661,7 @@ void ChessEvent::_bind_methods()
     ClassDB::bind_method(D_METHOD("board"), &ChessEvent::board);
     ClassDB::bind_method(D_METHOD("percent"), &ChessEvent::percent);
     ClassDB::bind_method(D_METHOD("msg"), &ChessEvent::msg);
+    ClassDB::bind_method(D_METHOD("cmt"), &ChessEvent::cmt);
 
     // ChessEventType
     BIND_ENUM_CONSTANT(ceNone);
@@ -729,4 +737,9 @@ int ChessEvent::percent()
 String ChessEvent::msg()
 {
     return String(m_event.msg.c_str());
+}
+
+String ChessEvent::cmt()
+{
+    return String(m_event.cmt.c_str());
 }

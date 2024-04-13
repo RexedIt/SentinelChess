@@ -42,6 +42,7 @@ private:
     ChessColor turn_color();
     ChessColor win_color();
     bool check_state(ChessColor col);
+    void comment(int i, String cmt);
 
     bool puzzle();
     int hints();
@@ -157,6 +158,7 @@ public:
     int black_time();
     int percent();
     String msg();
+    String cmt();
 
     chessevent get() { return m_event; }
 
