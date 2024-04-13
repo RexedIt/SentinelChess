@@ -594,7 +594,7 @@ namespace chess
         std::vector<chessturn> turns;
         m_open_filter.reset();
 
-        int16_t n = 0;
+        int16_t n = 1;
         chessturn t;
 
         for (chessmove m : p.moves())

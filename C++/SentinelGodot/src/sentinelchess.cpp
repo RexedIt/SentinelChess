@@ -126,7 +126,8 @@ String SentinelChess::movestr(int t, const Ref<ChessMove> &m)
 {
     if ((m.is_valid()) && (mp_game))
     {
-        return String(::move_str(m->get(), mp_game->board(t - 1)).c_str());
+        chessmove cm = m->get();
+        return String(::move_str(cm, mp_game->board(t - 1)).c_str());
     }
     return "";
 }
