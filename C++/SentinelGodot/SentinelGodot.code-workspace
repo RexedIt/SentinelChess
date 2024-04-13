@@ -87,7 +87,8 @@
 			"span": "cpp",
 			"unordered_map": "cpp",
 			"valarray": "cpp",
-			"xhash": "cpp"
+			"xhash": "cpp",
+			"regex": "cpp"
 		}
 	}
 }

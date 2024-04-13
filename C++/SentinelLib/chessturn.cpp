@@ -97,7 +97,6 @@ namespace chess
         wc = str_color(turn["win_color"]);
         wt = turn["white_time_ms"];
         bt = turn["black_time_ms"];
-
         return err;
     }
 

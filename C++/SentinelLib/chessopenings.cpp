@@ -1,4 +1,5 @@
 #include "chessopenings.h"
+#include "chessengine.h"
 #include "chessboard.h"
 #include "chesspgn.h"
 
@@ -9,6 +10,8 @@
 
 namespace chess
 {
+
+    extern chessecodb *p_eco;
 
     chessopening::chessopening()
     {
@@ -80,24 +83,12 @@ namespace chess
         return m_hash;
     }
 
-    chessecodb *p_eco = NULL;
-
-    error_e get_chessopenings(std::vector<chessopening> &openings)
-    {
-        if (p_eco)
-            return p_eco->chessopenings(openings);
-        return e_no_openings;
-    }
-
-    error_e get_preferredecos(color_e col, std::vector<std::string> &ecos)
-    {
-        if (p_eco)
-            return p_eco->preferredecos(col, ecos);
-        return e_no_openings;
-    }
-
     chessecodb::chessecodb()
     {
+        if (p_eco != NULL)
+        {
+            std::cerr << " *** SINGLETON ERROR *** - chessecodb already running!" << std::endl;
+        }
         p_eco = this;
         initialize();
     }
@@ -329,7 +320,7 @@ namespace chess
 
     void chessopenfilter::reset()
     {
-        get_chessopenings(m_filtered);
+        chessengine::chessopenings(m_filtered);
         m_last.clear();
         m_eco = "";
         m_title = "";

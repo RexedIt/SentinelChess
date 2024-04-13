@@ -7,11 +7,14 @@
 #include <thread>
 #include <set>
 
+#include "chessengine.h"
 #include "chesslobby.h"
 #include "console.h"
 #include "chessplayer.h"
 #include "chesspiece.h"
+
 #include "chessopenings.h"
+#include "chessplayerhub.h"
 
 using namespace chess;
 
@@ -33,6 +36,14 @@ std::string get_arg(std::string cmdu)
     if (pos == std::string::npos)
         return "";
     return cmdu.substr(pos + 1);
+}
+
+std::string get_arg_rem(std::string cmdu)
+{
+    size_t l = cmdu.find(' ');
+    if (l == std::string::npos)
+        return "";
+    return trim(cmdu.substr(l));
 }
 
 std::vector<std::string> get_args(std::string cmdu)
@@ -98,7 +109,7 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
 {
     std::string filename = userfile;
     if (filename == "")
-        filename = data_file("db_puzzles.csv");
+        filename = chessengine::data_file("db_puzzles.csv");
     std::string name = "Human";
     int skill = 600;
     int rating = 700;
@@ -124,9 +135,16 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
             keywords += ",";
         keywords += args[i];
     }
-    error_e err = lobby.load_puzzle(name, skill, filename, keywords, rating);
+
+    chessplayerdata player;
+    error_e err = chessengine::get_or_register_player(name, skill, t_human, player);
     if (err != e_none)
         return print_error(err);
+
+    err = lobby.load_puzzle(player, filename, keywords, rating);
+    if (err != e_none)
+        return print_error(err);
+
     refresh_data(lobby);
     std::cout << p_game->title() << std::endl;
     int p = p_game->points();
@@ -160,7 +178,7 @@ bool add_player(chesslobby &lobby, color_e color)
         if (args.size() > 3)
             continue;
         std::string name = "Computer";
-        int skill = 600;
+        int skill = 500;
         chessplayertype_e ptype = t_computer;
 
         if (args.size() >= 1)
@@ -187,11 +205,21 @@ bool add_player(chesslobby &lobby, color_e color)
             }
         }
 
-        if (lobby.add_player(color, name, skill, ptype) != e_none)
+        chessplayerdata player;
+        error_e err = chessengine::get_or_register_player(name, skill, ptype, player);
+        if (err != e_none)
         {
-            print_error("Error adding player");
+            print_error(err);
             return false;
         }
+
+        err = lobby.add_player(color, player);
+        if (err != e_none)
+        {
+            print_error(err);
+            return false;
+        }
+
         return true;
     }
 }
@@ -291,7 +319,17 @@ void refresh_board(int16_t t, chessboard &b)
     color_e turn_color = b.turn_color();
     if (locals.count(turn_color) > 0)
         bottom = turn_color;
-    board_to_console(t, b, bottom);
+    board_to_console(t + 1, b, bottom);
+}
+
+void refresh_comment(std::string comment)
+{
+    if (comment == "")
+        return;
+    std::string stripped = comment;
+    if (book_end(stripped, '{', '}'))
+        stripped = trim(stripped.substr(1, stripped.length() - 2));
+    std::cout << stripped << std::endl;
 }
 
 void on_consider(chessmove m, color_e c, int8_t p)
@@ -299,7 +337,7 @@ void on_consider(chessmove m, color_e c, int8_t p)
     std::cout << ".";
 }
 
-void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_state_e g, color_e wc, int32_t wt, int32_t bt)
+void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_state_e g, color_e wc, int32_t wt, int32_t bt, std::string cmt)
 {
     time_to_console(wt, bt);
     time_rem = (tc == c_black) ? bt : wt;
@@ -307,13 +345,14 @@ void on_turn(int16_t t, chessmove m, bool ch, chessboard &b, color_e tc, game_st
     if (m.is_valid())
     {
         color_e c = other(tc);
-        if (!locals.count(c))
-            move_to_console(m, color_str(c));
+        if ((!locals.count(c)) || is_idle)
+            move_to_console(m, p_game->board(t - 1), color_str(c));
         if (b.check_state(c_black))
             std::cout << "Black in Check." << std::endl;
         else if (b.check_state(c_white))
             std::cout << "White in Check." << std::endl;
     }
+    refresh_comment(cmt);
     if (g > play_e)
     {
         std::cout << game_state_str(g) << std::endl;
@@ -371,7 +410,7 @@ void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
             on_consider(e.move, e.color, e.percent);
             break;
         case ce_turn:
-            on_turn(e.turn_no, e.move, e.check, e.board, e.color, e.game_state, e.win_color, e.wt, e.bt);
+            on_turn(e.turn_no, e.move, e.check, e.board, e.color, e.game_state, e.win_color, e.wt, e.bt, e.cmt);
             break;
         case ce_state:
             on_state(e.game_state, e.win_color);
@@ -386,8 +425,12 @@ void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
 int main(void)
 {
 
-    if (!set_data_folder("..\\..\\..\\..\\ChessData\\"))
-        print_error("Data folder does not exist! Try SET command with path to ChessData");
+    error_e err = chessengine::initialize("..\\..\\..\\..\\ChessData\\");
+    if (err != e_none)
+    {
+        print_error(err);
+        return -1;
+    }
 
     /*
     std::shared_ptr<chessgamelistener_direct> p_listener(
@@ -397,12 +440,6 @@ int main(void)
                                      &on_turn,
                                      &on_state,
                                      &on_chat)); */
-
-    // Initialize the eco db
-    chessecodb co;
-    // co.load_scid_eco(data_file("..\\SourceData\\scid.eco"));
-    // co.save_binary(data_file("scid.bin"));
-    co.load_binary(data_file("scid.bin"));
 
     std::shared_ptr<chessgamelistener_queue> p_listener(
         new chessgamelistener_queue(cl_user));
@@ -457,7 +494,7 @@ int main(void)
                 std::cout << "\t(P)LAY, (I)DLE, (Q)UIT, ";
                 if (!is_idle)
                     std::cout << "(M)OVE MoveStr, HINT, ";
-                std::cout << "[, <, >, ], T Turn PIECE Coord Piece, - [Coord], (X)FEN [String] " << std::endl;
+                std::cout << "[, <, >, ], T Turn PIECE Coord Piece, - [Coord], (X)FEN [String] (C)OMMENT [String]" << std::endl;
                 continue;
             }
             if (cmdl == "N")
@@ -603,6 +640,12 @@ int main(void)
                     print_error(e_xfen_read);
                     continue;
                 }
+            }
+            if (cmdl == "C")
+            {
+                cmdu = get_arg_rem(cmd);
+                int t = p_game->playno();
+                p_game->comment(t + 1, cmdu);
             }
             else
             {

@@ -185,22 +185,29 @@ func strcoord(str: String) -> ChessCoord:
 				return cc
 	return null
 	
-func movestr(m : ChessMove) -> String:
-	var str : String = coordstr(m.p0) + '-' + coordstr(m.p1)
-	if m.en_passant():
-		str += ' EP'
-	if m.c!=-1:
-		str += ' CAST'
-	if m.get_promote() != 0:
-		str += ' PROM'
-	return str
+func movestr(n : int, m : ChessMove) -> String:
+	return game_manager.movestr(n, m);
 	
 func append_history(msg : String, color : String = 'blue'):
 	lblHistory.push_color(color)
-	lblHistory.add_text(msg.to_upper())
+	lblHistory.add_text(msg)
 	lblHistory.newline()
 	lblHistory.pop()
 
+func stripcurlies(cmt : String):
+	if cmt.begins_with('{') and cmt.ends_with('}'):
+		return cmt.substr(1, cmt.length()-2)
+	return cmt
+	
+func append_history2(msg : String, color : String, cmt : String, cmtcol : String = 'dark_slate_gray'):
+	lblHistory.push_color(color)
+	lblHistory.add_text(msg)
+	if cmt != '':
+		lblHistory.push_color(cmtcol)
+		lblHistory.add_text(' ' + stripcurlies(cmt))
+	lblHistory.newline()
+	lblHistory.pop()
+	
 func announceTurn(col : SentinelChess.ChessColor):
 	var vprompt = 'WhiteTurn'
 	if col == SentinelChess.ChessColor.Black:
@@ -215,13 +222,12 @@ func refreshPrompt(col : SentinelChess.ChessColor):
 	lblCmd.set('theme_override_colors/font_color', crgb)	
 	update_players(col)
 	
-func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.ChessColor):
+func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.ChessColor, cmt : String):
 	var color : String = 'white'
 	if col == SentinelChess.ChessColor.Black:
 		color = 'black'
-	#print(color + ' ' + movestr(m))
 	play_move_sfx()
-	append_history(str(n) + ' ' + color + ' ' + movestr(m), color)
+	append_history2(str(n) + ' ' + movestr(n, m), color, cmt)
 	if (b.check_state(SentinelChess.Black)):
 		append_history('Black in Check.', 'black')	
 		add_voice('Check')
@@ -292,7 +298,6 @@ func handle_rewind() -> bool:
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
 		return false
-	append_history('Rewind')
 	enableplaybuttons()
 	return true
 
@@ -304,7 +309,6 @@ func handle_start() -> bool:
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
 		return false
-	append_history('Start')
 	enableplaybuttons()
 	return true
 
@@ -349,7 +353,6 @@ func handle_advance() -> bool:
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
 		return false
-	append_history('Advance')
 	enableplaybuttons()
 	#game_manager.refresh_turn(game_manager.get_board())
 	return true
@@ -410,6 +413,13 @@ func _on_txt_cmd_text_submitted(new_text):
 			if s == '':
 				show_error('Need Turn Number')
 			handled=handle_goto(turn_no)
+		'C':
+			var s = ''
+			var l : int = cmd.find(' ')
+			if l>=0:
+				s = cmd.substr(l+1).strip_edges(true,true)
+			game_manager.comment(game_manager.playno()+1, s)
+			handled=true
 		'[':
 			handled = handle_start()
 		'<':

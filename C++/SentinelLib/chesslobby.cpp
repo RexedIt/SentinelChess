@@ -1,3 +1,4 @@
+#include "chessengine.h"
 #include "chesslobby.h"
 #include "chessplayer.h"
 #include "chesscomputer.h"
@@ -65,12 +66,19 @@ namespace chess
         // if black wins, (-points>0) are awarded.
     }
 
-    error_e chesslobby::new_game(std::string title, color_e user_color, std::string name, int skill, chessplayertype_e ptype, const chessclock_s &clock)
+    error_e chesslobby::new_game(std::string title, color_e user_color, std::string user_name, int elo, const chessclock_s &clock)
     {
+        // intended for a quick, temporary game
         backup();
 
         clear_players();
-        error_e err = add_player(user_color, name, skill, ptype);
+
+        chessplayerdata pd;
+        error_e err = chessengine::get_or_register_player(user_name, elo, t_human, pd);
+        if (err != e_none)
+            return restore(err);
+
+        err = add_player(user_color, pd);
         if (err != e_none)
             return restore(err);
 
@@ -78,7 +86,12 @@ namespace chess
         mp_game = std::shared_ptr<chessgame>(new chessgame());
 
         // Create a computer matchup
-        err = add_player(other(user_color), "Computer", skill, t_computer);
+        chessplayerdata cd;
+        err = chessengine::get_matching_computer_player(elo, cd);
+        if (err != e_none)
+            return restore(err);
+
+        err = add_player(other(user_color), cd);
         if (err != e_none)
             return restore(err);
 
@@ -127,17 +140,21 @@ namespace chess
             auto players = jsonf["Players"];
             clear_players();
 
+            error_e err = e_none;
+
             for (auto it : players)
             {
                 color_e color = str_color(it["color"]);
-                std::string name = it["name"];
-                int32_t skill = it["skill"];
-                chessplayertype_e ptype = it["type"];
-                if (add_player(color, name, skill, ptype) != e_none)
+                chessplayerdata pd;
+                pd.load_json(it);
+                err = chessengine::get_or_register_player(pd);
+                if (err != e_none)
+                    return restore(err);
+                if (add_player(color, pd) != e_none)
                     return restore(e_loading);
             }
 
-            error_e err = mp_game->load_game(jsonf);
+            err = mp_game->load_chs(jsonf);
             if (err != e_none)
                 return restore(err);
 
@@ -165,15 +182,13 @@ namespace chess
             {
                 auto player = json::object();
                 player["color"] = color_str(kv.second->playercolor());
-                player["name"] = kv.second->playername();
-                player["skill"] = kv.second->playerskill();
-                player["type"] = kv.second->playertype();
+                kv.second->playerdata().save_json(player, false);
                 players.push_back(player);
             }
 
             jsonf["Players"] = players;
 
-            error_e err = mp_game->save_game(jsonf);
+            error_e err = mp_game->save_chs(jsonf);
             if (err == e_none)
             {
                 std::ofstream os;
@@ -190,7 +205,7 @@ namespace chess
         return e_none;
     }
 
-    error_e chesslobby::load_puzzle(std::string name, int skill, chesspuzzle p)
+    error_e chesslobby::load_puzzle(chessplayerdata user, chesspuzzle p)
     {
         // determine the human color
         chessboard b;
@@ -206,11 +221,11 @@ namespace chess
 
         clear_players();
 
-        err = add_player(other(tc), name, skill, t_human);
+        err = add_player(other(tc), user);
         if (err != e_none)
             return restore(err);
 
-        err = add_player(tc, "Puzzle", p.rating, t_puzzle);
+        err = add_player(tc, new_puzzle_player("Puzzle", p.rating));
         if (err != e_none)
             return restore(err);
 
@@ -218,7 +233,7 @@ namespace chess
         if (err != e_none)
             return restore(err);
 
-        int points = (p.rating - skill) / 2;
+        int points = (p.rating - user.elo) / 2;
         if (points <= 0)
             points = 5;
         mp_game->set_points(points);
@@ -227,7 +242,7 @@ namespace chess
         return err;
     }
 
-    error_e chesslobby::load_puzzle(std::string name, int skill, std::string filename, std::string keywords, int rating)
+    error_e chesslobby::load_puzzle(chessplayerdata user, std::string filename, std::string keywords, int rating)
     {
         // determine the human color
         chesspuzzle p;
@@ -239,16 +254,16 @@ namespace chess
             err = p.load_random(filename, keywords, rating);
         if (err != e_none)
             return err;
-        return load_puzzle(name, skill, p);
+        return load_puzzle(user, p);
     }
 
-    error_e chesslobby::load_puzzle(std::string name, int skill, std::string contents)
+    error_e chesslobby::load_puzzle(chessplayerdata user, std::string contents)
     {
         chesspuzzle p;
         error_e err = p.load_line(contents);
         if (err != e_none)
             return err;
-        return load_puzzle(name, skill, p);
+        return load_puzzle(user, p);
     }
 
     error_e chesslobby::save_pgn(std::string filename)
@@ -293,11 +308,21 @@ namespace chess
 
         clear_players();
 
-        err = add_player(c_white, p.white(), p.whiteelo(), t_human);
+        chessplayerdata pw = p.get_playerdata(c_white);
+        err = chessengine::get_or_register_player(pw);
         if (err != e_none)
             return restore(err);
 
-        err = add_player(c_black, p.black(), p.blackelo(), t_human);
+        chessplayerdata pb = p.get_playerdata(c_black);
+        err = chessengine::get_or_register_player(pb);
+        if (err != e_none)
+            return restore(err);
+
+        err = add_player(c_white, pw);
+        if (err != e_none)
+            return restore(err);
+
+        err = add_player(c_black, pb);
         if (err != e_none)
             return restore(err);
 
@@ -309,6 +334,7 @@ namespace chess
         return err;
     }
 
+    /*
     error_e chesslobby::add_player(color_e color, std::string name, int skill, chessplayertype_e ptype)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
@@ -334,6 +360,42 @@ namespace chess
         case t_puzzle:
         {
             std::shared_ptr<chesspuzzleplayer> p(new chesspuzzleplayer(color, name, skill));
+            // if the type is a listener, do this
+            mp_game->listen(p);
+            mp_players[color] = p;
+            p->set_game(mp_game);
+            return e_none;
+        }
+        }
+        return e_player_not_created;
+    }
+    */
+
+    error_e chesslobby::add_player(color_e color, chessplayerdata data)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        switch (data.ptype)
+        {
+        case t_human:
+        {
+            std::shared_ptr<chessplayer> p(new chessplayer(color, data));
+            m_locals.insert(color);
+            mp_players[color] = p;
+            p->set_game(mp_game);
+            return e_none;
+        }
+        case t_computer:
+        {
+            std::shared_ptr<chesscomputer> p(new chesscomputer(color, data));
+            // if the type is a listener, do this
+            mp_game->listen(p);
+            mp_players[color] = p;
+            p->set_game(mp_game);
+            return e_none;
+        }
+        case t_puzzle:
+        {
+            std::shared_ptr<chesspuzzleplayer> p(new chesspuzzleplayer(color, data));
             // if the type is a listener, do this
             mp_game->listen(p);
             mp_players[color] = p;

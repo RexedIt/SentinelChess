@@ -26,6 +26,7 @@ namespace chess
         msg = e.msg;
         wt = e.wt;
         bt = e.bt;
+        cmt = e.cmt;
     }
 
     void chessevent::operator=(const chessevent &e)
@@ -83,11 +84,11 @@ namespace chess
             (*mp_on_consider_cb)(m, c, p);
     }
 
-    void chessgamelistener_direct::signal_on_turn(int16_t n, chessmove m, bool ch, chessboard &b, color_e c, game_state_e g, color_e wc, int32_t wt, int32_t bt)
+    void chessgamelistener_direct::signal_on_turn(int16_t n, chessmove m, bool ch, chessboard &b, color_e c, game_state_e g, color_e wc, int32_t wt, int32_t bt, std::string cmt)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         if (mp_on_turn_cb)
-            (*mp_on_turn_cb)(n, m, ch, b, c, g, wc, wt, bt);
+            (*mp_on_turn_cb)(n, m, ch, b, c, g, wc, wt, bt, cmt);
     }
 
     void chessgamelistener_direct::signal_on_state(game_state_e g, color_e w)
@@ -149,7 +150,7 @@ namespace chess
         }
     }
 
-    void chessgamelistener_queue::signal_on_turn(int16_t n, chessmove m, bool ch, chessboard &b, color_e c, game_state_e g, color_e wc, int32_t wt, int32_t bt)
+    void chessgamelistener_queue::signal_on_turn(int16_t n, chessmove m, bool ch, chessboard &b, color_e c, game_state_e g, color_e wc, int32_t wt, int32_t bt, std::string cmt)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         chessevent e(ce_turn);
@@ -162,6 +163,7 @@ namespace chess
         e.game_state = g;
         e.wt = wt;
         e.bt = bt;
+        e.cmt = cmt;
         m_events.push(e);
     }
 

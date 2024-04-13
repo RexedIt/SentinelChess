@@ -3,6 +3,9 @@
 #include <fstream>
 #include <algorithm>
 #include <chrono>
+#include <regex>
+#include <iostream>
+#include <sstream>
 
 #include "chesscommon.h"
 #include "chesspiece.h"
@@ -102,6 +105,16 @@ namespace chess
             return "Invalid Extension, must be CHS or PGN";
         case e_play_not_paused:
             return "Play not paused";
+        case e_pgn_overflow:
+            return "PGN Buffer Overflow";
+        case e_data_not_found:
+            return "Data Folder not found";
+        case e_user_not_found:
+            return "User Folder not found";
+        case e_no_player_hub:
+            return "No Player Hub Exists";
+        case e_no_guid:
+            return "No GUID to Register";
         default:
             return "Unknown Error";
         }
@@ -496,6 +509,27 @@ namespace chess
         return (a.substr(a.length() - b.length(), b.length()) == b);
     }
 
+    bool book_end(std::string s, char b, char e)
+    {
+        if (s != "")
+            if (s[0] == b)
+                if (s[s.length() - 1] == e)
+                    return true;
+        return false;
+    }
+
+    bool book_end(std::string s, std::string b, std::string e)
+    {
+        if (s != "")
+        {
+            size_t li = s.length() - 1;
+            size_t bi = s.find_first_of(b);
+            size_t ei = s.find_last_of(e);
+            return ((bi == 0) && (ei == li));
+        }
+        return false;
+    }
+
     const char *ws = " \t\n\r\f\v";
 
     // trim from end of string (right)
@@ -553,26 +587,17 @@ namespace chess
         return (stat(fixeddir.c_str(), &st) == 0);
     }
 
-    std::string data_folder = "..\\ChessData\\";
-
-    std::string get_data_folder()
-    {
-        return data_folder;
-    }
-
-    bool set_data_folder(std::string f)
-    {
-        if (!get_dir_exists(f))
-            return false;
-        data_folder = f;
-        return true;
-    }
-
     std::string string_replace(std::string s, char o, char n)
     {
         std::string ret = s;
         std::replace(ret.begin(), ret.end(), o, n);
         return ret;
+    }
+
+    std::string string_replace(std::string s, std::string o, std::string n)
+    {
+        std::string ret = s;
+        return std::regex_replace(ret, std::regex(o), n);
     }
 
     inline char separator()
@@ -591,16 +616,6 @@ namespace chess
 #else
         return string_replace(f, '\\', '/');
 #endif
-    }
-
-    std::string data_file(std::string f)
-    {
-        if (data_folder == "")
-            return f;
-        char lc = data_folder[data_folder.length() - 1];
-        if ((lc == '\\') || (lc == '/'))
-            return fix_path(data_folder + f);
-        return fix_path(data_folder + "\\" + f);
     }
 
     uint32_t hash(unsigned char *b, size_t l)
@@ -642,6 +657,23 @@ namespace chess
             buf[p++] = moves[i].p1.x;
         }
         return hash(buf, moves.size() * 4);
+    }
+
+    std::string file_to_string(std::string f)
+    {
+        try
+        {
+            std::ifstream af(f, std::ios::binary);
+            std::stringstream buffer;
+            buffer << af.rdbuf();
+            af.close();
+            return buffer.str();
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
+            return e.what();
+        }
     }
 
     bool little_endian()

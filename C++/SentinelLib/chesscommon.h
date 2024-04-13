@@ -67,6 +67,11 @@ namespace chess
         e_pgn_parse,
         e_invalid_extension,
         e_play_not_paused,
+        e_pgn_overflow,
+        e_data_not_found,
+        e_user_not_found,
+        e_no_player_hub,
+        e_no_guid,
     } error_e;
 
     std::string errorstr(error_e num);
@@ -231,16 +236,18 @@ namespace chess
     std::string lowercase(std::string u);
     bool starts_with(std::string a, std::string b);
     bool ends_with(std::string a, std::string b);
+    bool book_end(std::string s, char b, char e);
+    bool book_end(std::string s, std::string b, std::string e);
     uintmax_t get_file_size(std::string f);
     bool get_dir_exists(std::string dirname);
 
     std::string string_replace(std::string s, char o, char n);
+    std::string string_replace(std::string s, std::string o, std::string n);
     std::string fix_path(std::string f);
-    std::string get_data_folder();
-    bool set_data_folder(std::string f);
-    std::string data_file(std::string f);
     uint32_t hash(unsigned char *, size_t);
     uint32_t hash(std::vector<chessmove>);
+
+    std::string file_to_string(std::string f);
 
     bool save_binary(std::ofstream &of, size_t v);
     bool load_binary(std::ifstream &inf, size_t &v);

@@ -8,20 +8,19 @@ namespace chess
 
     chesspuzzleplayer::chesspuzzleplayer()
     {
-        m_playertype = t_puzzle;
+        m_data.ptype = t_puzzle;
+        m_data.username = "Puzzle";
         m_listenertype = cl_computer;
-        m_name = "Puzzle";
         m_cancel = false;
         m_thread_running = false;
     }
 
-    chesspuzzleplayer::chesspuzzleplayer(color_e color, std::string name, int32_t skill)
+    chesspuzzleplayer::chesspuzzleplayer(color_e color, chessplayerdata data)
     {
         m_color = color;
-        m_playertype = t_puzzle;
+        m_data = data;
+        m_data.ptype = t_puzzle;
         m_listenertype = cl_computer;
-        m_name = name;
-        m_skill = skill;
         m_cancel = false;
         m_thread_running = false;
     }
@@ -40,7 +39,7 @@ namespace chess
         }
     }
 
-    void chesspuzzleplayer::signal_on_turn(int16_t turn_no, chessmove m, bool check, chessboard &board, color_e color, game_state_e game_state, color_e win_color, int32_t wt, int32_t bt)
+    void chesspuzzleplayer::signal_on_turn(int16_t turn_no, chessmove m, bool check, chessboard &board, color_e color, game_state_e game_state, color_e win_color, int32_t wt, int32_t bt, std::string cmt)
     {
         // This is where we will determine game state, move, or forfeit.
         // move:

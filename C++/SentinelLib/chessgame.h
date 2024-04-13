@@ -21,7 +21,7 @@ namespace chess
     class chessgamelistener;
     class chessclock;
 
-    class chessgame : chessmeta
+    class chessgame : public chessmeta
     {
     public:
         chessgame();
@@ -39,7 +39,7 @@ namespace chess
         std::string save_xfen();
 
         chessboard board();
-
+        chessboard board(int16_t t);
         chessturn play_turn();
 
         game_state_e state();
@@ -93,8 +93,8 @@ namespace chess
 
     protected:
         error_e new_game(std::string title, const chessclock_s &clock);
-        error_e load_game(json &j);
-        error_e save_game(json &j);
+        error_e load_chs(json &j);
+        error_e save_chs(json &j);
         error_e load_puzzle(chesspuzzle &p);
         error_e load_pgn(chesspgn &p);
         error_e save_pgn(chesspgn &p);

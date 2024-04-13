@@ -101,7 +101,7 @@ namespace chess
         return std::shared_ptr<chessclock>(new chessclock(cc, p_game));
     }
 
-    void chessclock::signal_on_turn(int16_t turn_no, chessmove m, bool check, chessboard &board, color_e color, game_state_e game_state, color_e win_color, int32_t wt, int32_t bt)
+    void chessclock::signal_on_turn(int16_t turn_no, chessmove m, bool check, chessboard &board, color_e color, game_state_e game_state, color_e win_color, int32_t wt, int32_t bt, std::string cmt)
     {
         // We will make our timekeeping adjustments here
         if (mp_game)

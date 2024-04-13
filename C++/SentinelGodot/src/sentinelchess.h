@@ -28,6 +28,7 @@ public:
 private:
     String errorstr(int num);
     String gamestatestr(ChessGameState state);
+    String movestr(int t, const Ref<ChessMove> &m);
 
     int new_game(String title, const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black, const Ref<ChessClock> &clock);
     int load_puzzle(const Ref<ChessPlayer> &player, String keywords, const int rating);
@@ -41,13 +42,14 @@ private:
     ChessColor turn_color();
     ChessColor win_color();
     bool check_state(ChessColor col);
+    void comment(int i, String cmt);
 
     bool puzzle();
     int hints();
     Ref<ChessMove> hint();
     String hintstr();
     int win_points(ChessColor col);
-    bool initialize(const String &);
+    int initialize(const String &);
 
     // For getting high level info about the game, useful one time
     Ref<ChessMeta> get_meta();
@@ -156,6 +158,7 @@ public:
     int black_time();
     int percent();
     String msg();
+    String cmt();
 
     chessevent get() { return m_event; }
 

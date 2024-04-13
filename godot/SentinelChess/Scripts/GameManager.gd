@@ -71,14 +71,15 @@ func _physics_process(delta):
 				var wc : ChessColor = ce.win_color();
 				var wt : int = ce.white_time()
 				var bt : int = ce.black_time()
+				var cmt : String = ce.cmt()
 				if m.is_valid():
 					var cm : ChessColor = ChessColor.White
 					if c == ChessColor.White:
 						cm = ChessColor.Black
 					if has_local() and !is_local(cm):
-						_computer_moved(n, m, b, cm)
+						_computer_moved(n, m, b, cm, cmt)
 					else:
-						_draw_move(n, m, b, cm)
+						_draw_move(n, m, b, cm, cmt)
 				if gamestate != GameState.ANIMATEMOVE:
 					_on_turn(n,b,c)
 				gameUI.clock_turn(c, wt, bt)
@@ -323,8 +324,8 @@ func _on_error_msg(_err : String):
 	print('***** ERROR *****' + _err)
 		
 # Signal Handlers
-func _draw_move(n, m, b, c):
-	gameUI.append_move(n,m,b,c)
+func _draw_move(n, m, b, cm, cmt):
+	gameUI.append_move(n,m,b,cm,cmt)
 	board.move_piece(m.p0, m.p1)
 	board.refreshpieces(b)	
 	pnlCaptured.refreshpieces(b)
@@ -376,7 +377,7 @@ func _user_moved(m):
 	board.animate_move(m)
 	gamestate = GameState.ANIMATEMOVE
 		
-func _computer_moved(n, m, b, c):
+func _computer_moved(n, m, b, c, cmt):
 	# for now we ONLY will paint the board
 	# eventually we will animate the move
 	# which will force the board to be redrawn.
@@ -384,6 +385,6 @@ func _computer_moved(n, m, b, c):
 	# animate as we will miss the action.
 	if board.animate_move(m):
 		statewait = false
-		gameUI.append_move(n,m,b,c)
+		gameUI.append_move(n,m,b,c,cmt)
 		gamestate = GameState.ANIMATEMOVE
 			

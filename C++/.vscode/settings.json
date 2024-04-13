@@ -81,7 +81,8 @@
         "xhash": "cpp",
         "condition_variable": "cpp",
         "unordered_set": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "regex": "cpp"
     },
     "cmake.debugConfig": {
         "externalConsole": true,

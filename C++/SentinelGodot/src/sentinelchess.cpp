@@ -1,5 +1,6 @@
 #include "sentinelchess.h"
 
+#include "chessengine.h"
 #include "chesspiece.h"
 
 #include <godot_cpp/core/class_db.hpp>
@@ -24,6 +25,7 @@ void SentinelChess::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("errorstr", "num"), &SentinelChess::errorstr);
     ClassDB::bind_method(D_METHOD("gamestatestr", "state"), &SentinelChess::gamestatestr);
+    ClassDB::bind_method(D_METHOD("movestr", "n", "m"), &SentinelChess::movestr);
     ClassDB::bind_method(D_METHOD("new_game", "white", "black"), &SentinelChess::new_game);
     ClassDB::bind_method(D_METHOD("save_game", "filename"), &SentinelChess::save_game);
     ClassDB::bind_method(D_METHOD("load_game", "filename"), &SentinelChess::load_game);
@@ -48,6 +50,7 @@ void SentinelChess::_bind_methods()
 
     ClassDB::bind_method(D_METHOD("state"), &SentinelChess::state);
     ClassDB::bind_method(D_METHOD("check_state"), &SentinelChess::check_state);
+    ClassDB::bind_method(D_METHOD("comment", "turn", "cmt"), &SentinelChess::comment);
 
     ClassDB::bind_method(D_METHOD("puzzle"), &SentinelChess::puzzle);
     ClassDB::bind_method(D_METHOD("hints"), &SentinelChess::hints);
@@ -118,6 +121,16 @@ String SentinelChess::errorstr(int num)
 String SentinelChess::gamestatestr(ChessGameState state)
 {
     return String(::game_state_str((game_state_e)state).c_str());
+}
+
+String SentinelChess::movestr(int t, const Ref<ChessMove> &m)
+{
+    if ((m.is_valid()) && (mp_game))
+    {
+        chessmove cm = m->get();
+        return String(::move_str(cm, mp_game->board(t - 1)).c_str());
+    }
+    return "";
 }
 
 bool SentinelChess::hasevent()
@@ -205,15 +218,15 @@ int SentinelChess::new_game(String title, const Ref<ChessPlayer> &white, const R
     error_e err = e_none;
     if (white.is_valid())
     {
-        white->get(n, s, t);
-        err = m_lobby.add_player(c_white, n, s, t);
+        white->refresh();
+        err = m_lobby.add_player(c_white, white->get());
         if (err != e_none)
             return err;
     }
     if (black.is_valid())
     {
-        black->get(n, s, t);
-        err = m_lobby.add_player(c_black, n, s, t);
+        black->refresh();
+        err = m_lobby.add_player(c_black, black->get());
         if (err != e_none)
             return err;
     }
@@ -233,11 +246,11 @@ int SentinelChess::load_puzzle(const Ref<ChessPlayer> &player, String keywords, 
 {
     if (!player.is_valid())
         return -1;
-    std::string n = player->get_name().ascii().get_data();
+    player->refresh();
+    chessplayerdata pd = player->get();
     std::string k = keywords.ascii().get_data();
-    int s = player->get_skill();
-    std::string f = data_file("db_puzzles.csv");
-    int err = m_lobby.load_puzzle(n, s, f, k, rating);
+    std::string f = chessengine::data_file("db_puzzles.csv");
+    int err = m_lobby.load_puzzle(player->get(), f, k, rating);
     refresh_data();
     return err;
 }
@@ -382,6 +395,12 @@ bool SentinelChess::check_state(ChessColor col)
     return false;
 }
 
+void SentinelChess::comment(int turn, String cmt)
+{
+    if (mp_game)
+        mp_game->comment(turn, cmt.ascii().get_data());
+}
+
 ChessGameState SentinelChess::state()
 {
     if (mp_game)
@@ -425,11 +444,9 @@ int SentinelChess::win_points(ChessColor col)
     return m_lobby.win_points((color_e)col);
 }
 
-bool SentinelChess::initialize(const String &d)
+int SentinelChess::initialize(const String &d)
 {
-    if (set_data_folder(d.ascii().get_data()))
-        return (m_ecodb.load_binary(data_file("scid.bin")) == e_none);
-    return false;
+    return chessengine::initialize(d.ascii().get_data());
 }
 
 int SentinelChess::forfeit(ChessColor col)
@@ -644,6 +661,7 @@ void ChessEvent::_bind_methods()
     ClassDB::bind_method(D_METHOD("board"), &ChessEvent::board);
     ClassDB::bind_method(D_METHOD("percent"), &ChessEvent::percent);
     ClassDB::bind_method(D_METHOD("msg"), &ChessEvent::msg);
+    ClassDB::bind_method(D_METHOD("cmt"), &ChessEvent::cmt);
 
     // ChessEventType
     BIND_ENUM_CONSTANT(ceNone);
@@ -719,4 +737,9 @@ int ChessEvent::percent()
 String ChessEvent::msg()
 {
     return String(m_event.msg.c_str());
+}
+
+String ChessEvent::cmt()
+{
+    return String(m_event.cmt.c_str());
 }

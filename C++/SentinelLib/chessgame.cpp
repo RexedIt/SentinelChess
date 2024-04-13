@@ -24,7 +24,16 @@ namespace chess
     chessboard chessgame::board()
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        chessboard b(m_board);
+        return m_board;
+    }
+
+    chessboard chessgame::board(int16_t t)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if ((t > 0) && (t < playmax()))
+            return m_turn[t - 1].b;
+        chessboard b;
+        b.load_xfen(m_init_board);
         return b;
     }
 
@@ -461,7 +470,7 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::load_game(json &jsonf)
+    error_e chessgame::load_chs(json &jsonf)
     {
         try
         {
@@ -489,12 +498,27 @@ namespace chess
             JSON_LOAD(jsonf, "hints", m_hints, 0);
             JSON_LOAD(jsonf, "points", m_points, 0);
 
+            reset_tags();
+
             auto meta = json::object();
             JSON_LOADC(jsonf, "meta", meta);
             if (!meta.is_null())
             {
                 for (auto el : meta.items())
                     write_tag(el.key(), el.value().dump());
+            }
+
+            clear_comments();
+
+            auto commentsj = json::object();
+            JSON_LOADC(jsonf, "comments", commentsj);
+            if (!commentsj.is_null())
+            {
+                for (auto el : commentsj.items())
+                {
+                    int key = atoi(el.key().c_str());
+                    comment(key, el.value().dump());
+                }
             }
 
             m_play_pos = jsonf["play_pos"];
@@ -585,7 +609,7 @@ namespace chess
         std::vector<chessturn> turns;
         m_open_filter.reset();
 
-        int16_t n = 0;
+        int16_t n = 1;
         chessturn t;
 
         for (chessmove m : p.moves())
@@ -612,7 +636,7 @@ namespace chess
         m_board.load_xfen(c_open_board);
         m_puzzle = false;
 
-        copy_tags_from(p);
+        copy_from(p);
         refresh_board_positions();
 
         // update the last turn.
@@ -632,7 +656,7 @@ namespace chess
             turns[last_turn - 1] = lt;
         }
         narrow_moves();
-        set_state(detect_state, true);
+        set_state(idle_e, true);
         // and set it.
         signal_on_turn();
         return e_none;
@@ -642,7 +666,7 @@ namespace chess
     {
         write_tag("ECO", m_open_filter.eco());
         write_tag("Opening", m_open_filter.title());
-        p.copy_tags_from(*this);
+        p.copy_from(*this);
         int last_turn = playmax();
         if (last_turn >= 1)
         {
@@ -652,7 +676,7 @@ namespace chess
         return p.write_moves(moves());
     }
 
-    error_e chessgame::save_game(json &jsonf)
+    error_e chessgame::save_chs(json &jsonf)
     {
         try
         {
@@ -683,15 +707,22 @@ namespace chess
             jsonf["play_pos"] = m_play_pos;
             jsonf["points"] = m_points;
 
-            auto meta = json::object();
-
             write_tag("ECO", m_open_filter.eco());
             write_tag("Opening", m_open_filter.title());
 
-            for (auto tag_pair : m_tags)
-                meta[tag_pair.first] = tag_pair.second;
+            auto meta = json::object();
+
+            for (auto meta_pair : m_tags)
+                meta[meta_pair.first] = meta_pair.second;
 
             jsonf["meta"] = meta;
+
+            auto commentsj = json::object();
+
+            for (auto comment_pair : m_comments)
+                commentsj[comment_pair.first] = comment_pair.second;
+
+            jsonf["comments"] = commentsj;
 
             auto board = json::object();
             if (m_board.save(board) != e_none)
@@ -888,8 +919,9 @@ namespace chess
     {
         chessmove m;
         chessturn l = m_turn.size() > 0 ? play_turn() : new_turn(m);
+        std::string cmt = comment(l.t + 1);
         for (const auto &kv : mp_listeners)
-            kv.second->signal_on_turn(l.t, l.m, l.ch, l.b, l.c, l.g, l.wc, l.wt, l.bt);
+            kv.second->signal_on_turn(l.t, l.m, l.ch, l.b, l.c, l.g, l.wc, l.wt, l.bt, cmt);
     }
 
     void chessgame::signal_on_state()

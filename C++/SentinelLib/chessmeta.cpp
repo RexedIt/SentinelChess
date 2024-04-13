@@ -13,6 +13,11 @@ namespace chess
         m_tags.clear();
     }
 
+    void chessmeta::clear_comments()
+    {
+        m_comments.clear();
+    }
+
     std::string chessmeta::operator[](const char *key)
     {
         return tag(key);
@@ -57,7 +62,7 @@ namespace chess
         return write_tag(key, std::to_string(value));
     }
 
-    bool chessmeta::copy_tags_from(chessmeta &m)
+    bool chessmeta::copy_from(chessmeta &m)
     {
         std::vector<std::pair<std::string, std::string>> oth = m.m_tags;
         for (size_t i = 0; i < oth.size(); i++)
@@ -65,7 +70,28 @@ namespace chess
             std::pair<std::string, std::string> pair = oth[i];
             write_tag(pair.first, pair.second);
         }
+        m_comments = m.m_comments;
         return true;
+    }
+
+    std::map<int, std::string> chessmeta::comments()
+    {
+        return m_comments;
+    }
+
+    std::string chessmeta::comment(int index)
+    {
+        if (m_comments.count(index))
+            return m_comments[index];
+        return "";
+    }
+
+    void chessmeta::comment(int index, std::string val)
+    {
+        if (book_end(val, "${(", ".})"))
+            m_comments[index] = val;
+        else
+            m_comments[index] = "{" + val + "}";
     }
 
     std::string chessmeta::tag(std::string key)
