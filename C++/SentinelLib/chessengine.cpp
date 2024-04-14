@@ -91,13 +91,6 @@ namespace chess
         return e_no_openings;
     }
 
-    error_e chessengine::preferredecos(color_e col, std::vector<std::string> &ecos)
-    {
-        if (p_eco)
-            return p_eco->preferredecos(col, ecos);
-        return e_no_openings;
-    }
-
     // static chessplayerhub calls
     error_e chessengine::get_or_register_player(std::string username, int32_t elo, chessplayertype_e ptype, chessplayerdata &data)
     {

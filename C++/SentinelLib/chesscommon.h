@@ -14,6 +14,10 @@ namespace chess
     else                      \
         v = d;
 
+#define JSON_LOADIF(o, k, v) \
+    if (o.contains(k))       \
+        v = o[k];
+
 #define JSON_GET(o, k, d) \
     (o.contains(k) ? o[k] : d)
 

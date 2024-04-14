@@ -84,9 +84,9 @@ namespace chess
         return str;
     }
 
-    chessplayerdata new_computer_player(std::string username, int32_t elo, std::string meta)
+    chessplayerdata new_computer_player(std::string guid, std::string username, int32_t elo, std::string meta)
     {
-        return chessplayerdata(new_guid(), username, elo, t_computer, false, meta);
+        return chessplayerdata(guid, username, elo, t_computer, false, meta);
     }
 
     chessplayerdata new_human_player(std::string username, int32_t elo, std::string meta)
@@ -106,7 +106,7 @@ namespace chess
             std::cerr << " *** SINGLETON ERROR *** - chessplayerhub already running!" << std::endl;
         }
         p_hub = this;
-        initialize();
+        generate_static_players();
     }
 
     chessplayerhub::~chessplayerhub()
@@ -181,16 +181,30 @@ namespace chess
     void chessplayerhub::clear_players()
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        m_players.clear();
+        std::map<std::string, chessplayerdata> static_players;
+        for (std::map<std::string, chessplayerdata>::iterator it = m_players.begin(); it != m_players.end(); ++it)
+        {
+            chessplayerdata d = it->second;
+            if ((d.persistent == false) && (d.ptype == t_computer))
+                static_players[d.guid] = d;
+        }
+        m_players = static_players;
     }
 
-    void chessplayerhub::initialize()
+    void chessplayerhub::generate_static_players()
     {
-        register_data(new_computer_player("Hank", 500, ""));
-        register_data(new_computer_player("Veronica", 1000, ""));
-        register_data(new_computer_player("Julian", 1500, ""));
-        register_data(new_computer_player("Hal", 2000, ""));
-        register_data(new_computer_player("DeepDrew", 2500, ""));
+        // Template for computer metadata: {"bp_weight":0.5,"eco_favorites":["ABC","DEF"],"eco_weight":32,"kc_weight":0.25,"turn_time":5000}
+        register_data(new_computer_player("87f7663e-95dc-430d-95e2-240ff4e4f285", "Sparky", 400, R"({"bp_weight":0.0,"eco_weight":0,"kc_weight":0.0})"));
+        register_data(new_computer_player("44e57420-4b35-4c90-abb7-ac6d13081f9d", "Hank", 500, R"({"bp_weight":0.0,"eco_weight":8,"kc_weight":0.0})"));
+        register_data(new_computer_player("83b4cab2-f465-4f86-b73b-e03276d2387f", "Corky", 650, R"({"eco_weight":16,"eco_favorites":["A01", D06"]})"));
+        register_data(new_computer_player("bc28442a-c928-4cc6-9315-e157952953cc", "Zippy", 850, R"({"eco_weight":32,"eco_favorites":["D06","A04"],"turn_time":2000})"));
+        register_data(new_computer_player("49379cc9-15e9-4934-95a0-4b0a47dbd414", "Veronica", 1000, R"({"eco_weight":32,"eco_favorites":["D06","C44","C45"]})"));
+        register_data(new_computer_player("496c83f0-59be-4c0e-a4ca-f8bd098722a2", "Vlad", 1150, R"({"eco_weight":32,"eco_favorites":["B20","B25","B39"],"kc_weight":0.65,"bp_weight":1.0})"));
+        register_data(new_computer_player("dd2c6c0e-1e60-4e1f-8971-2042fbec714c", "Benjamin", 1350, R"({"eco_weight":16,"eco_favorites":["D08","E54"],"kc_weight":0.25,"bp_weight":0.25})"));
+        register_data(new_computer_player("40d6077c-b107-4271-bbb0-9b21b259a8fc", "Julian", 1500, R"({"bp_weight":0.75,"eco_favorites":["A00","A04","C25","C26","C27","C28"],"eco_weight":64,"kc_weight":0.5,"turn_time":7500})"));
+        register_data(new_computer_player("d485b7ff-e883-4680-b092-8329478f2e18", "Dorian", 1750, R"({"bp_weight":0.4,"eco_favorites":["A00","A04","D06","D07","D09","D10"],"eco_weight":64,"kc_weight":0.15,"turn_time":9000})"));
+        register_data(new_computer_player("f9b73070-17d1-403a-983f-eed8eba9e283", "Hal", 2000, R"({"bp_weight":0.25,"eco_favorites":["C21","C22","C60","B00"],"eco_weight":64,"kc_weight":0.15,"turn_time":10000})"));
+        register_data(new_computer_player("5f20e613-4d6c-46a6-84ec-452b436ff637", "DeepDrew", 2500, R"({"bp_weight":0.25,"eco_favorites":["D00","C21","C22","C23","C25","C26","C27","C28","D06","D07","D08","D09","C60","C44","C45","A10","A04"],"eco_weight":64,"kc_weight":0.15,"turn_time":10000})"));
     }
 
     error_e chessplayerhub::register_data(chessplayerdata data)

@@ -30,7 +30,8 @@ namespace chess
         float computer_move_max(chessboard &board, color_e turn_col, float _alpha, float _beta, int32_t rec);
         float computer_move_min(chessboard &board, color_e turn_col, float _alpha, float _beta, int32_t rec);
         void cancel_execution();
-
+        error_e load_meta(std::string);
+        std::string save_meta();
         void initialize_opening();
         float opening_weight(chessmove &m);
 
@@ -48,5 +49,10 @@ namespace chess
         std::vector<chessmove> m_next_opening_moves;
         int m_opening_weight;
         bool m_opening_in_play;
+        float m_kc_weight;
+        float m_bp_weight;
+        int m_eco_weight;
+        int32_t m_turn_time;
+        std::vector<std::string> m_eco_favorites;
     };
 }

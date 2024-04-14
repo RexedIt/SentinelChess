@@ -32,7 +32,7 @@ namespace chess
 
     std::string new_guid();
 
-    chessplayerdata new_computer_player(std::string username, int32_t elo, std::string meta = "");
+    chessplayerdata new_computer_player(std::string guid, std::string username, int32_t elo, std::string meta = "");
     chessplayerdata new_human_player(std::string username, int32_t elo, std::string meta = "");
     chessplayerdata new_puzzle_player(std::string username, int32_t elo, std::string meta = "");
 
@@ -58,7 +58,7 @@ namespace chess
 
     private:
         void clear_players();
-        void initialize();
+        void generate_static_players();
         error_e save_json();
 
         std::mutex m_mutex;

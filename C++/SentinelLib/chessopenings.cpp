@@ -135,14 +135,6 @@ namespace chess
         return e_none;
     }
 
-    error_e chessecodb::preferredecos(color_e col, std::vector<std::string> &ecos)
-    {
-        if (m_preferred.count(col) == 0)
-            return e_no_openings;
-        ecos = m_preferred[col];
-        return e_none;
-    }
-
     error_e chessecodb::load_binary(std::string filename)
     {
         try
@@ -198,8 +190,6 @@ namespace chess
 
     void chessecodb::initialize()
     {
-        m_preferred[c_white] = std::vector<std::string>({"D00", "C21", "C22", "C23", "C25", "C26", "C27", "C28", "D06", "D07", "D08", "D09", "C60", "C44", "C45", "A00", "A10", "A04"});
-        m_preferred[c_black] = std::vector<std::string>({"B20", "B00", "B03", "B04", "B05", "A00", "A42", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19"});
     }
 
     error_e chessecodb::load_scid_eco(std::string filename)

@@ -42,12 +42,10 @@ namespace chess
         error_e save_binary(std::string filename);
 
         error_e chessopenings(std::vector<chessopening> &openings);
-        error_e preferredecos(color_e col, std::vector<std::string> &ecos);
 
     private:
         void initialize();
         std::vector<chessopening> m_openings;
-        std::map<color_e, std::vector<std::string>> m_preferred;
     };
 
     // Preserved for unit testing
