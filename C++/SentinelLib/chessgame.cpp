@@ -187,7 +187,7 @@ namespace chess
         return g;
     }
 
-    void chessgame::clock_remaining(color_e col, int32_t &wt, int32_t &bt)
+    void chessgame::clock_remaining(int32_t &wt, int32_t &bt)
     {
         wt = 0;
         bt = 0;
@@ -394,7 +394,7 @@ namespace chess
             if (turn_rw)
                 refresh_board_positions();
         }
-        signal_on_turn();
+        signal_on_turn(activate);
     }
 
     error_e chessgame::rewind_game()
@@ -843,7 +843,7 @@ namespace chess
         color_e wc = win_color();
         int32_t wt = 0;
         int32_t bt = 0;
-        clock_remaining(c, wt, bt);
+        clock_remaining(wt, bt);
         return chess::new_turn(n, m, ch, m_board, c, g, wc, wt, bt);
     }
 
@@ -915,11 +915,13 @@ namespace chess
             kv.second->signal_on_consider(m, c, p);
     }
 
-    void chessgame::signal_on_turn()
+    void chessgame::signal_on_turn(bool refreshtime)
     {
         chessmove m;
         chessturn l = m_turn.size() > 0 ? play_turn() : new_turn(m);
         std::string cmt = comment(l.t + 1);
+        if (refreshtime)
+            clock_remaining(l.wt, l.bt);
         for (const auto &kv : mp_listeners)
             kv.second->signal_on_turn(l.t, l.m, l.ch, l.b, l.c, l.g, l.wc, l.wt, l.bt, cmt);
     }

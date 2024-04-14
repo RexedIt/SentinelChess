@@ -44,6 +44,9 @@ namespace chess
         int32_t current_elapsed();
         int32_t current_elapsed_nolock();
 
+        void start_pause();
+        void end_pause();
+
         chessgame *mp_game;
 
         std::mutex m_mutex;
@@ -54,6 +57,8 @@ namespace chess
         bool m_active;
 
         std::thread::id m_thread_id;
+        std::chrono::steady_clock::time_point m_pause_tp;
+        int32_t m_pause_ms;
         bool m_thread_running;
         bool m_ending;
         volatile bool m_cancel;

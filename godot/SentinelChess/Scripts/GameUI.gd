@@ -113,8 +113,9 @@ func _physics_process(delta):
 				var pct = int(smooth * 100) / step * step
 				smooth = float(pct)/100.0
 			lblError.modulate.a = smooth
-	clock_update(delta)
-	play_voice()
+	if is_idle == false:
+		clock_update(delta)
+		play_voice()
 
 func update_players(turnc : SentinelChess.ChessColor):
 	# who's on top?
@@ -511,6 +512,7 @@ func clock_turn(col : SentinelChess.ChessColor, wt : int, bt : int):
 		countdown = float(wt) / 1000.0
 	if col == SentinelChess.Black:
 		countdown = float(bt) / 1000.0
+	print('clock_turn called')
 		
 func clock_update(delta : float):
 	if countdown>=0.0:

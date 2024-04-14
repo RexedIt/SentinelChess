@@ -75,7 +75,7 @@ namespace chess
         std::map<int16_t, chessmove> player_moves(color_e col);
 
         game_state_e is_game_over(color_e col, chessmove m);
-        void clock_remaining(color_e col, int32_t &wt, int32_t &bt);
+        void clock_remaining(int32_t &wt, int32_t &bt);
 
         // Check?
         bool check_state(color_e col);
@@ -120,7 +120,7 @@ namespace chess
         // Signallers
         void signal_refresh_board();
         void signal_on_consider(chessmove, color_e, int8_t pct = -1);
-        void signal_on_turn();
+        void signal_on_turn(bool refreshtime = false);
         void signal_on_state();
         void signal_chat(std::string, color_e);
 

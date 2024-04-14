@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <thread>
+#include <iostream>
 
 namespace chess
 {
@@ -16,6 +17,7 @@ namespace chess
         m_thread_running = false;
         m_ending = false;
         mp_game = p_game;
+        m_pause_ms = 0;
         start_execution();
     }
 
@@ -123,9 +125,15 @@ namespace chess
         {
             std::lock_guard<std::mutex> guard(m_mutex);
             if ((game_state == play_e) && !m_active)
+            {
+                end_pause();
                 m_active = true;
+            }
             else if ((game_state == idle_e) && m_active)
+            {
+                start_pause();
                 m_active = false;
+            }
         }
     }
 
@@ -137,7 +145,7 @@ namespace chess
         {
             if (m_active)
                 time_evaluate();
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
         m_thread_running = false;
     }
@@ -196,6 +204,7 @@ namespace chess
     void chessclock::start_turn(color_e col)
     {
         m_current = col;
+        m_pause_ms = 0;
         m_current_tp = std::chrono::steady_clock::now();
         // *** NATHANAEL *** Apply beginning of turn specific logic here
         switch (m_clock.ctype)
@@ -215,7 +224,19 @@ namespace chess
     {
         std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
         std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_current_tp);
-        return (int32_t)ms.count();
+        return (int32_t)ms.count() - m_pause_ms;
+    }
+
+    void chessclock::start_pause()
+    {
+        m_pause_tp = std::chrono::steady_clock::now();
+    }
+
+    void chessclock::end_pause()
+    {
+        std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+        std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_pause_tp);
+        m_pause_ms += (int32_t)ms.count();
     }
 
 }
