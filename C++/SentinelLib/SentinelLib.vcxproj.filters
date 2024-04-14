@@ -15,6 +15,10 @@
     <ClCompile Include="chesspuzzleplayer.cpp" />
     <ClCompile Include="chessclock.cpp" />
     <ClCompile Include="chessopenings.cpp" />
+    <ClCompile Include="chessengine.cpp" />
+    <ClCompile Include="chessplayerhub.cpp" />
+    <ClCompile Include="chessmeta.cpp" />
+    <ClCompile Include="chesspgn.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="chessboard.h" />
@@ -31,5 +35,9 @@
     <ClInclude Include="chesspuzzleplayer.h" />
     <ClInclude Include="chessclock.h" />
     <ClInclude Include="chessopenings.h" />
+    <ClInclude Include="chessengine.h" />
+    <ClInclude Include="chessplayerhub.h" />
+    <ClInclude Include="chessmeta.h" />
+    <ClInclude Include="chesspgn.h" />
   </ItemGroup>
 </Project>

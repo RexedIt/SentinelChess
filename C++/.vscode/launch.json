@@ -1,0 +1,50 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(Windows) SentinelConsole (Debug)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Console/Debug/SentinelConsole.exe",
+            "args": [
+                "--chessdata",
+                "../ChessData"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "preLaunchTask": "build debug" // corresponds to a task in tasks.json that builds your program
+        },
+        {
+            "name": "(Windows) SentinelConsole (Release)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Console/Release/SentinelConsole.exe",
+            "args": [
+                "--chessdata",
+                "../ChessData"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "preLaunchTask": "build release" // corresponds to a task in tasks.json that builds your program
+        },
+        {
+            "name": "(Windows) sc_test (Debug)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Console/Debug/sc_test.exe",
+            "args": [
+                "--chessdata",
+                "../ChessData",
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "preLaunchTask": "build debug tests" // corresponds to a task in tasks.json that builds your program
+        }
+    ]
+}

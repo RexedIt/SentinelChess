@@ -481,7 +481,7 @@ namespace chess
         moves_str += val;
     }
 
-    error_e chesspgn::write_moves(std::vector<chessmove> &move_vec)
+    error_e chesspgn::write_moves(std::vector<chessmove> move_vec)
     {
         chessboard b;
         b.load_xfen(c_open_board);

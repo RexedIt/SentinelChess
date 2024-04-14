@@ -611,7 +611,9 @@ namespace chess
 
     std::string fix_path(std::string f)
     {
+        char path_seperator = '/';
 #ifdef _WIN32
+        path_seperator = '\\';
         return string_replace(f, '/', '\\');
 #else
         return string_replace(f, '\\', '/');

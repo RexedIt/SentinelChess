@@ -430,7 +430,7 @@ namespace chess
             return;
         if (m_filtered.size() > 0)
         {
-            m_last_match_size = m_filtered.size();
+            m_last_match_size = (int)m_filtered.size();
             std::map<std::string, int> titles;
             std::map<std::string, int> ecos;
             for (size_t i = 0; i < m_filtered.size(); i++)

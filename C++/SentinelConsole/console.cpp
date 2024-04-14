@@ -104,7 +104,7 @@ void move_to_console(chess::chessmove &m, std::string s)
     std::cout << s << " move " << m.to_string() << std::endl;
 }
 
-void move_to_console(chess::chessmove &m, chess::chessboard &b, std::string s)
+void move_to_console(chess::chessmove &m, chess::chessboard b, std::string s)
 {
     std::string movestr = move_str(m, b);
     if (movestr == "")

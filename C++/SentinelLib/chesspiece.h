@@ -25,7 +25,7 @@ namespace chess
         piece_e ptype;
         color_e color;
         char abbr;
-        std::string name;
+        std::string name();
         unsigned char value;
         unsigned char kill_mask;
         unsigned char enemy_kill_mask;

@@ -49,5 +49,5 @@ private:
 
 void board_to_console(int n, chess::chessboard &b, chess::color_e bottom);
 void move_to_console(chess::chessmove &m, std::string s);
-void move_to_console(chess::chessmove &m, chess::chessboard &b, std::string s);
+void move_to_console(chess::chessmove &m, chess::chessboard b, std::string s);
 void time_to_console(int32_t wt, int32_t bt);

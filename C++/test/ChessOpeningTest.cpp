@@ -8,6 +8,8 @@
 using namespace chess;
 using namespace testing;
 
+extern std::string test_datapath;
+
 class ChessOpeningTest : public Test
 {
 public:
@@ -16,7 +18,7 @@ public:
 
     std::string test_file(std::string orig)
     {
-        return fix_path("..\\..\\..\\test\\TestData\\PGN\\" + orig);
+        return fix_path(test_datapath + "\\PGN\\" + orig);
     }
 
 protected:

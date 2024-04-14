@@ -422,10 +422,35 @@ void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
     }
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
+    // Default = EXE folder for chess data
+    std::string datapath = "./ChessData";
+    bool usage = false;
 
-    error_e err = chessengine::initialize("..\\..\\..\\..\\ChessData\\");
+    for (int i = 1; i < argc; i++)
+    {
+        std::string arg = argv[i];
+        bool has_next = i + 1 < argc;
+        if (arg == "--chessdata")
+        {
+            if (has_next)
+                datapath = fix_path(argv[(i++) + 1]);
+            else
+                usage = true;
+        }
+    }
+
+    if (usage)
+    {
+        std::cout << "USAGE: SentinelConsole [--data folder_with_chessdata]" << std::endl;
+        return -1;
+    }
+
+    if (!ends_with(uppercase(datapath), "\\CHESSDATA"))
+        datapath += "\\ChessData";
+
+    error_e err = chessengine::initialize(datapath);
     if (err != e_none)
     {
         print_error(err);

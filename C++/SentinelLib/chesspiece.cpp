@@ -22,7 +22,6 @@ namespace chess
         value = (unsigned char)(p + c);
         kill_mask = color * color_kill_mask_mult;
         enemy_kill_mask = (color == c_white) ? black_kill_mask : white_kill_mask;
-        name = piece_str(ptype);
         abbr = abbr_char(ptype, color);
     }
 
@@ -33,7 +32,6 @@ namespace chess
         value = c;
         kill_mask = color * color_kill_mask_mult;
         enemy_kill_mask = (color == c_white) ? black_kill_mask : white_kill_mask;
-        name = piece_str(ptype);
         abbr = abbr_char(ptype, color);
     }
 
@@ -62,12 +60,16 @@ namespace chess
         ptype = oth.ptype;
         color = oth.color;
         abbr = oth.abbr;
-        name = oth.name;
         value = oth.value;
         kill_mask = oth.kill_mask;
         enemy_kill_mask = oth.enemy_kill_mask;
     }
 
+    std::string chesspiece::name()
+    {
+        return piece_str(ptype);
+    }
+    
     void chesspiece::operator=(const chesspiece &oth)
     {
         copy(oth);

@@ -27,7 +27,7 @@ namespace chess
         game_state_e game_state();
         void set_final_state(game_state_e, color_e);
 
-        error_e write_moves(std::vector<chessmove> &move_vec);
+        error_e write_moves(std::vector<chessmove> move_vec);
         error_e load(std::string filename, std::string &errextra);
         error_e save(std::string filename);
 

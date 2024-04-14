@@ -63,7 +63,7 @@ namespace chess
     int chessgame::possible_opening_count()
     {
         // depends on state of eco database and move history
-        return m_open_filter.possible_opening_count();
+        return (int)m_open_filter.possible_opening_count();
     }
 
     error_e chessgame::next_opening_moves(color_e col, std::string eco, std::vector<chessmove> &m)
@@ -74,7 +74,8 @@ namespace chess
 
     void chessgame::narrow_moves()
     {
-        m_open_filter.narrow(moves());
+        std::vector<chessmove> mv = moves();
+        m_open_filter.narrow(mv);
         // std::cout << "ECO: " << m_open_filter.eco() << " Title: " << m_open_filter.title() << std::endl;
     }
 
@@ -586,7 +587,7 @@ namespace chess
         m_play_pos = -1;
         m_board.load_xfen(p.fen);
         m_puzzle = true;
-        m_hints = turns.size() / 4;
+        m_hints = (int)turns.size() / 4;
         write_tag("Event", p.themes);
         write_tag("puzzle_id", p.puzzleid);
         write_tag("puzzle_open", p.openingtags);

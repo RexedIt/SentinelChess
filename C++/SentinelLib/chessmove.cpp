@@ -71,7 +71,7 @@ namespace chess
         if (promote != p_none)
         {
             chesspiece p((unsigned char)promote);
-            s += " Promote to " + p.name;
+            s += " Promote to " + p.name();
         }
         return s;
     }

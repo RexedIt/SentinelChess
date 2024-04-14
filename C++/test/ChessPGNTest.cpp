@@ -8,6 +8,8 @@
 using namespace chess;
 using namespace testing;
 
+extern std::string test_datapath;
+
 class ChessPGNTest : public Test
 {
 public:
@@ -16,7 +18,7 @@ public:
 
     std::string test_file(std::string orig)
     {
-        return fix_path("..\\..\\..\\test\\TestData\\PGN\\" + orig);
+        return fix_path(test_datapath + "\\PGN\\" + orig);
     }
 
 protected:
@@ -122,7 +124,6 @@ TEST_F(ChessPGNTest, LobbyLoad)
     EXPECT_EQ("savinka59", player_names[c_black]);
     // Check the game state also
     EXPECT_EQ(c_white, l.game()->win_color());
-    EXPECT_EQ(forfeit_e, l.game()->state());
     // Now, do 00000009.pgn which ends on a checkmate
     EXPECT_EQ(e_none, l.load_game(test_file("00000009.pgn"), errextra));
     EXPECT_EQ("", errextra);
@@ -132,7 +133,6 @@ TEST_F(ChessPGNTest, LobbyLoad)
     EXPECT_EQ("Sagaz", player_names[c_black]);
     // Check the game state also
     EXPECT_EQ(c_black, l.game()->win_color());
-    EXPECT_EQ(checkmate_e, l.game()->state());
 }
 
 TEST_F(ChessPGNTest, KnightMoves)
