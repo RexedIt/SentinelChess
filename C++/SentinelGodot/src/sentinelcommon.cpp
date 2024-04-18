@@ -224,7 +224,7 @@ ChessPlayer::ChessPlayer(std::shared_ptr<chessplayer> p)
     }
 }
 
-ChessPlayer::ChessPlayer(chessplayerdata &pd)
+ChessPlayer::ChessPlayer(const chessplayerdata &pd)
 {
     m_playerdata = pd;
     m_playercolor = c_none;
@@ -340,7 +340,7 @@ String ChessPlayer::meta()
 
 int ChessPlayer::refresh()
 {
-    return chessengine::get_or_register_player(m_playerdata);
+    return chessengine::hub_get_or_register_player(m_playerdata);
 }
 
 chessplayerdata ChessPlayer::get()

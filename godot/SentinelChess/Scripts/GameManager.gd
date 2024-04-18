@@ -3,7 +3,7 @@ extends SentinelChess
 # siblings
 @onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var Background : Sprite2D = get_parent().get_node("Background")
-@onready var popNew : Window = get_parent().get_node("popNew")
+@onready var popNew : Window = get_parent().get_node("popNew_")
 @onready var popPuzzle : Window = get_parent().get_node("popPuzzle")
 @onready var popLoad : FileDialog = get_parent().get_node("popLoad")
 @onready var popSave : FileDialog = get_parent().get_node("popSave")

@@ -512,7 +512,6 @@ func clock_turn(col : SentinelChess.ChessColor, wt : int, bt : int):
 		countdown = float(wt) / 1000.0
 	if col == SentinelChess.Black:
 		countdown = float(bt) / 1000.0
-	print('clock_turn called')
 		
 func clock_update(delta : float):
 	if countdown>=0.0:

@@ -26,6 +26,7 @@ public:
     ~SentinelChess();
 
 private:
+    // string setters
     String errorstr(int num);
     String gamestatestr(ChessGameState state);
     String movestr(int t, const Ref<ChessMove> &m);
@@ -98,6 +99,10 @@ private:
     // Board helpers
     bool cell_interactive(int y, int x);
     Ref<ChessBoard> board();
+
+    // Chessengine helpers
+    Array hub_usernames(ChessPlayerType ptype, int elo = 0);
+    Array hub_players(ChessPlayerType ptype, bool include_avatars = false, int elo = 0, bool sort_elo = false);
 
 protected:
     static void _bind_methods();

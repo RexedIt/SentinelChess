@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 
+#include "chessengine.h"
 #include "chesscommon.h"
 #include "chessopenings.h"
 #include "chesslobby.h"
@@ -7,8 +8,6 @@
 
 using namespace chess;
 using namespace testing;
-
-extern std::string test_datapath;
 
 class ChessOpeningTest : public Test
 {
@@ -18,7 +17,7 @@ public:
 
     std::string test_file(std::string orig)
     {
-        return fix_path(test_datapath + "\\PGN\\" + orig);
+        return fix_path(chessengine::test_folder() + "\\PGN\\" + orig);
     }
 
 protected:

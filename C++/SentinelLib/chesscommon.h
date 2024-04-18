@@ -76,6 +76,8 @@ namespace chess
         e_user_not_found,
         e_no_player_hub,
         e_no_guid,
+        e_no_username,
+        e_cannot_register
     } error_e;
 
     std::string errorstr(error_e num);

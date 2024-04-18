@@ -74,7 +74,7 @@ namespace chess
         clear_players();
 
         chessplayerdata pd;
-        error_e err = chessengine::get_or_register_player(user_name, elo, t_human, pd);
+        error_e err = chessengine::hub_get_or_register_player(pd, user_name, elo, t_human);
         if (err != e_none)
             return restore(err);
 
@@ -87,7 +87,7 @@ namespace chess
 
         // Create a computer matchup
         chessplayerdata cd;
-        err = chessengine::get_matching_computer_player(elo, cd);
+        err = chessengine::hub_get_matching_computer_player(cd, "", elo);
         if (err != e_none)
             return restore(err);
 
@@ -147,7 +147,7 @@ namespace chess
                 color_e color = str_color(it["color"]);
                 chessplayerdata pd;
                 pd.load_json(it);
-                err = chessengine::get_or_register_player(pd);
+                err = chessengine::hub_get_or_register_player(pd);
                 if (err != e_none)
                     return restore(err);
                 if (add_player(color, pd) != e_none)
@@ -309,12 +309,12 @@ namespace chess
         clear_players();
 
         chessplayerdata pw = p.get_playerdata(c_white);
-        err = chessengine::get_or_register_player(pw);
+        err = chessengine::hub_get_or_register_player(pw);
         if (err != e_none)
             return restore(err);
 
         chessplayerdata pb = p.get_playerdata(c_black);
-        err = chessengine::get_or_register_player(pb);
+        err = chessengine::hub_get_or_register_player(pb);
         if (err != e_none)
             return restore(err);
 

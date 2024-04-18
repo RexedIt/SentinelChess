@@ -115,6 +115,10 @@ namespace chess
             return "No Player Hub Exists";
         case e_no_guid:
             return "No GUID to Register";
+        case e_no_username:
+            return "No Username Given";
+        case e_cannot_register:
+            return "Cannot Register";
         default:
             return "Unknown Error";
         }

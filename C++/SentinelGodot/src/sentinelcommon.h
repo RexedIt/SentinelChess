@@ -176,7 +176,7 @@ class ChessPlayer : public RefCounted
 public:
     ChessPlayer();
     ChessPlayer(std::shared_ptr<chessplayer>);
-    ChessPlayer(chessplayerdata &pd);
+    ChessPlayer(const chessplayerdata &pd);
     ~ChessPlayer();
 
     void set_name(String s);

@@ -84,6 +84,10 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("playno"), &SentinelChess::playno);
     ClassDB::bind_method(D_METHOD("playmax"), &SentinelChess::playmax);
 
+    // Chessengine helpers
+    ClassDB::bind_method(D_METHOD("hub_usernames", "ptype", "elo"), &SentinelChess::hub_usernames, DEFVAL(0));
+    ClassDB::bind_method(D_METHOD("hub_players", "ptype", "include_avatars", "elo", "sort_elo"), &SentinelChess::hub_players, DEFVAL(false), DEFVAL(0), DEFVAL(false));
+
     // Colors
     BIND_ENUM_CONSTANT(cNone);
     BIND_ENUM_CONSTANT(White);
@@ -364,6 +368,38 @@ Dictionary SentinelChess::player_names()
         d[kv.first] = s;
     }
     return d;
+}
+
+Array SentinelChess::hub_usernames(ChessPlayerType ptype, int elo)
+{
+    Array a;
+    std::vector<std::string> vec;
+    int err = chessengine::hub_usernames(vec, (chessplayertype_e)ptype, elo);
+    if (err == 0)
+    {
+        for (const std::string sn : vec)
+        {
+            String s(sn.c_str());
+            a.push_back(s);
+        }
+    }
+    return a;
+}
+
+Array SentinelChess::hub_players(ChessPlayerType ptype, bool include_avatars, int elo, bool sort_elo)
+{
+    Array a;
+    std::vector<chessplayerdata> vec;
+    int err = chessengine::hub_players(vec, (chessplayertype_e)ptype, include_avatars, elo, sort_elo);
+    if (err == 0)
+    {
+        for (const chessplayerdata pd : vec)
+        {
+            Ref<ChessPlayer> cp(memnew(ChessPlayer(pd)));
+            a.push_back(cp);
+        }
+    }
+    return a;
 }
 
 ChessColor SentinelChess::preferred_board_color()

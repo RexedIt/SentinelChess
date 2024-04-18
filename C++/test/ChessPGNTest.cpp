@@ -1,14 +1,13 @@
 #include "gtest/gtest.h"
 
 #include "chesscommon.h"
+#include "chessengine.h"
 #include "chesspgn.h"
 #include "chesslobby.h"
 #include "PGNTest.h"
 
 using namespace chess;
 using namespace testing;
-
-extern std::string test_datapath;
 
 class ChessPGNTest : public Test
 {
@@ -18,7 +17,7 @@ public:
 
     std::string test_file(std::string orig)
     {
-        return fix_path(test_datapath + "\\PGN\\" + orig);
+        return fix_path(chessengine::test_folder() + "\\PGN\\" + orig);
     }
 
 protected:
