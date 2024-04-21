@@ -51,6 +51,7 @@ namespace chess
         bool m_opening_in_play;
         float m_kc_weight;
         float m_bp_weight;
+        float m_chaos;
         int m_eco_weight;
         int32_t m_turn_time;
         std::vector<std::string> m_eco_favorites;

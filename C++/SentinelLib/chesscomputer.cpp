@@ -27,6 +27,7 @@ namespace chess
         m_kc_weight = 0.25f;
         m_bp_weight = 0.5f;
         m_eco_weight = 32;
+        m_chaos = 0.0;
         m_turn_time = 5000;
     }
 
@@ -35,7 +36,7 @@ namespace chess
         m_color = color;
         m_data.ptype = t_computer;
         m_data = data;
-        m_level = m_data.elo / 500 + 2;
+        m_level = m_data.elo / 400 + 1;
         if (m_level < 1)
             m_level = 1;
         if (m_level > 6)
@@ -51,6 +52,7 @@ namespace chess
         m_kc_weight = 0.25f;
         m_bp_weight = 0.5f;
         m_eco_weight = 32;
+        m_chaos = 0.0;
         m_turn_time = 5000;
 
         load_meta(data.meta);
@@ -138,6 +140,8 @@ namespace chess
             {
                 float score = computer_move_min(b, other(m_color), -9999, 9999, rec - 1);
                 score += opening_weight(candidate);
+                if (m_chaos > 0.0001)
+                    score += get_rand() * m_chaos;
                 if (score >= maxval)
                 {
                     best = candidate;
@@ -266,6 +270,7 @@ namespace chess
                 JSON_LOADIF(jmeta, "kc_weight", m_kc_weight);
                 JSON_LOADIF(jmeta, "bp_weight", m_bp_weight);
                 JSON_LOADIF(jmeta, "eco_weight", m_eco_weight);
+                JSON_LOADIF(jmeta, "chaos", m_chaos);
                 JSON_LOADIF(jmeta, "turn_time", m_turn_time);
                 JSON_LOADIF(jmeta, "eco_favorites", m_eco_favorites);
                 return e_none;
@@ -286,6 +291,7 @@ namespace chess
             jmeta["kc_weight"] = m_kc_weight;
             jmeta["bp_weight"] = m_bp_weight;
             jmeta["eco_weight"] = m_eco_weight;
+            jmeta["chaos"] = m_chaos;
             jmeta["turn_time"] = m_turn_time;
             jmeta["eco_favorites"] = m_eco_favorites;
             return jmeta.dump();

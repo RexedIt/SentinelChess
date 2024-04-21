@@ -8,6 +8,7 @@ var players : Array
 @onready var game : SentinelChess = get_parent().get_node('/root/MainGame/SentinelChess')
 @onready var Avatar : TextureRect = get_node("Avatar")
 @onready var optName : OptionButton = get_node("GC/optName")
+@onready var txtName : TextEdit = get_node("GC/optName/txtName")
 @onready var lvlSkill : HSlider = get_node("GC/lvlSkill")
 @onready var optHuman : CheckBox = get_node("GC/HC/optHuman")
 @onready var optComputer : CheckBox = get_node("GC/HC/optComputer")
@@ -22,15 +23,16 @@ func initialize(c, n, s, t):
 	player.Name = n
 	player.Skill = s
 	_initializeSelections()
+	txtName.text = player.Name
 	lvlSkill.value = player.Skill
-	if player.PlayerType == ChessPlayer.ChessPlayerType.Human:
-		optHuman.button_pressed = true
-	else:
+	if player.PlayerType == ChessPlayer.ChessPlayerType.Computer:
 		optComputer.button_pressed = true
+	else:
+		optHuman.button_pressed = true
 	_initializing = false
 
 func read():
-	player.Name = optName.text
+	player.Name = txtName.text
 	player.Skill = lvlSkill.value
 	if optHuman.button_pressed:
 		player.PlayerType = ChessPlayer.ChessPlayerType.Human
@@ -42,12 +44,15 @@ func _initializeSelections():
 	optName.clear()
 	players = game.hub_players(player.PlayerType, true, 0, true)
 	var selItem : int = 0
+	var index : int = 0
 	for pl: ChessPlayer in players:
-		if pl.Name == player.Name:
-			selItem = optName.items.item_count
+		if pl.Name.to_upper() == player.Name.to_upper():
+			selItem = index
 		optName.add_item(pl.Name + ' (' + str(pl.Skill) + ')')
+		index = index + 1
 	if selItem >= 0 and players.size()>0:
 		optName.selected = selItem
+		txtName.text = players[selItem].Name
 		_setAvatar(players[selItem].avatar())
 	#var b : String = 'C:\\Projects\\SentinelChess\\Assets\\Characters\\'
 	#_convertAvatar(b+'Veronica.png')
@@ -79,7 +84,7 @@ func _ready():
 	optHuman.pressed.connect(_human_pressed)
 	optComputer.pressed.connect(_computer_pressed)
 	optName.item_selected.connect(_name_selected)
-	
+	txtName.text_changed.connect(_name_changed)
 	pass # Replace with function body.
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -103,6 +108,27 @@ func _name_selected(index):
 		return
 	player = players[index]
 	lvlSkill.value = player.Skill
+	txtName.text = player.Name
 	_setAvatar(players[index].avatar())
 
+func _name_changed():
+	if _initializing:
+		return
+	var itemMatch: int = -1
+	var index: int = 0;
+	for pl: ChessPlayer in players:
+		if pl.Name.to_upper() == txtName.text.to_upper():
+			itemMatch = index
+		index = index + 1
+	if itemMatch >= 0:
+		player = players[itemMatch]
+		optName.selected = itemMatch
+		lvlSkill.value = player.Skill
+		lvlSkill.editable = false
+	else:
+		player = ChessPlayer.new()
+		player.Skill = lvlSkill.value
+		lvlSkill.editable = true
+		
+		
 
