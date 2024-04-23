@@ -192,8 +192,10 @@ public:
     String fullname();
     int puzzlepoints();
     int gamepoints();
-    bool persistent();
-    String avatar();
+    bool get_persistent();
+    void set_persistent(const bool b);
+    String get_avatar();
+    void set_avatar(const String s);
     String meta();
     chessplayerdata get();
     int refresh();

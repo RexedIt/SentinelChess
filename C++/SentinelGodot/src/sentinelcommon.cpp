@@ -252,8 +252,12 @@ void ChessPlayer::_bind_methods()
     ClassDB::bind_method(D_METHOD("fullname"), &ChessPlayer::fullname);
     ClassDB::bind_method(D_METHOD("puzzlepoints"), &ChessPlayer::puzzlepoints);
     ClassDB::bind_method(D_METHOD("gamepoints"), &ChessPlayer::gamepoints);
-    ClassDB::bind_method(D_METHOD("persistent"), &ChessPlayer::persistent);
-    ClassDB::bind_method(D_METHOD("avatar"), &ChessPlayer::avatar);
+    ClassDB::bind_method(D_METHOD("get_persistent"), &ChessPlayer::get_persistent);
+    ClassDB::bind_method(D_METHOD("set_persistent"), &ChessPlayer::set_persistent);
+    ClassDB::add_property("ChessPlayer", PropertyInfo(Variant::BOOL, "Persistent"), "set_persistent", "get_persistent");
+    ClassDB::bind_method(D_METHOD("get_avatar"), &ChessPlayer::get_avatar);
+    ClassDB::bind_method(D_METHOD("set_avatar", "uuenc"), &ChessPlayer::set_avatar);
+    ClassDB::add_property("ChessPlayer", PropertyInfo(Variant::STRING, "Avatar"), "set_avatar", "get_avatar");
     ClassDB::bind_method(D_METHOD("meta"), &ChessPlayer::meta);
 
     // ChessPlayerType
@@ -323,14 +327,24 @@ int ChessPlayer::gamepoints()
     return m_playerdata.gamepoints;
 }
 
-bool ChessPlayer::persistent()
+bool ChessPlayer::get_persistent()
 {
     return m_playerdata.persistent;
 }
 
-String ChessPlayer::avatar()
+void ChessPlayer::set_persistent(const bool b)
+{
+    m_playerdata.persistent = b;
+}
+
+String ChessPlayer::get_avatar()
 {
     return String(m_playerdata.avatar.c_str());
+}
+
+void ChessPlayer::set_avatar(const String s)
+{
+    m_playerdata.avatar = s.ascii().get_data();
 }
 
 String ChessPlayer::meta()

@@ -1,4 +1,4 @@
-[gd_scene load_steps=53 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=52 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="PackedScene" uid="uid://b3vb7tg7wpihs" path="res://Skins/Skin.tscn" id="2_rnrr5"]
@@ -18,7 +18,6 @@
 [ext_resource type="Script" path="res://Scripts/TimeSlider.gd" id="12_jf3ul"]
 [ext_resource type="Texture2D" uid="uid://cs15an43lt8d" path="res://Skins/Common/Sprites/Empty.png" id="14_5ke6l"]
 [ext_resource type="Script" path="res://Scripts/popPuzzle.gd" id="14_s72vn"]
-[ext_resource type="Texture2D" uid="uid://b6qrfbbqcymwd" path="res://Skins/Common/Sprites/Hub.png" id="15_685pe"]
 [ext_resource type="Script" path="res://Scripts/playerSelect.gd" id="15_cyr67"]
 [ext_resource type="Script" path="res://Scripts/pnlPlayer.gd" id="17_di116"]
 [ext_resource type="Script" path="res://Scripts/pnlScore.gd" id="18_m2w67"]
@@ -164,7 +163,7 @@ layout_mode = 2
 [node name="txtName" type="TextEdit" parent="popNew/MC/VC/WhitePlayer/GC/optName"]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
-offset_right = 430.0
+offset_right = 425.0
 offset_bottom = 28.0
 
 [node name="lblSkill" type="Label" parent="popNew/MC/VC/WhitePlayer/GC"]
@@ -204,13 +203,9 @@ button_group = ExtResource("10_8y1dj")
 text = "Computer
 "
 
-[node name="Spacer" type="Label" parent="popNew/MC/VC/WhitePlayer/GC/HC"]
-custom_minimum_size = Vector2(64, 0)
+[node name="chkSave" type="CheckButton" parent="popNew/MC/VC/WhitePlayer/GC/HC"]
 layout_mode = 2
-
-[node name="btnHub" type="Button" parent="popNew/MC/VC/WhitePlayer/GC/HC"]
-layout_mode = 2
-icon = ExtResource("15_685pe")
+text = "Save "
 
 [node name="HSeparator2" type="HSeparator" parent="popNew/MC/VC"]
 custom_minimum_size = Vector2(0, 24)
@@ -247,7 +242,7 @@ layout_mode = 2
 [node name="txtName" type="TextEdit" parent="popNew/MC/VC/BlackPlayer/GC/optName"]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
-offset_right = 430.0
+offset_right = 425.0
 offset_bottom = 28.0
 
 [node name="lblSkill" type="Label" parent="popNew/MC/VC/BlackPlayer/GC"]
@@ -293,13 +288,9 @@ button_group = ExtResource("11_ikrfp")
 text = "Computer
 "
 
-[node name="Spacer" type="Label" parent="popNew/MC/VC/BlackPlayer/GC/HC"]
-custom_minimum_size = Vector2(64, 0)
+[node name="chkSave" type="CheckButton" parent="popNew/MC/VC/BlackPlayer/GC/HC"]
 layout_mode = 2
-
-[node name="btnHub" type="Button" parent="popNew/MC/VC/BlackPlayer/GC/HC"]
-layout_mode = 2
-icon = ExtResource("15_685pe")
+text = "Save "
 
 [node name="HSeparator3" type="HSeparator" parent="popNew/MC/VC"]
 custom_minimum_size = Vector2(0, 24)

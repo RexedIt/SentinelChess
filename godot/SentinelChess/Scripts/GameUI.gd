@@ -2,7 +2,6 @@ extends CanvasLayer
 
 @onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var game_manager : SentinelChess = get_parent().get_node('SentinelChess')
-
 @onready var pnlScore : Panel = get_node('pnlScore')
 @onready var lblTitle : Label = get_node('lblTitle')
 @onready var lblEco : Label = get_node('lblEco')
@@ -457,8 +456,14 @@ func possible_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
 			return true
 	return false
 
+func append_extension(filename, ext) -> String:
+	var final : String = filename
+	if final.to_upper().ends_with(ext.to_upper()):
+		return final
+	return final + ext
+	
 func handle_load(filename: String) -> bool:
-	var toload : String = filename + '.chs'
+	var toload : String = append_extension(filename,'.chs')
 	var err : int = game_manager.load_game(toload)
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
@@ -469,12 +474,12 @@ func handle_load(filename: String) -> bool:
 	return true
 
 func handle_save(filename: String) -> bool:
-	var tosave : String = filename + '.chs'
-	var err : int = game_manager.save_game(tosave)
+	var toSave : String = append_extension(filename,'.chs')
+	var err : int = game_manager.save_game(toSave)
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
 		return false
-	append_history('Save Game - ' + tosave)
+	append_history('Save Game - ' + toSave)
 	return true
 	
 func incorrectmove():

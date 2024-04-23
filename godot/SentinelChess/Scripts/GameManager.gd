@@ -2,6 +2,7 @@ extends SentinelChess
 
 # siblings
 @onready var skin : Node = get_node('/root/MainGame/Skin')
+@onready var base_title : String = ''
 @onready var Background : Sprite2D = get_parent().get_node("Background")
 @onready var popNew : Window = get_parent().get_node("popNew")
 @onready var popPuzzle : Window = get_parent().get_node("popPuzzle")
@@ -31,6 +32,7 @@ func _ready():
 	popSave.on_closed.connect(_on_closed_save)
 	popPromote.on_closed.connect(_on_closed_promote)
 	popSettings.on_closed.connect(_on_closed_settings)
+	base_title = get_window().title
 	applyskin()
 	_gamestatereact(GameState.INIT)
 
@@ -227,6 +229,7 @@ func _on_closed_new(_cancelled, _title, _white, _black, _clock):
 	new_game(_title, _white, _black, _clock)
 	refresh_board_color(preferred_board_color())
 	gameUI.initialize('New Game')
+	DisplayServer.window_set_title(base_title + ' - New Game')
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
@@ -243,6 +246,7 @@ func _on_closed_puzzle(_cancelled, _player, _keywords, _rating):
 		return
 	refresh_board_color(preferred_board_color())
 	gameUI.initialize('Load Puzzle')
+	DisplayServer.window_set_title(base_title + ' - Puzzle')
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 		
@@ -259,6 +263,7 @@ func _on_closed_load(_cancelled, _filename):
 		_gamestatereact(prepopgamestate)
 		return
 	gameUI.initialize('Load Game - ' + _filename)
+	DisplayServer.window_set_title(base_title + ' - ' + _filename)
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
@@ -275,6 +280,7 @@ func _on_closed_save(_cancelled, _filename):
 		_gamestatereact(prepopgamestate)
 		return
 	gameUI.append_history('Save Game - ' + _filename)
+	DisplayServer.window_set_title(base_title + ' - ' + _filename)
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 

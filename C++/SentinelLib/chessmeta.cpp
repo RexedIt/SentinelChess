@@ -48,7 +48,10 @@ namespace chess
             std::pair<std::string, std::string> pair = m_tags[i];
             if (pair.first == key)
             {
-                pair.second = value;
+                std::string v = value;
+                if (book_end(v, '\"', '\"'))
+                    v = v.substr(1, v.length() - 2);
+                pair.second = v;
                 m_tags[i] = pair;
                 return true;
             }
