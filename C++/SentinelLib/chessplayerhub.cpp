@@ -248,8 +248,9 @@ namespace chess
         if (m_humans.count(data.guid))
             return e_player_already_registered;
         for (auto kv : m_humans)
-            if (uppercase(kv.second.username) == uppercase(data.username))
-                return e_player_already_registered;
+            if (kv.first != data.guid)
+                if (uppercase(kv.second.username) == uppercase(data.username))
+                    return e_player_already_registered;
         m_humans[data.guid] = data;
         if (data.persistent)
             save_json();
@@ -469,6 +470,59 @@ namespace chess
                  });
         }
         return ret;
+    }
+
+    error_e chessplayerhub::update_player(chessplayerdata data)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        chessplayerdata d = data;
+        std::string guid = d.guid;
+        if (guid == "")
+            return e_no_guid;
+        d.username = trim(d.username);
+        if (d.username == "")
+            return e_no_username;
+        if (d.ptype != t_human)
+            return e_cannot_register;
+        for (auto kv : m_humans)
+            if (kv.first != d.guid)
+                if (uppercase(kv.second.username) == uppercase(d.username))
+                    return e_player_already_registered;
+        if (m_humans.count(guid))
+        {
+            chessplayerdata ed = m_humans[guid];
+            d.gamepoints = ed.gamepoints;
+            d.puzzlepoints = ed.puzzlepoints;
+        }
+        m_humans[guid] = d;
+        save_json();
+        return e_none;
+    }
+
+    error_e chessplayerhub::update_puzzle_points(std::string guid, int addpuzzle)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if (guid == "")
+            return e_no_guid;
+        if (m_humans.count(guid) == 0)
+            return e_player_not_found;
+        chessplayerdata d = m_humans[guid];
+        d.puzzlepoints += addpuzzle;
+        m_humans[guid] = d;
+        return e_none;
+    }
+
+    error_e chessplayerhub::update_game_points(std::string guid, int addgame)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if (guid == "")
+            return e_no_guid;
+        if (m_humans.count(guid) == 0)
+            return e_player_not_found;
+        chessplayerdata d = m_humans[guid];
+        d.gamepoints += addgame;
+        m_humans[guid] = d;
+        return e_none;
     }
 
 }

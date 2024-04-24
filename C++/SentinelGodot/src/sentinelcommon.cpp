@@ -259,6 +259,7 @@ void ChessPlayer::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_avatar", "uuenc"), &ChessPlayer::set_avatar);
     ClassDB::add_property("ChessPlayer", PropertyInfo(Variant::STRING, "Avatar"), "set_avatar", "get_avatar");
     ClassDB::bind_method(D_METHOD("meta"), &ChessPlayer::meta);
+    ClassDB::bind_method(D_METHOD("copy"), &ChessPlayer::copy);
 
     // ChessPlayerType
     BIND_ENUM_CONSTANT(tNone);
@@ -350,6 +351,12 @@ void ChessPlayer::set_avatar(const String s)
 String ChessPlayer::meta()
 {
     return String(m_playerdata.meta.c_str());
+}
+
+Ref<ChessPlayer> ChessPlayer::copy()
+{
+    Ref<ChessPlayer> cp(memnew(ChessPlayer(m_playerdata)));
+    return cp;
 }
 
 int ChessPlayer::refresh()

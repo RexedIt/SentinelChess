@@ -6,6 +6,7 @@ var _white : ChessPlayer
 var _black : ChessPlayer
 var _clock : ChessClock
 
+@onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var txtTitle : TextEdit = get_node("MC/VC/HC/txtTitle")
 @onready var WhitePlayer : HBoxContainer = get_node('MC/VC/WhitePlayer')
 @onready var BlackPlayer : HBoxContainer = get_node('MC/VC/BlackPlayer')
@@ -23,6 +24,9 @@ var _clock : ChessClock
 @onready var AddBlack : HBoxContainer = get_node("MC/VC/Clock/HC/TVC/AddBlack")
 @onready var TVC : VBoxContainer = get_node("MC/VC/Clock/HC/TVC")
 
+var loaded : bool = false
+var skinned : bool = false
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	btnCancel.pressed.connect(_OnCancel)
@@ -38,7 +42,16 @@ func _ready():
 	_white = ChessPlayer.new()
 	_black = ChessPlayer.new()
 	_clock = ChessClock.new()
-	pass # Replace with function body.
+	loaded = true
+	if not skinned:
+		applyskin()
+
+func applyskin():
+	if loaded:
+		set_theme(skin.theme)
+		WhitePlayer.applyskin()
+		BlackPlayer.applyskin()
+		skinned = true
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):

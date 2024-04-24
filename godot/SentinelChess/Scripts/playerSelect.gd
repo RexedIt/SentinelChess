@@ -4,10 +4,10 @@ var player : ChessPlayer
 var color : SentinelChess.ChessColor
 var _initializing : bool = false
 var players : Array
-var HumanName : String = 'Human2'
-var HumanSkill : int = 600
+var HumanPlayer : ChessPlayer 
+var HumanMode : bool
 
-@onready var game : SentinelChess = get_parent().get_node('/root/MainGame/SentinelChess')
+@onready var game : SentinelChess = get_node('/root/MainGame/SentinelChess')
 @onready var Avatar : TextureRect = get_node("Avatar")
 @onready var optName : OptionButton = get_node("GC/optName")
 @onready var txtName : TextEdit = get_node("GC/optName/txtName")
@@ -15,33 +15,45 @@ var HumanSkill : int = 600
 @onready var optHuman : CheckBox = get_node("GC/HC/optHuman")
 @onready var optComputer : CheckBox = get_node("GC/HC/optComputer")
 @onready var chkSave : Button = get_node("GC/HC/chkSave")
+@onready var popImage : FileDialog = get_node('/root/MainGame/popImage')
 
 func initialize(c, n, s, t):
 	_initializing = true
+	HumanPlayer = ChessPlayer.new()
+	HumanPlayer.Name = 'Human2'
+	HumanPlayer.PlayerType = ChessPlayer.Human
+	HumanPlayer.Skill = 600
 	player = ChessPlayer.new()
 	player.PlayerType = t
 	player.PlayerColor = c
 	color = c
 	player.Name = n
 	player.Skill = s
+	player.Persistent = false
 	_initializeSelections()
 	lvlSkill.value = player.Skill
 	if player.PlayerType == ChessPlayer.ChessPlayerType.Computer:
+		HumanMode = false
 		optComputer.button_pressed = true
 		chkSave.visible = false
 	else:
+		HumanMode = true
+		HumanPlayer.Name = player.Name
+		HumanPlayer.Skill = player.Skill
+		HumanPlayer.Persistent = false
 		txtName.text = player.Name
-		HumanName = player.Name
-		HumanSkill = player.Skill
-		optHuman.button_pressed = true
 		chkSave.visible = true
 		chkSave.button_pressed = player.Persistent
 	_initializing = false
 
+func applyskin():
+	var skin : Node = get_node('/root/MainGame/Skin')
+	popImage.set_theme(skin.theme)
+	
 func read():
 	player.Name = txtName.text
 	player.Skill = lvlSkill.value
-	if optHuman.button_pressed:
+	if HumanMode:
 		player.PlayerType = ChessPlayer.ChessPlayerType.Human
 		player.Persistent = chkSave.button_pressed
 	else:
@@ -59,10 +71,11 @@ func _initializeSelections():
 		optName.add_item(pl.Name + ' (' + str(pl.Skill) + ')')
 		index = index + 1
 	if selItem >= 0 and players.size()>0:
+		player = players[selItem].copy()
 		optName.selected = selItem
-		txtName.text = players[selItem].Name
-		lvlSkill.value = players[selItem].Skill
-		_setAvatar(players[selItem].Avatar)
+		txtName.text = player.Name
+		lvlSkill.value = player.Skill
+		_setAvatar(player.Avatar)
 	else:
 		_setAvatar('')
 	#var b : String = 'C:\\Projects\\SentinelChess\\Assets\\Characters\\'
@@ -97,8 +110,10 @@ func _ready():
 	optName.item_selected.connect(_name_selected)
 	txtName.text_changed.connect(_name_changed)
 	lvlSkill.value_changed.connect(_value_changed)
-	pass # Replace with function body.
-
+	chkSave.toggled.connect(_on_save_toggled)
+	popImage.on_closed.connect(_on_closed_image)
+	Avatar.gui_input.connect(avatar_input)
+	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
@@ -106,9 +121,10 @@ func _process(delta):
 func _human_pressed():
 	if _initializing:
 		return
-	player.PlayerType = ChessPlayer.ChessPlayerType.Human
-	txtName.text = HumanName
-	lvlSkill.value = HumanSkill
+	HumanMode = true
+	player = HumanPlayer.copy()
+	txtName.text = player.Name
+	lvlSkill.value = player.Skill
 	_initializeSelections()
 	chkSave.visible = true
 	chkSave.button_pressed = player.Persistent
@@ -116,6 +132,7 @@ func _human_pressed():
 func _computer_pressed():
 	if _initializing:
 		return
+	HumanMode = false
 	player.PlayerType = ChessPlayer.ChessPlayerType.Computer
 	_initializeSelections()
 	chkSave.visible = false
@@ -123,10 +140,11 @@ func _computer_pressed():
 func _name_selected(index):
 	if _initializing:
 		return
-	player = players[index]
+	player = players[index].copy()
 	_initializing = true
 	lvlSkill.value = player.Skill
 	txtName.text = player.Name
+	chkSave.button_pressed = player.Persistent
 	_setAvatar(players[index].Avatar)
 	_initializing = false
 	
@@ -140,18 +158,36 @@ func _name_changed():
 			itemMatch = index
 		index = index + 1
 	if itemMatch >= 0:
-		player = players[itemMatch]
+		player = players[itemMatch].copy()
+		optName.text = player.Name + ' (' + str(player.Skill) + ')'
 		optName.selected = itemMatch
-		lvlSkill.value = player.Skill
 		lvlSkill.editable = false
 	else:
-		player = ChessPlayer.new()
-		player.Skill = lvlSkill.value
+		HumanPlayer.Name = txtName.text
+		player = HumanPlayer.copy()
+		optName.text = txtName.text
+		optName.selected = -1
 		lvlSkill.editable = true
-
+	lvlSkill.value = player.Skill
+	chkSave.button_pressed = player.Persistent
+		
 func _value_changed(v: float):
 	if _initializing:
 		return
-	if optHuman.button_pressed:
-		HumanSkill = v
+	if HumanMode:
+		HumanPlayer.Skill = v
 
+func _on_save_toggled(v: bool):
+	if _initializing:
+		return
+	if HumanMode:
+		HumanPlayer.Persistent = v
+		
+func _on_closed_image(_cancelled, _filename):
+	if _cancelled:
+		return
+		
+func avatar_input(event: InputEvent):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed and HumanMode:
+			return

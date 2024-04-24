@@ -197,6 +197,11 @@ namespace chess
         return e_no_player_hub;
     }
 
+    error_e chessengine::hub_update_player(chessplayerdata data)
+    {
+        if (p_hub)
+            return p_hub->update_player(data);
+    }
 }
 
 #undef _CRT_SECURE_NO_WARNINGS

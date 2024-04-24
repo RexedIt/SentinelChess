@@ -103,6 +103,8 @@ private:
     // Chessengine helpers
     Array hub_usernames(ChessPlayerType ptype, int elo = 0);
     Array hub_players(ChessPlayerType ptype, bool include_avatars = false, int elo = 0, bool sort_elo = false);
+    int hub_update_player(const Ref<ChessPlayer> &pdata);
+    int hub_unregister(String guid);
 
 protected:
     static void _bind_methods();

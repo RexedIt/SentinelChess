@@ -197,6 +197,7 @@ public:
     String get_avatar();
     void set_avatar(const String s);
     String meta();
+    Ref<ChessPlayer> copy();
     chessplayerdata get();
     int refresh();
 

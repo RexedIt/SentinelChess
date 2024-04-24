@@ -31,5 +31,6 @@ namespace chess
         // Lists
         static error_e hub_usernames(std::vector<std::string> &vec, chessplayertype_e ptype, int32_t elo = 0);
         static error_e hub_players(std::vector<chessplayerdata> &vec, chessplayertype_e ptype, bool include_avatars = false, int32_t elo = 0, bool sort_elo = false);
+        static error_e hub_update_player(chessplayerdata data);
     };
 }

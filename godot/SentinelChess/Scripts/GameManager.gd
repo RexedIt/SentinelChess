@@ -37,7 +37,7 @@ func _ready():
 	_gamestatereact(GameState.INIT)
 
 func applyskin():
-	popNew.set_theme(skin.theme)
+	popNew.applyskin()
 	popPuzzle.set_theme(skin.theme)
 	popLoad.set_theme(skin.theme)
 	popSave.set_theme(skin.theme)
@@ -219,6 +219,12 @@ func _on_animated():
 		gameUI.refreshPrompt(c)
 	_gamestatereact(GameState.PLAY)
 	
+func save_player(player : ChessPlayer):
+	if player.PlayerType == ChessPlayer.Human:
+		var err : int = hub_update_player(player)
+		if err != 0:
+			_on_error(err)
+
 # Dialog Handlers
 func _on_closed_new(_cancelled, _title, _white, _black, _clock):
 	print("on_closed_new")
@@ -226,6 +232,8 @@ func _on_closed_new(_cancelled, _title, _white, _black, _clock):
 		_gamestatereact(prepopgamestate)
 		return
 	# start new game
+	save_player(_white)
+	save_player(_black)
 	new_game(_title, _white, _black, _clock)
 	refresh_board_color(preferred_board_color())
 	gameUI.initialize('New Game')

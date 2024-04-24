@@ -87,6 +87,8 @@ void SentinelChess::_bind_methods()
     // Chessengine helpers
     ClassDB::bind_method(D_METHOD("hub_usernames", "ptype", "elo"), &SentinelChess::hub_usernames, DEFVAL(0));
     ClassDB::bind_method(D_METHOD("hub_players", "ptype", "include_avatars", "elo", "sort_elo"), &SentinelChess::hub_players, DEFVAL(false), DEFVAL(0), DEFVAL(false));
+    ClassDB::bind_method(D_METHOD("hub_update_player", "pdata"), &SentinelChess::hub_update_player);
+    ClassDB::bind_method(D_METHOD("hub_unregister", "guid"), &SentinelChess::hub_unregister);
 
     // Colors
     BIND_ENUM_CONSTANT(cNone);
@@ -400,6 +402,18 @@ Array SentinelChess::hub_players(ChessPlayerType ptype, bool include_avatars, in
         }
     }
     return a;
+}
+
+int SentinelChess::hub_update_player(const Ref<ChessPlayer> &pdata)
+{
+    if (pdata.is_valid())
+        return chessengine::hub_update_player(pdata->get());
+    return e_invalid_reference;
+}
+
+int SentinelChess::hub_unregister(String guid)
+{
+    return chessengine::hub_unregister(guid.ascii().get_data());
 }
 
 ChessColor SentinelChess::preferred_board_color()

@@ -1,4 +1,4 @@
-[gd_scene load_steps=52 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=53 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="PackedScene" uid="uid://b3vb7tg7wpihs" path="res://Skins/Skin.tscn" id="2_rnrr5"]
@@ -21,6 +21,7 @@
 [ext_resource type="Script" path="res://Scripts/playerSelect.gd" id="15_cyr67"]
 [ext_resource type="Script" path="res://Scripts/pnlPlayer.gd" id="17_di116"]
 [ext_resource type="Script" path="res://Scripts/pnlScore.gd" id="18_m2w67"]
+[ext_resource type="Script" path="res://Scripts/popImage.gd" id="18_o8re0"]
 [ext_resource type="Script" path="res://Scripts/popSettings.gd" id="18_vfrru"]
 [ext_resource type="ButtonGroup" uid="uid://dimdhq82k5jrx" path="res://SkinSelection.tres" id="19_608yc"]
 [ext_resource type="Texture2D" uid="uid://dttgcrag5dcgu" path="res://Skins/RetroWood/Sprites/PuzzlePiece.png" id="20_bw7a2"]
@@ -126,7 +127,7 @@ layout_mode = 2
 text = "Title"
 
 [node name="txtTitle" type="TextEdit" parent="popNew/MC/VC/HC"]
-custom_minimum_size = Vector2(565, 24)
+custom_minimum_size = Vector2(565, 26)
 layout_mode = 2
 
 [node name="HSeparator" type="HSeparator" parent="popNew/MC/VC"]
@@ -163,7 +164,8 @@ layout_mode = 2
 [node name="txtName" type="TextEdit" parent="popNew/MC/VC/WhitePlayer/GC/optName"]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
-offset_right = 425.0
+offset_left = 3.0
+offset_right = 428.0
 offset_bottom = 28.0
 
 [node name="lblSkill" type="Label" parent="popNew/MC/VC/WhitePlayer/GC"]
@@ -242,7 +244,8 @@ layout_mode = 2
 [node name="txtName" type="TextEdit" parent="popNew/MC/VC/BlackPlayer/GC/optName"]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
-offset_right = 425.0
+offset_left = 3.0
+offset_right = 428.0
 offset_bottom = 28.0
 
 [node name="lblSkill" type="Label" parent="popNew/MC/VC/BlackPlayer/GC"]
@@ -593,6 +596,16 @@ file_mode = 0
 access = 2
 filters = PackedStringArray("*.chs ; Chess File", "*.pgn; PGN File")
 script = ExtResource("10_we7ge")
+
+[node name="popImage" type="FileDialog" parent="."]
+title = "Open an Image"
+position = Vector2i(693, 309)
+size = Vector2i(640, 480)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.jpg ; JPEG File", "*.png; PNG File")
+script = ExtResource("18_o8re0")
 
 [node name="popSave" type="FileDialog" parent="."]
 position = Vector2i(640, 320)
@@ -1143,6 +1156,8 @@ offset_bottom = 168.0
 
 [connection signal="canceled" from="popLoad" to="popLoad" method="_on_canceled"]
 [connection signal="confirmed" from="popLoad" to="popLoad" method="_on_confirmed"]
+[connection signal="canceled" from="popImage" to="popImage" method="_on_canceled"]
+[connection signal="confirmed" from="popImage" to="popImage" method="_on_confirmed"]
 [connection signal="canceled" from="popSave" to="popSave" method="_on_canceled"]
 [connection signal="confirmed" from="popSave" to="popSave" method="_on_confirmed"]
 [connection signal="pressed" from="GameUI/btnNew" to="GameUI" method="_on_btn_new_pressed"]
