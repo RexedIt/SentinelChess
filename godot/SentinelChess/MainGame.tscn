@@ -493,7 +493,7 @@ text = " Cancel "
 [node name="popPuzzle" type="Window" parent="."]
 title = "Load Puzzle"
 position = Vector2i(585, 429)
-size = Vector2i(750, 240)
+size = Vector2i(750, 290)
 visible = false
 script = ExtResource("14_s72vn")
 
@@ -503,44 +503,100 @@ offset_top = 20.0
 offset_right = 715.0
 offset_bottom = 124.0
 
-[node name="Player" type="GridContainer" parent="popPuzzle/MC"]
+[node name="HC" type="VBoxContainer" parent="popPuzzle/MC"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Player" type="HBoxContainer" parent="popPuzzle/MC/HC"]
+layout_mode = 2
+script = ExtResource("15_cyr67")
+humanOnly = true
+
+[node name="Avatar" type="TextureRect" parent="popPuzzle/MC/HC/Player"]
+layout_mode = 2
+texture = ExtResource("14_5ke6l")
+
+[node name="Spacer" type="Label" parent="popPuzzle/MC/HC/Player"]
+custom_minimum_size = Vector2(12, 0)
+layout_mode = 2
+
+[node name="GC" type="GridContainer" parent="popPuzzle/MC/HC/Player"]
 layout_mode = 2
 theme_override_constants/h_separation = 20
 theme_override_constants/v_separation = 20
 columns = 2
 
-[node name="lblName" type="Label" parent="popPuzzle/MC/Player"]
+[node name="lblName" type="Label" parent="popPuzzle/MC/HC/Player/GC"]
 layout_mode = 2
-text = "Name
+text = "White
 "
 
-[node name="txtName" type="TextEdit" parent="popPuzzle/MC/Player"]
-custom_minimum_size = Vector2(425, 24)
+[node name="optName" type="OptionButton" parent="popPuzzle/MC/HC/Player/GC"]
+custom_minimum_size = Vector2(445, 28)
 layout_mode = 2
 
-[node name="lblSkill" type="Label" parent="popPuzzle/MC/Player"]
-custom_minimum_size = Vector2(250, 0)
+[node name="txtName" type="TextEdit" parent="popPuzzle/MC/HC/Player/GC/optName"]
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
-text = "Skill (0-2500)
+offset_left = 3.0
+offset_right = 428.0
+offset_bottom = 28.0
+
+[node name="lblSkill" type="Label" parent="popPuzzle/MC/HC/Player/GC"]
+layout_mode = 2
+text = "Skill
 "
-horizontal_alignment = 2
 
-[node name="lvlSkill" type="HSlider" parent="popPuzzle/MC/Player"]
-custom_minimum_size = Vector2(300, 0)
+[node name="lvlSkill" type="HSlider" parent="popPuzzle/MC/HC/Player/GC"]
+custom_minimum_size = Vector2(425, 0)
 layout_mode = 2
 max_value = 2500.0
 step = 50.0
 value = 600.0
 rounded = true
 
-[node name="lblRating" type="Label" parent="popPuzzle/MC/Player"]
+[node name="lblPlayerType" type="Label" parent="popPuzzle/MC/HC/Player/GC"]
+layout_mode = 2
+text = "type
+"
+
+[node name="HC" type="HBoxContainer" parent="popPuzzle/MC/HC/Player/GC"]
+custom_minimum_size = Vector2(425, 0)
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="optHuman" type="CheckBox" parent="popPuzzle/MC/HC/Player/GC/HC"]
+layout_mode = 2
+button_pressed = true
+button_group = ExtResource("10_8y1dj")
+text = "Human"
+alignment = 2
+
+[node name="optComputer" type="CheckBox" parent="popPuzzle/MC/HC/Player/GC/HC"]
+layout_mode = 2
+button_group = ExtResource("10_8y1dj")
+text = "Computer
+"
+
+[node name="chkSave" type="CheckButton" parent="popPuzzle/MC/HC/Player/GC/HC"]
+layout_mode = 2
+text = "Save "
+
+[node name="GC" type="GridContainer" parent="popPuzzle/MC/HC"]
+layout_mode = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 2
+
+[node name="lblRating" type="Label" parent="popPuzzle/MC/HC/GC"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 text = "Rating (0-2500)
 "
 horizontal_alignment = 2
 
-[node name="lvlRating" type="HSlider" parent="popPuzzle/MC/Player"]
+[node name="lvlRating" type="HSlider" parent="popPuzzle/MC/HC/GC"]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 max_value = 2500.0
@@ -548,14 +604,14 @@ step = 50.0
 value = 600.0
 rounded = true
 
-[node name="lblKeywords" type="Label" parent="popPuzzle/MC/Player"]
+[node name="lblKeywords" type="Label" parent="popPuzzle/MC/HC/GC"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 text = "Keywords (,)
 "
 horizontal_alignment = 2
 
-[node name="txtKeywords" type="TextEdit" parent="popPuzzle/MC/Player"]
+[node name="txtKeywords" type="TextEdit" parent="popPuzzle/MC/HC/GC"]
 custom_minimum_size = Vector2(425, 24)
 layout_mode = 2
 
@@ -598,7 +654,7 @@ filters = PackedStringArray("*.chs ; Chess File", "*.pgn; PGN File")
 script = ExtResource("10_we7ge")
 
 [node name="popImage" type="FileDialog" parent="."]
-title = "Open an Image"
+title = "Open a File"
 position = Vector2i(693, 309)
 size = Vector2i(640, 480)
 ok_button_text = "Open"

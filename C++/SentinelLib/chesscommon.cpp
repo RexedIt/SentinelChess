@@ -465,6 +465,25 @@ namespace chess
         return t == c_white ? c_black : c_white;
     }
 
+    // Elo point possibilities
+    void calc_elo_points(color_e col, std::map<color_e, int32_t> elo, int32_t &win, int32_t &lose, int32_t &draw)
+    {
+        win = 0;
+        lose = 0;
+        draw = 0;
+        // uses the FIDE method for single game worth
+        if (elo.size() != 2)
+            return;
+        float me_elo = (float)(col == c_white ? elo[c_white] : elo[c_black]);
+        float opp_elo = (float)(col == c_white ? elo[c_black] : elo[c_white]);
+        float QMe = pow(10.0f, me_elo / 400.0f);
+        float QOpp = pow(10.0f, opp_elo / 400.0f);
+        float Q = QMe / (QMe + QOpp);
+        win = (int32_t)(32.0 * (1.0f - Q) + 0.5f);
+        lose = (int32_t)(32.0 * (0.0f - Q) - 0.5f);
+        draw = (int32_t)(32.0 * (0.5f - Q));
+    }
+
     static volatile bool _sinit = false;
     float get_rand()
     {

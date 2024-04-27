@@ -12,14 +12,13 @@ namespace chess
 
     chessplayerdata::chessplayerdata()
     {
-        elo = 500;
+        elo = 100;
         ptype = t_none;
         puzzlepoints = 0;
-        gamepoints = 0;
         persistent = false;
     }
 
-    chessplayerdata::chessplayerdata(std::string _guid, std::string _username, int32_t _elo, chessplayertype_e _ptype, bool _persistent, std::string _meta)
+    chessplayerdata::chessplayerdata(std::string _guid, std::string _username, int32_t _elo, chessplayertype_e _ptype, bool _persistent, std::string _meta, int32_t _puzzlepoints)
     {
         guid = _guid;
         username = _username;
@@ -27,8 +26,7 @@ namespace chess
         ptype = _ptype;
         persistent = _persistent;
         meta = _meta;
-        puzzlepoints = 0;
-        gamepoints = 0;
+        puzzlepoints = _puzzlepoints;
     }
 
     chessplayerdata::chessplayerdata(json j, chessplayertype_e _ptype)
@@ -48,7 +46,6 @@ namespace chess
         JSON_LOAD(j, "ptype", ptypestr, "None");
         ptype = playertypefromstring(ptypestr);
         JSON_LOAD(j, "puzzlepoints", puzzlepoints, 0);
-        JSON_LOAD(j, "gamepoints", gamepoints, 0);
         JSON_LOAD(j, "persistent", persistent, true);
         JSON_LOAD(j, "avatar", avatar, "");
 
@@ -72,7 +69,6 @@ namespace chess
         {
             j["fullname"] = fullname;
             j["puzzlepoints"] = puzzlepoints;
-            j["gamepoints"] = gamepoints;
             j["avatar"] = avatar;
         }
         if (meta != "")
@@ -108,9 +104,9 @@ namespace chess
         return chessplayerdata(new_guid(), username, elo, t_human, false, meta);
     }
 
-    chessplayerdata new_puzzle_player(std::string username, int32_t elo, std::string meta)
+    chessplayerdata new_puzzle_player(std::string username, int32_t puzzlepoints, std::string meta)
     {
-        return chessplayerdata(new_guid(), username, elo, t_puzzle, false, meta);
+        return chessplayerdata(new_guid(), username, puzzlepoints, t_puzzle, false, meta, puzzlepoints);
     }
 
     chessplayerhub::chessplayerhub()
@@ -491,15 +487,15 @@ namespace chess
         if (m_humans.count(guid))
         {
             chessplayerdata ed = m_humans[guid];
-            d.gamepoints = ed.gamepoints;
             d.puzzlepoints = ed.puzzlepoints;
+            d.elo = ed.elo;
         }
         m_humans[guid] = d;
         save_json();
         return e_none;
     }
 
-    error_e chessplayerhub::update_puzzle_points(std::string guid, int addpuzzle)
+    error_e chessplayerhub::update_points(std::string guid, int32_t pts, bool puzzle)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         if (guid == "")
@@ -507,20 +503,18 @@ namespace chess
         if (m_humans.count(guid) == 0)
             return e_player_not_found;
         chessplayerdata d = m_humans[guid];
-        d.puzzlepoints += addpuzzle;
-        m_humans[guid] = d;
-        return e_none;
-    }
-
-    error_e chessplayerhub::update_game_points(std::string guid, int addgame)
-    {
-        std::lock_guard<std::mutex> guard(m_mutex);
-        if (guid == "")
-            return e_no_guid;
-        if (m_humans.count(guid) == 0)
-            return e_player_not_found;
-        chessplayerdata d = m_humans[guid];
-        d.gamepoints += addgame;
+        if (puzzle)
+        {
+            d.puzzlepoints += pts;
+            if (d.puzzlepoints < 0)
+                d.puzzlepoints = 0;
+        }
+        else
+        {
+            d.elo += pts;
+            if (d.elo < 100)
+                d.elo = 100;
+        }
         m_humans[guid] = d;
         return e_none;
     }

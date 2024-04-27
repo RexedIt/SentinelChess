@@ -42,9 +42,6 @@ var PauseTexture : Texture2D
 var meta : ChessMeta = null
 var puzzle : bool = false
 var hints : int = 0
-var points : int = 0
-var white_points : int = 0
-var black_points : int = 0
 var voice_queue = []
 var do_voice : bool = false
 var do_sfx : bool = false
@@ -124,11 +121,11 @@ func update_players(turnc : SentinelChess.ChessColor):
 	else:
 		botc = game_manager.preferred_board_color()
 	if botc == SentinelChess.White:
-		pnlPlayerTop.refreshplayer(SentinelChess.Black, meta.black())
-		pnlPlayerBottom.refreshplayer(botc, meta.white())
+		pnlPlayerTop.refreshplayer(SentinelChess.Black, meta.black(), puzzle)
+		pnlPlayerBottom.refreshplayer(botc, meta.white(), puzzle)
 	else:
-		pnlPlayerTop.refreshplayer(SentinelChess.White, meta.white())
-		pnlPlayerBottom.refreshplayer(botc, meta.black())
+		pnlPlayerTop.refreshplayer(SentinelChess.White, meta.white(), puzzle)
+		pnlPlayerBottom.refreshplayer(botc, meta.black(), puzzle)
 	
 func initialize(msg : String):
 	meta = game_manager.get_meta()
@@ -137,12 +134,14 @@ func initialize(msg : String):
 	setEcoValues(meta.eco(), meta.open_title())
 	puzzle = meta.puzzle()
 	hints = meta.hints()
-	points = meta.points()
-	white_points = meta.white_points()
-	black_points = meta.black_points()
+	var white_points : String = meta.white_points()
+	var black_points : String = meta.black_points()
 	pnlScore.visible = true
 	if puzzle:
-		pnlScore.setPuzzleValues(points,hints,true)
+		var puzzle_points : String = white_points
+		if game_manager.lone_local_color() == SentinelChess.ChessColor.Black:
+			puzzle_points = black_points
+		pnlScore.setPuzzleValues(puzzle_points,hints,true)
 	else:
 		pnlScore.setScoreValues(white_points,black_points);
 	btnHint.disabled = (not puzzle) or hints <= 0
@@ -361,7 +360,7 @@ func handle_advance() -> bool:
 
 func refreshhints():
 	hints = game_manager.hints()
-	points = game_manager.win_points(SentinelChess.cNone)
+	var points : String = game_manager.win_points(game_manager.lone_local_color())
 	btnHint.disabled =(not puzzle) or hints <= 0
 	pnlScore.setPuzzleValues(points,hints,false)
 

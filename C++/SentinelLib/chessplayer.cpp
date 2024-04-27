@@ -60,6 +60,11 @@ namespace chess
     {
     }
 
+    std::string chessplayer::playerguid()
+    {
+        return m_data.guid;
+    }
+
     color_e chessplayer::playercolor()
     {
         return m_color;
@@ -84,6 +89,11 @@ namespace chess
     int32_t chessplayer::playerskill()
     {
         return m_data.elo;
+    }
+
+    int32_t chessplayer::playerpuzzlepoints()
+    {
+        return m_data.puzzlepoints;
     }
 
     chessplayerdata chessplayer::playerdata()

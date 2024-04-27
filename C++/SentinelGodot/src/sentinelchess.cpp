@@ -489,9 +489,17 @@ String SentinelChess::hintstr()
     return "";
 }
 
-int SentinelChess::win_points(ChessColor col)
+String SentinelChess::win_points(ChessColor col)
 {
-    return m_lobby.win_points((color_e)col);
+    int32_t win = 0;
+    int32_t lose = 0;
+    int32_t draw = 0;
+    m_lobby.potential_points((color_e)col, win, lose, draw);
+    std::string winlosedraw = std::to_string(win) + "/" + std::to_string(lose);
+    if(mp_game)
+        if (!mp_game->puzzle())
+            winlosedraw += "/" + std::to_string(draw);
+    return String(winlosedraw.c_str());
 }
 
 int SentinelChess::initialize(const String &d)
@@ -707,6 +715,8 @@ void ChessEvent::_bind_methods()
     ClassDB::bind_method(D_METHOD("game_state"), &ChessEvent::game_state);
     ClassDB::bind_method(D_METHOD("white_time"), &ChessEvent::white_time);
     ClassDB::bind_method(D_METHOD("black_time"), &ChessEvent::black_time);
+    ClassDB::bind_method(D_METHOD("white_points"), &ChessEvent::white_points);
+    ClassDB::bind_method(D_METHOD("black_points"), &ChessEvent::black_points);
     ClassDB::bind_method(D_METHOD("move"), &ChessEvent::move);
     ClassDB::bind_method(D_METHOD("board"), &ChessEvent::board);
     ClassDB::bind_method(D_METHOD("percent"), &ChessEvent::percent);
@@ -765,6 +775,16 @@ int ChessEvent::white_time()
 int ChessEvent::black_time()
 {
     return m_event.bt;
+}
+
+int ChessEvent::white_points()
+{
+    return m_event.wp;
+}
+
+int ChessEvent::black_points()
+{
+    return m_event.bp;
 }
 
 Ref<ChessMove> ChessEvent::move()

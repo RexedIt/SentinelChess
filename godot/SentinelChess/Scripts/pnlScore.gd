@@ -17,18 +17,18 @@ func applyskin():
 	lblPoints1.set_theme(skin.theme)
 	lblPoints2.set_theme(skin.theme)
 	
-func setPuzzleValues(points : int, hints : int, first : bool):
+func setPuzzleValues(points : String, hints : int, first : bool):
 	if first:
 		_maxhints = hints
 	sprPuzzle.visible = true
-	lblPoints1.text = str(points) + ' Points'
+	lblPoints1.text = points
 	lblPoints2.visible = _maxhints > 0
 	lblPoints2.text = str(_maxhints-hints) + '/' + str(_maxhints) + ' Hints'
 
-func setScoreValues(white : int, black : int):
+func setScoreValues(white : String, black : String):
 	sprPuzzle.visible = false
-	lblPoints1.text = str(white) + ' Points'
-	lblPoints2.text = str(black) + ' Points'
+	lblPoints1.text = white
+	lblPoints2.text = black
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):

@@ -49,7 +49,7 @@ private:
     int hints();
     Ref<ChessMove> hint();
     String hintstr();
-    int win_points(ChessColor col);
+    String win_points(ChessColor col);
     int initialize(const String &);
 
     // For getting high level info about the game, useful one time
@@ -163,6 +163,8 @@ public:
     Ref<ChessBoard> board();
     int white_time();
     int black_time();
+    int white_points();
+    int black_points();
     int percent();
     String msg();
     String cmt();

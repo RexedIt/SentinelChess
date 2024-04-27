@@ -6,6 +6,9 @@ var _initializing : bool = false
 var players : Array
 var HumanPlayer : ChessPlayer 
 var HumanMode : bool
+var PlayerColor : SentinelChess.ChessColor
+
+@export var humanOnly : bool = false
 
 @onready var game : SentinelChess = get_node('/root/MainGame/SentinelChess')
 @onready var Avatar : TextureRect = get_node("Avatar")
@@ -15,6 +18,7 @@ var HumanMode : bool
 @onready var optHuman : CheckBox = get_node("GC/HC/optHuman")
 @onready var optComputer : CheckBox = get_node("GC/HC/optComputer")
 @onready var chkSave : Button = get_node("GC/HC/chkSave")
+@onready var lblPlayerType : Label = get_node('GC/lblPlayerType')
 @onready var popImage : FileDialog = get_node('/root/MainGame/popImage')
 
 func initialize(c, n, s, t):
@@ -23,6 +27,7 @@ func initialize(c, n, s, t):
 	HumanPlayer.Name = 'Human2'
 	HumanPlayer.PlayerType = ChessPlayer.Human
 	HumanPlayer.Skill = 600
+	PlayerColor = c
 	player = ChessPlayer.new()
 	player.PlayerType = t
 	player.PlayerColor = c
@@ -30,6 +35,10 @@ func initialize(c, n, s, t):
 	player.Name = n
 	player.Skill = s
 	player.Persistent = false
+	if humanOnly == true:
+		optHuman.visible = false
+		optComputer.visible = false
+		lblPlayerType.text = ''
 	_initializeSelections()
 	lvlSkill.value = player.Skill
 	if player.PlayerType == ChessPlayer.ChessPlayerType.Computer:
@@ -182,12 +191,25 @@ func _on_save_toggled(v: bool):
 		return
 	if HumanMode:
 		HumanPlayer.Persistent = v
-		
+	
+var InitiatedColor : SentinelChess.ChessColor = SentinelChess.ChessColor.cNone
+	
 func _on_closed_image(_cancelled, _filename):
-	if _cancelled:
+	if _cancelled or (InitiatedColor != PlayerColor) or (player == null):
 		return
-		
+	var i = Image.load_from_file(_filename)
+	i.resize(128,128,1)
+	var bytes = i.save_jpg_to_buffer(0.75)
+	var ustr = Marshalls.raw_to_base64(bytes)
+	player.Avatar = ustr
+	HumanPlayer.Avatar = ustr
+	var t = ImageTexture.new()
+	t.set_image(i)
+	Avatar.texture = t
+
+			
 func avatar_input(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and HumanMode:
-			return
+			InitiatedColor = PlayerColor
+			popImage.visible = true

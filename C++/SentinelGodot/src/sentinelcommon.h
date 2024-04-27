@@ -191,7 +191,6 @@ public:
     String guid();
     String fullname();
     int puzzlepoints();
-    int gamepoints();
     bool get_persistent();
     void set_persistent(const bool b);
     String get_avatar();
@@ -223,9 +222,8 @@ public:
     Ref<ChessPlayer> black();
     bool puzzle();
     int hints();
-    int points();
-    int white_points();
-    int black_points();
+    String white_points();
+    String black_points();
     int turns();
     int playno();
     String eco();
@@ -237,9 +235,8 @@ private:
     chessplayerdata m_black;
     bool m_puzzle;
     int m_hints;
-    int m_points;
-    int m_w_points;
-    int m_b_points;
+    std::string m_w_points;
+    std::string m_b_points;
     int m_turns;
     int m_playno;
     std::string m_eco;

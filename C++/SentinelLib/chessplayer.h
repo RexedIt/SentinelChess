@@ -38,10 +38,12 @@ namespace chess
         error_e chat(std::string msg);
         error_e consider(chessmove &, int8_t pct = -1);
 
+        std::string playerguid();
         color_e playercolor();
         chessplayertype_e playertype();
         std::string playername();
         int32_t playerskill();
+        int32_t playerpuzzlepoints();
         chessplayerdata playerdata();
 
         friend class chesslobby;

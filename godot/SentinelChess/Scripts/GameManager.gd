@@ -247,6 +247,7 @@ func _on_closed_puzzle(_cancelled, _player, _keywords, _rating):
 		_gamestatereact(prepopgamestate)
 		return
 	# start new game
+	save_player(_player)
 	var err : int = load_puzzle(_player, _keywords, _rating)
 	if err != 0:
 		_on_error(err)

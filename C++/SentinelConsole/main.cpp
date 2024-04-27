@@ -162,9 +162,9 @@ chessplayerdata get_hub_player(int32_t elo = 0)
             }
             std::string name = au[1];
             int32_t skill = atoi(args[1].c_str());
-            if ((skill < 0) || (skill > 2500))
+            if ((skill < 100) || (skill > 2500))
             {
-                print_error("Skill/elo must be 0-2500");
+                print_error("Skill/elo must be 100-2500");
                 continue;
             }
             bool perm = false;
@@ -306,11 +306,19 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
 
     refresh_data(lobby);
     std::cout << p_game->title() << std::endl;
-    int p = p_game->points();
-    std::cout << "Worth up to " << p << " points. ";
+
+    int32_t win = 0;
+    int32_t lose = 0;
+    int32_t draw = 0;
+
+    color_e me = lobby.local_players().count(c_white) > 0 ? c_white : c_black;
+    lobby.potential_points(me, win, lose, draw);
+
+    std::cout << "Value of Game: W:" << win << " L:" << lose << " points. ";
     int n = p_game->hints();
     if (n > 0)
         std::cout << "You have " << n << " hints.";
+
     std::cout << std::endl;
     return true;
 }
@@ -338,7 +346,7 @@ bool add_player(chesslobby &lobby, color_e color)
         if (args.size() > 3)
             continue;
         std::string name = "Computer";
-        int skill = 500;
+        int skill = 100;
         chessplayertype_e ptype = t_computer;
 
         if (args.size() >= 1)
@@ -358,9 +366,9 @@ bool add_player(chesslobby &lobby, color_e color)
         if (args.size() >= 3)
         {
             skill = atoi(args[2].c_str());
-            if ((skill < 0) || (skill > 2500))
+            if ((skill < 100) || (skill > 2500))
             {
-                print_error("Skill/elo must be 0-2500");
+                print_error("Skill/elo must be 100-2500");
                 continue;
             }
         }
@@ -572,6 +580,18 @@ void on_state(game_state_e g, color_e c)
         is_idle = true;
 }
 
+void on_points(int32_t wp, int32_t bp)
+{
+    std::cout << "--- Awarded: ";
+    if (locals.count(c_white))
+        std::cout << "W:" << wp;
+    if (locals.count(c_black))
+        std::cout << " B:" << bp;
+    if (p_game->puzzle())
+        std::cout << " puzzle";
+    std::cout << " points." << std::endl;
+}
+
 void on_chat(std::string msg, color_e c)
 {
 }
@@ -594,6 +614,9 @@ void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
             break;
         case ce_state:
             on_state(e.game_state, e.win_color);
+            break;
+        case ce_points:
+            on_points(e.wp, e.bp);
             break;
         case ce_chat:
             on_chat(e.msg, e.color);

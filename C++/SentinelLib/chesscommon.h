@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdlib>
 #include <vector>
+#include <map>
 
 namespace chess
 {
@@ -230,6 +231,9 @@ namespace chess
     std::string time_str(int32_t t);
     bool is_color(unsigned char cell, color_e color);
     color_e other(color_e c);
+
+    // Elo point possibilities
+    void calc_elo_points(color_e col, std::map<color_e, int32_t> elo, int32_t &win, int32_t &lose, int32_t &draw);
 
     float get_rand();
     int get_rand_int(int min, int max);

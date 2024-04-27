@@ -13,7 +13,8 @@ namespace chess
         m_play_pos = -1;
         m_puzzle = false;
         m_hints = 0;
-        m_points = 0;
+        m_awarded = false;
+        m_puzzle_mult = 1.0f;
     }
 
     chessgame::~chessgame()
@@ -235,7 +236,7 @@ namespace chess
                     if (m_hints > 0)
                     {
                         m_hints--;
-                        m_points /= 2;
+                        m_puzzle_mult *= 0.5f;
                         guard.unlock();
                         return m.error;
                     }
@@ -298,22 +299,12 @@ namespace chess
         return m_hints;
     }
 
-    int chessgame::points()
-    {
-        return m_points;
-    }
-
-    void chessgame::set_points(const int v)
-    {
-        m_points = v;
-    }
-
     chessmove chessgame::hint()
     {
         if ((m_hints > 0) && (m_play_pos < playmax()))
         {
             m_hints--;
-            m_points /= 2;
+            m_puzzle_mult *= 0.5f;
             return m_turn[m_play_pos + 1].m;
         }
         chessmove m;
@@ -326,10 +317,40 @@ namespace chess
         if ((m_hints > 0) && (m_play_pos < playmax()))
         {
             m_hints--;
-            m_points /= 2;
+            m_puzzle_mult *= 0.5f;
             return move_str(m_turn[m_play_pos + 1].m);
         }
         return "No Hint Available";
+    }
+
+    bool chessgame::awarded()
+    {
+        return m_awarded;
+    }
+
+    void chessgame::potential_points(color_e col, int32_t &win, int32_t &lose, int32_t &draw)
+    {
+        std::map<color_e, int32_t> elo;
+        if (has_tag("WhiteElo"))
+            elo[c_white] = atoi(tag("WhiteElo").c_str());
+        if (has_tag("BlackElo"))
+            elo[c_black] = atoi(tag("BlackElo").c_str());
+        calc_elo_points(col, elo, win, lose, draw);
+        if (m_puzzle)
+            win = (int32_t)(((float)win) * m_puzzle_mult);
+    }
+
+    int32_t chessgame::award_points(color_e col)
+    {
+        int32_t win = 0;
+        int32_t lose = 0;
+        int32_t draw = 0;
+        potential_points(col, win, lose, draw);
+        if (m_state >= draw_stalemate_e)
+        {
+            return draw;
+        }
+        return col == m_win_color ? win : lose;
     }
 
     std::string chessgame::title()
@@ -452,17 +473,22 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::new_game(std::string title, const chessclock_s &clock)
+    error_e chessgame::new_game(std::string title, std::map<color_e, int32_t> elo, const chessclock_s &clock)
     {
         m_win_color = c_none;
         m_init_board = c_open_board;
         m_puzzle = false;
+        m_awarded = false;
         remove_tag("puzzle_id");
         remove_tag("puzzle_open");
         m_board.load_xfen(m_init_board);
         m_turn.clear();
         m_play_pos = -1;
         write_tag("Event", title);
+        if (elo.count(c_white))
+            write_tag("WhiteElo", elo[c_white]);
+        if (elo.count(c_black))
+            write_tag("BlackElo", elo[c_black]);
         m_open_filter.reset();
         add_clock(clock);
         refresh_board_positions();
@@ -496,8 +522,9 @@ namespace chess
 
             JSON_LOAD(jsonf, "init_board", m_init_board, c_open_board);
             JSON_LOAD(jsonf, "puzzle", m_puzzle, false);
+            JSON_LOAD(jsonf, "puzzle_mult", m_puzzle_mult, 1.0f);
             JSON_LOAD(jsonf, "hints", m_hints, 0);
-            JSON_LOAD(jsonf, "points", m_points, 0);
+            JSON_LOAD(jsonf, "awarded", m_awarded, false);
 
             reset_tags();
 
@@ -545,7 +572,7 @@ namespace chess
         }
     }
 
-    error_e chessgame::load_puzzle(chesspuzzle &p)
+    error_e chessgame::load_puzzle(chesspuzzle &p, int32_t elo)
     {
         chessboard b;
         error_e err = b.load_xfen(p.fen);
@@ -580,19 +607,24 @@ namespace chess
             t.wc = c_none;
             turns.push_back(t);
         }
-
         mp_clock = nullptr;
         m_init_board = p.fen;
         m_turn = turns;
         m_play_pos = -1;
         m_board.load_xfen(p.fen);
         m_puzzle = true;
+        m_puzzle_mult = 1.0f;
+        m_awarded = false;
         m_hints = (int)turns.size() / 4;
         write_tag("Event", p.themes);
         write_tag("puzzle_id", p.puzzleid);
         write_tag("puzzle_open", p.openingtags);
         write_tag("puzzle_themes", p.themes);
         write_tag("puzzle_ratings", p.rating);
+        // Save ELO
+        color_e me = other(turn_color());
+        write_tag(color_str(me) + "Elo", elo);
+        write_tag(color_str(other(me)) + "Elo", p.rating);
         refresh_board_positions();
         set_state(play_e, true);
         signal_on_turn();
@@ -609,6 +641,7 @@ namespace chess
         color_e tc = b.turn_color();
         std::vector<chessturn> turns;
         m_open_filter.reset();
+        m_awarded = true;
 
         int16_t n = 1;
         chessturn t;
@@ -704,9 +737,10 @@ namespace chess
 
             jsonf["init_board"] = m_init_board;
             jsonf["puzzle"] = m_puzzle;
+            jsonf["puzzle_mult"] = m_puzzle_mult;
             jsonf["hints"] = m_hints;
+            jsonf["awarded"] = m_awarded;
             jsonf["play_pos"] = m_play_pos;
-            jsonf["points"] = m_points;
 
             write_tag("ECO", m_open_filter.eco());
             write_tag("Opening", m_open_filter.title());
@@ -806,9 +840,8 @@ namespace chess
     {
         std::unique_lock<std::mutex> guard(m_mutex);
         m_win_color = win_color;
-        set_state(end_state);
         guard.unlock();
-        signal_on_state();
+        set_state(end_state, true);
         return e_none;
     }
 
@@ -829,6 +862,9 @@ namespace chess
         if ((g != m_state) || (force_notify))
         {
             m_state = g;
+            // if it is a game ending condition we need to also award points
+            if ((m_awarded == false) && (m_state >= terminate_e))
+                signal_on_points();
             signal_on_state();
         }
     }
@@ -931,6 +967,15 @@ namespace chess
     {
         for (const auto &kv : mp_listeners)
             kv.second->signal_on_state(m_state, m_win_color);
+    }
+
+    void chessgame::signal_on_points()
+    {
+        m_awarded = true;
+        int32_t wp = award_points(c_white);
+        int32_t bp = award_points(c_black);
+        for (const auto &kv : mp_listeners)
+            kv.second->signal_on_points(wp, bp);
     }
 
     void chessgame::signal_chat(std::string msg, color_e c)

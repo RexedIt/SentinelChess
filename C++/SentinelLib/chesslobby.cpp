@@ -38,7 +38,7 @@ namespace chess
     error_e chesslobby::new_game(std::string title, const chessclock_s &clock)
     {
         attach_to_game();
-        return mp_game->new_game(title, clock);
+        return mp_game->new_game(title, player_skills(), clock);
     }
 
     void chesslobby::attach_to_game()
@@ -53,17 +53,6 @@ namespace chess
     {
         for (const auto &kv : mp_players)
             kv.second->set_game(NULL);
-    }
-
-    int chesslobby::player_points()
-    {
-        if (mp_players.count(c_white) == 0)
-            return 0;
-        if (mp_players.count(c_black) == 0)
-            return 0;
-        return mp_players[c_black]->playerskill() - mp_players[c_white]->playerskill();
-        // is positive if black has higher skill.  so if white wins, points>0 are awarded.
-        // if black wins, (-points>0) are awarded.
     }
 
     error_e chesslobby::new_game(std::string title, color_e user_color, std::string user_name, int elo, const chessclock_s &clock)
@@ -95,11 +84,10 @@ namespace chess
         if (err != e_none)
             return restore(err);
 
-        err = mp_game->new_game(title, clock);
+        err = mp_game->new_game(title, player_skills(), clock);
         if (err != e_none)
             return restore(err);
 
-        mp_game->set_points(player_points());
         attach_to_game();
         return err;
     }
@@ -158,7 +146,6 @@ namespace chess
             if (err != e_none)
                 return restore(err);
 
-            mp_game->set_points(player_points());
             attach_to_game();
             return e_none;
         }
@@ -229,14 +216,9 @@ namespace chess
         if (err != e_none)
             return restore(err);
 
-        err = mp_game->load_puzzle(p);
+        err = mp_game->load_puzzle(p, user.puzzlepoints);
         if (err != e_none)
             return restore(err);
-
-        int points = (p.rating - user.elo) / 2;
-        if (points <= 0)
-            points = 5;
-        mp_game->set_points(points);
 
         attach_to_game();
         return err;
@@ -483,20 +465,10 @@ namespace chess
         return false;
     }
 
-    int chesslobby::win_points(color_e col)
+    void chesslobby::potential_points(color_e col, int32_t &win, int32_t &lose, int32_t &draw)
     {
-        int points = 0;
         if (mp_game)
-        {
-            points = mp_game->points();
-            if (mp_game->puzzle())
-                return points;
-        }
-        if (col == c_black)
-            points = -1 * points;
-        if (points < 0)
-            points = 0;
-        return points;
+            return mp_game->potential_points(col, win, lose, draw);
     }
 
     std::string chesslobby::player_name(color_e col)
@@ -514,6 +486,25 @@ namespace chess
         for (const auto &kv : mp_players)
             ret[kv.second->playercolor()] = kv.second->playername();
         return ret;
+    }
+
+    std::map<color_e, int32_t> chesslobby::player_skills_nolock()
+    {
+        std::map<color_e, int32_t> ret;
+        bool puzzle = mp_game->puzzle();
+        for (const auto &kv : mp_players)
+        {
+            bool puzzleskill = ((puzzle) && (kv.second->playertype() == t_human));
+            int32_t pskill = puzzleskill ? kv.second->playerpuzzlepoints() : kv.second->playerskill();
+            ret[kv.second->playercolor()] = pskill;
+        }
+        return ret;
+    }
+
+    std::map<color_e, int32_t> chesslobby::player_skills()
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        return player_skills_nolock();
     }
 
     // functions to restore values
