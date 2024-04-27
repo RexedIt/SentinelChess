@@ -42,7 +42,7 @@ func suppress():
 			
 func finish_game(g : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
 	var musictrack = null
-	var localw : bool = game_manager.is_local_active(w)
+	var localw : bool = game_manager.is_local(w)
 	var puzzle : bool = game_manager.puzzle()
 	match w:
 		SentinelChess.ChessColor.Black:

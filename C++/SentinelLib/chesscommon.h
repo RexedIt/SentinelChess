@@ -78,7 +78,8 @@ namespace chess
         e_no_player_hub,
         e_no_guid,
         e_no_username,
-        e_cannot_register
+        e_cannot_register,
+        e_points_awarded
     } error_e;
 
     std::string errorstr(error_e num);
@@ -203,7 +204,8 @@ namespace chess
         cl_none,
         cl_computer,
         cl_user,
-        cl_clock
+        cl_clock,
+        cl_lobby
     } chessgamelistenertype;
 
     class chessmove;

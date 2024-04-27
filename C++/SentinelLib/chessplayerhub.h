@@ -10,6 +10,7 @@ using namespace nlohmann;
 
 namespace chess
 {
+
     class chessplayerdata
     {
     public:

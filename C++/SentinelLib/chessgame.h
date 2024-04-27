@@ -94,10 +94,10 @@ namespace chess
         error_e pause_game();
 
     protected:
-        error_e new_game(std::string title, std::map<color_e, int32_t> elo, const chessclock_s &clock);
+        error_e new_game(std::string title, const chessclock_s &clock);
         error_e load_chs(json &j);
         error_e save_chs(json &j);
-        error_e load_puzzle(chesspuzzle &p, int32_t elo);
+        error_e load_puzzle(chesspuzzle &p);
         error_e load_pgn(chesspgn &p);
         error_e save_pgn(chesspgn &p);
 

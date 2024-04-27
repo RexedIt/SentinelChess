@@ -301,11 +301,16 @@ namespace chess
         return get_or_register_player(data, data.username, data.elo, data.ptype);
     }
 
-    error_e chessplayerhub::get_matching_computer_player(chessplayerdata &data, std::string username, int32_t elo)
+    error_e chessplayerhub::get_matching_computer_player(chessplayerdata &data, std::string username, int32_t _elo)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         std::vector<std::string> matches;
         std::string uusername = uppercase(username);
+        int32_t elo = _elo;
+        if (elo < 100)
+            elo = 100;
+        if (elo > 2000)
+            elo = 2000;
         for (std::map<std::string, chessplayerdata>::iterator it = m_computers.begin(); it != m_computers.end(); ++it)
         {
             if ((uusername != "") && (uusername == uppercase(it->second.username)))
@@ -313,7 +318,7 @@ namespace chess
                 data = it->second;
                 return e_none;
             }
-            if (abs(it->second.elo - elo) <= 250)
+            if (abs(it->second.elo - elo) <= 300)
                 matches.push_back(it->second.guid);
         }
         if (matches.size() == 0)

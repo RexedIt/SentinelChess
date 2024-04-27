@@ -38,7 +38,8 @@ namespace chess
     error_e chesslobby::new_game(std::string title, const chessclock_s &clock)
     {
         attach_to_game();
-        return mp_game->new_game(title, player_skills(), clock);
+        write_player_meta();
+        return mp_game->new_game(title, clock);
     }
 
     void chesslobby::attach_to_game()
@@ -84,7 +85,7 @@ namespace chess
         if (err != e_none)
             return restore(err);
 
-        err = mp_game->new_game(title, player_skills(), clock);
+        err = mp_game->new_game(title, clock);
         if (err != e_none)
             return restore(err);
 
@@ -142,6 +143,7 @@ namespace chess
                     return restore(e_loading);
             }
 
+            write_player_meta();
             err = mp_game->load_chs(jsonf);
             if (err != e_none)
                 return restore(err);
@@ -216,7 +218,8 @@ namespace chess
         if (err != e_none)
             return restore(err);
 
-        err = mp_game->load_puzzle(p, user.puzzlepoints);
+        write_player_meta(true);
+        err = mp_game->load_puzzle(p);
         if (err != e_none)
             return restore(err);
 
@@ -308,6 +311,7 @@ namespace chess
         if (err != e_none)
             return restore(err);
 
+        write_player_meta();
         err = mp_game->load_pgn(p);
         if (err != e_none)
             return restore(err);
@@ -315,43 +319,6 @@ namespace chess
         attach_to_game();
         return err;
     }
-
-    /*
-    error_e chesslobby::add_player(color_e color, std::string name, int skill, chessplayertype_e ptype)
-    {
-        std::lock_guard<std::mutex> guard(m_mutex);
-        switch (ptype)
-        {
-        case t_human:
-        {
-            std::shared_ptr<chessplayer> p(new chessplayer(color, name, skill, t_human));
-            m_locals.insert(color);
-            mp_players[color] = p;
-            p->set_game(mp_game);
-            return e_none;
-        }
-        case t_computer:
-        {
-            std::shared_ptr<chesscomputer> p(new chesscomputer(color, name, skill));
-            // if the type is a listener, do this
-            mp_game->listen(p);
-            mp_players[color] = p;
-            p->set_game(mp_game);
-            return e_none;
-        }
-        case t_puzzle:
-        {
-            std::shared_ptr<chesspuzzleplayer> p(new chesspuzzleplayer(color, name, skill));
-            // if the type is a listener, do this
-            mp_game->listen(p);
-            mp_players[color] = p;
-            p->set_game(mp_game);
-            return e_none;
-        }
-        }
-        return e_player_not_created;
-    }
-    */
 
     error_e chesslobby::add_player(color_e color, chessplayerdata data)
     {
@@ -488,25 +455,6 @@ namespace chess
         return ret;
     }
 
-    std::map<color_e, int32_t> chesslobby::player_skills_nolock()
-    {
-        std::map<color_e, int32_t> ret;
-        bool puzzle = mp_game->puzzle();
-        for (const auto &kv : mp_players)
-        {
-            bool puzzleskill = ((puzzle) && (kv.second->playertype() == t_human));
-            int32_t pskill = puzzleskill ? kv.second->playerpuzzlepoints() : kv.second->playerskill();
-            ret[kv.second->playercolor()] = pskill;
-        }
-        return ret;
-    }
-
-    std::map<color_e, int32_t> chesslobby::player_skills()
-    {
-        std::lock_guard<std::mutex> guard(m_mutex);
-        return player_skills_nolock();
-    }
-
     // functions to restore values
     void chesslobby::backup()
     {
@@ -523,6 +471,26 @@ namespace chess
         mp_players_backup.clear();
         attach_to_game();
         return err;
+    }
+
+    void chesslobby::write_player_meta(bool puzzle)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        for (const auto &kv : mp_players)
+        {
+            std::shared_ptr<chessplayer> player = kv.second;
+            chessplayertype_e ptype = player->playertype();
+            if (ptype != t_puzzle)
+            {
+                color_e pcolor = player->playercolor();
+                int32_t pelo = puzzle ? player->playerpuzzlepoints() : player->playerskill();
+                std::string pguid = player->playerguid();
+                std::string colname = color_str(pcolor);
+                mp_game->write_tag(colname + "Elo", pelo);
+                mp_game->write_tag(colname + "Guid", pguid);
+                mp_game->write_tag(colname + "Type", playertypetostring(ptype));
+            }
+        }
     }
 
 }

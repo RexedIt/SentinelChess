@@ -119,6 +119,8 @@ namespace chess
             return "No Username Given";
         case e_cannot_register:
             return "Cannot Register";
+        case e_points_awarded:
+            return "Points already awarded";
         default:
             return "Unknown Error";
         }

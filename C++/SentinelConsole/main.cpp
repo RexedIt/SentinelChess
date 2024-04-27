@@ -389,7 +389,10 @@ bool add_player(chesslobby &lobby, color_e color)
         }
         else
         {
-            err = chessengine::hub_get_or_register_player(player, name, skill, ptype);
+            if (ptype == t_human)
+                err = chessengine::hub_get_or_register_player(player, name, skill, ptype);
+            else
+                chessengine::hub_get_matching_computer_player(player, name, skill);
         }
 
         if (err != e_none)

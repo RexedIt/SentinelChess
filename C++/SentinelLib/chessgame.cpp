@@ -1,6 +1,7 @@
 #include "chessgame.h"
 #include "chesscomputer.h"
 #include "chessclock.h"
+#include "chessengine.h"
 // #include <iostream>
 
 namespace chess
@@ -31,8 +32,9 @@ namespace chess
     chessboard chessgame::board(int16_t t)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        if ((t > 0) && (t < playmax()))
-            return m_turn[t - 1].b;
+        int turn = m_puzzle ? t + 1 : t;
+        if ((turn > 0) && (turn < playmax()))
+            return m_turn[turn - 1].b;
         chessboard b;
         b.load_xfen(m_init_board);
         return b;
@@ -245,9 +247,9 @@ namespace chess
             if (m.error == e_none)
                 m = m_board.attempt_move(col, m0);
             guard.unlock();
-            set_state(is_game_over(col, m));
             if (m.error == e_none)
                 push_new_turn(m);
+            set_state(is_game_over(col, m));
             return m.error;
         }
         guard.unlock();
@@ -350,7 +352,19 @@ namespace chess
         {
             return draw;
         }
-        return col == m_win_color ? win : lose;
+        int32_t to_award = m_win_color ? win : lose;
+        std::string colbase = color_str(col);
+        if (has_tag(colbase + "Type"))
+        {
+            chessplayertype_e ptype = playertypefromstring(tag(colbase + "Type"));
+            if (ptype == t_human)
+            {
+                std::string pguid = tag(colbase + "Guid");
+                if (pguid != "")
+                    chessengine::hub_update_points(pguid, to_award, m_puzzle);
+            }
+        }
+        return to_award;
     }
 
     std::string chessgame::title()
@@ -473,7 +487,7 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::new_game(std::string title, std::map<color_e, int32_t> elo, const chessclock_s &clock)
+    error_e chessgame::new_game(std::string title, const chessclock_s &clock)
     {
         m_win_color = c_none;
         m_init_board = c_open_board;
@@ -485,10 +499,6 @@ namespace chess
         m_turn.clear();
         m_play_pos = -1;
         write_tag("Event", title);
-        if (elo.count(c_white))
-            write_tag("WhiteElo", elo[c_white]);
-        if (elo.count(c_black))
-            write_tag("BlackElo", elo[c_black]);
         m_open_filter.reset();
         add_clock(clock);
         refresh_board_positions();
@@ -572,7 +582,7 @@ namespace chess
         }
     }
 
-    error_e chessgame::load_puzzle(chesspuzzle &p, int32_t elo)
+    error_e chessgame::load_puzzle(chesspuzzle &p)
     {
         chessboard b;
         error_e err = b.load_xfen(p.fen);
@@ -621,10 +631,6 @@ namespace chess
         write_tag("puzzle_open", p.openingtags);
         write_tag("puzzle_themes", p.themes);
         write_tag("puzzle_ratings", p.rating);
-        // Save ELO
-        color_e me = other(turn_color());
-        write_tag(color_str(me) + "Elo", elo);
-        write_tag(color_str(other(me)) + "Elo", p.rating);
         refresh_board_positions();
         set_state(play_e, true);
         signal_on_turn();
@@ -862,7 +868,6 @@ namespace chess
         if ((g != m_state) || (force_notify))
         {
             m_state = g;
-            // if it is a game ending condition we need to also award points
             if ((m_awarded == false) && (m_state >= terminate_e))
                 signal_on_points();
             signal_on_state();
@@ -983,5 +988,4 @@ namespace chess
         for (const auto &kv : mp_listeners)
             kv.second->signal_chat(msg, c);
     }
-
 }

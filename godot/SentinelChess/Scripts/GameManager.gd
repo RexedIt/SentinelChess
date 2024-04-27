@@ -359,9 +359,10 @@ func set_idle(b : bool):
 
 func finish_game(s : ChessGameState, w : ChessColor):
 	_gamestatereact(GameState.END)
-	gameUI.finish_game(s, w)
-	board.finish_game(s, w)
-	popEnd.finish_game(s, w)
+	if popEnd.visible == false:
+		gameUI.finish_game(s, w)
+		board.finish_game(s, w)
+		popEnd.finish_game(s, w)
 		
 func _on_state(s : ChessGameState, w : ChessColor):
 	if s == Idle:
