@@ -348,20 +348,21 @@ namespace chess
         int32_t lose = 0;
         int32_t draw = 0;
         potential_points(col, win, lose, draw);
-        if (m_state >= draw_stalemate_e)
-        {
-            return draw;
-        }
         int32_t to_award = m_win_color ? win : lose;
-        std::string colbase = color_str(col);
-        if (has_tag(colbase + "Type"))
+        if (m_state >= draw_stalemate_e)
+            to_award = draw;
+        if (to_award != 0)
         {
-            chessplayertype_e ptype = playertypefromstring(tag(colbase + "Type"));
-            if (ptype == t_human)
+            std::string colbase = color_str(col);
+            if (has_tag(colbase + "Type"))
             {
-                std::string pguid = tag(colbase + "Guid");
-                if (pguid != "")
-                    chessengine::hub_update_points(pguid, to_award, m_puzzle);
+                chessplayertype_e ptype = playertypefromstring(tag(colbase + "Type"));
+                if (ptype == t_human)
+                {
+                    std::string pguid = tag(colbase + "Guid");
+                    if (pguid != "")
+                        chessengine::hub_update_points(pguid, to_award, m_puzzle);
+                }
             }
         }
         return to_award;
@@ -631,6 +632,8 @@ namespace chess
         write_tag("puzzle_open", p.openingtags);
         write_tag("puzzle_themes", p.themes);
         write_tag("puzzle_ratings", p.rating);
+        // Save ELO of puzzle
+        write_tag(color_str(turn_color()) + "Elo", p.rating);
         refresh_board_positions();
         set_state(play_e, true);
         signal_on_turn();
