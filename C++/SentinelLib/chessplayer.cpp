@@ -1,4 +1,5 @@
 #include "chessplayer.h"
+#include "chessengine.h"
 
 namespace chess
 {
@@ -99,6 +100,11 @@ namespace chess
     chessplayerdata chessplayer::playerdata()
     {
         return m_data;
+    }
+
+    error_e chessplayer::refresh()
+    {
+        return chessengine::hub_refresh_player(m_data);
     }
 
     bool chessplayer::is(color_e c)

@@ -473,6 +473,11 @@ namespace chess
         return ret;
     }
 
+    error_e chessplayerhub::refresh_player(chessplayerdata &data)
+    {
+        return find_by_id(data, data.guid);
+    }
+
     error_e chessplayerhub::update_player(chessplayerdata data)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
@@ -521,6 +526,7 @@ namespace chess
                 d.elo = 100;
         }
         m_humans[guid] = d;
+        save_json();
         return e_none;
     }
 

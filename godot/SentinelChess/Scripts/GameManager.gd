@@ -73,6 +73,8 @@ func _physics_process(delta):
 				var wc : ChessColor = ce.win_color();
 				var wt : int = ce.white_time()
 				var bt : int = ce.black_time()
+				var wp : int = ce.white_points()
+				var bp : int = ce.black_points()
 				var cmt : String = ce.cmt()
 				if m.is_valid():
 					var cm : ChessColor = ChessColor.White
@@ -90,6 +92,11 @@ func _physics_process(delta):
 			ChessEvent.ChessEventType.ceState:
 				print('ceState')
 				_on_state(ce.game_state(), ce.win_color())
+			ChessEvent.ChessEventType.cePoints:
+				print('cePoints')
+				var wp : int = ce.white_points()
+				var bp : int = ce.black_points()
+				_on_points(wp, bp)
 			ChessEvent.ChessEventType.ceChat:
 				print('ceChat *** REM *** TODO')
 
@@ -371,6 +378,9 @@ func _on_state(s : ChessGameState, w : ChessColor):
 		set_idle(false)
 	if s > Play:
 		finish_game(s, w)
+		
+func _on_points(wp : int, bp : int):
+	gameUI.update_points(wp, bp)
 	
 func refresh_board(c : ChessColor, b : ChessBoard):
 	refresh_board_color(c)

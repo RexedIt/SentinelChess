@@ -545,6 +545,11 @@ func gamestate(gs):
 		do_voice = game_manager.has_local()
 		do_sfx = do_voice
 		
+func update_points(wp: int, bp: int):
+	meta = game_manager.get_meta()
+	# do some sound or animation indicating the gain in points
+	update_players(game_manager.turn_color())
+	
 func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
 	append_history(game_manager.gamestatestr(s))
 	countdown = -1.0

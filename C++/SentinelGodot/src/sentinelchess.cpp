@@ -496,7 +496,7 @@ String SentinelChess::win_points(ChessColor col)
     int32_t draw = 0;
     m_lobby.potential_points((color_e)col, win, lose, draw);
     std::string winlosedraw = std::to_string(win) + "/" + std::to_string(lose);
-    if(mp_game)
+    if (mp_game)
         if (!mp_game->puzzle())
             winlosedraw += "/" + std::to_string(draw);
     return String(winlosedraw.c_str());
@@ -729,6 +729,7 @@ void ChessEvent::_bind_methods()
     BIND_ENUM_CONSTANT(ceConsider);
     BIND_ENUM_CONSTANT(ceTurn);
     BIND_ENUM_CONSTANT(ceState);
+    BIND_ENUM_CONSTANT(cePoints);
     BIND_ENUM_CONSTANT(ceChat);
 }
 

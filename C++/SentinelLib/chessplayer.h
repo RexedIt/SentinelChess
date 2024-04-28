@@ -46,6 +46,8 @@ namespace chess
         int32_t playerpuzzlepoints();
         chessplayerdata playerdata();
 
+        error_e refresh();
+
         friend class chesslobby;
 
     protected:

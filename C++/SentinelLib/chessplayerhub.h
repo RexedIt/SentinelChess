@@ -56,6 +56,7 @@ namespace chess
         error_e get_or_register_player(chessplayerdata &data);
         error_e get_matching_computer_player(chessplayerdata &data, std::string username = "", int32_t elo = 0);
 
+        error_e refresh_player(chessplayerdata &data);
         error_e update_player(chessplayerdata data);
         error_e update_points(std::string guid, int32_t pts, bool puzzle);
 

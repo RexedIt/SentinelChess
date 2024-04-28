@@ -521,9 +521,15 @@ ChessMeta::ChessMeta(std::shared_ptr<chessgame> g, chesslobby &l)
     m_b_points = winlosedraw(c_black, puzzle, l);
     std::map<color_e, std::shared_ptr<chessplayer>> pl = l.players();
     if (pl.count(c_white))
+    {
+        pl[c_white]->refresh();
         m_white = pl[c_white]->playerdata();
+    }
     if (pl.count(c_black))
+    {
+        pl[c_black]->refresh();
         m_black = pl[c_black]->playerdata();
+    }
 }
 
 ChessMeta::~ChessMeta()
