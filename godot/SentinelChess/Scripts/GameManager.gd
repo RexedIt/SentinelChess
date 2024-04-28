@@ -2,6 +2,7 @@ extends SentinelChess
 
 # siblings
 @onready var skin : Node = get_node('/root/MainGame/Skin')
+@onready var base_title : String = ''
 @onready var Background : Sprite2D = get_parent().get_node("Background")
 @onready var popNew : Window = get_parent().get_node("popNew")
 @onready var popPuzzle : Window = get_parent().get_node("popPuzzle")
@@ -31,11 +32,12 @@ func _ready():
 	popSave.on_closed.connect(_on_closed_save)
 	popPromote.on_closed.connect(_on_closed_promote)
 	popSettings.on_closed.connect(_on_closed_settings)
+	base_title = get_window().title
 	applyskin()
 	_gamestatereact(GameState.INIT)
 
 func applyskin():
-	popNew.set_theme(skin.theme)
+	popNew.applyskin()
 	popPuzzle.set_theme(skin.theme)
 	popLoad.set_theme(skin.theme)
 	popSave.set_theme(skin.theme)
@@ -71,6 +73,8 @@ func _physics_process(delta):
 				var wc : ChessColor = ce.win_color();
 				var wt : int = ce.white_time()
 				var bt : int = ce.black_time()
+				var wp : int = ce.white_points()
+				var bp : int = ce.black_points()
 				var cmt : String = ce.cmt()
 				if m.is_valid():
 					var cm : ChessColor = ChessColor.White
@@ -88,6 +92,11 @@ func _physics_process(delta):
 			ChessEvent.ChessEventType.ceState:
 				print('ceState')
 				_on_state(ce.game_state(), ce.win_color())
+			ChessEvent.ChessEventType.cePoints:
+				print('cePoints')
+				var wp : int = ce.white_points()
+				var bp : int = ce.black_points()
+				_on_points(wp, bp)
 			ChessEvent.ChessEventType.ceChat:
 				print('ceChat *** REM *** TODO')
 
@@ -217,6 +226,12 @@ func _on_animated():
 		gameUI.refreshPrompt(c)
 	_gamestatereact(GameState.PLAY)
 	
+func save_player(player : ChessPlayer):
+	if player.PlayerType == ChessPlayer.Human:
+		var err : int = hub_update_player(player)
+		if err != 0:
+			_on_error(err)
+
 # Dialog Handlers
 func _on_closed_new(_cancelled, _title, _white, _black, _clock):
 	print("on_closed_new")
@@ -224,9 +239,12 @@ func _on_closed_new(_cancelled, _title, _white, _black, _clock):
 		_gamestatereact(prepopgamestate)
 		return
 	# start new game
+	save_player(_white)
+	save_player(_black)
 	new_game(_title, _white, _black, _clock)
 	refresh_board_color(preferred_board_color())
 	gameUI.initialize('New Game')
+	DisplayServer.window_set_title(base_title + ' - New Game')
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
@@ -236,6 +254,7 @@ func _on_closed_puzzle(_cancelled, _player, _keywords, _rating):
 		_gamestatereact(prepopgamestate)
 		return
 	# start new game
+	save_player(_player)
 	var err : int = load_puzzle(_player, _keywords, _rating)
 	if err != 0:
 		_on_error(err)
@@ -243,6 +262,7 @@ func _on_closed_puzzle(_cancelled, _player, _keywords, _rating):
 		return
 	refresh_board_color(preferred_board_color())
 	gameUI.initialize('Load Puzzle')
+	DisplayServer.window_set_title(base_title + ' - Puzzle')
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 		
@@ -259,6 +279,7 @@ func _on_closed_load(_cancelled, _filename):
 		_gamestatereact(prepopgamestate)
 		return
 	gameUI.initialize('Load Game - ' + _filename)
+	DisplayServer.window_set_title(base_title + ' - ' + _filename)
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
@@ -275,6 +296,7 @@ func _on_closed_save(_cancelled, _filename):
 		_gamestatereact(prepopgamestate)
 		return
 	gameUI.append_history('Save Game - ' + _filename)
+	DisplayServer.window_set_title(base_title + ' - ' + _filename)
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
@@ -344,9 +366,10 @@ func set_idle(b : bool):
 
 func finish_game(s : ChessGameState, w : ChessColor):
 	_gamestatereact(GameState.END)
-	gameUI.finish_game(s, w)
-	board.finish_game(s, w)
-	popEnd.finish_game(s, w)
+	if popEnd.visible == false:
+		gameUI.finish_game(s, w)
+		board.finish_game(s, w)
+		popEnd.finish_game(s, w)
 		
 func _on_state(s : ChessGameState, w : ChessColor):
 	if s == Idle:
@@ -355,6 +378,9 @@ func _on_state(s : ChessGameState, w : ChessColor):
 		set_idle(false)
 	if s > Play:
 		finish_game(s, w)
+		
+func _on_points(wp : int, bp : int):
+	gameUI.update_points(wp, bp)
 	
 func refresh_board(c : ChessColor, b : ChessBoard):
 	refresh_board_color(c)

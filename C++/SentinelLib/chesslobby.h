@@ -45,7 +45,7 @@ namespace chess
         bool is_local(color_e col);
         bool is_local_turn();
         bool is_local_active(color_e col);
-        int win_points(color_e col);
+        void potential_points(color_e col, int32_t &win, int32_t &lose, int32_t &draw);
 
         std::string player_name(color_e col);
         std::map<color_e, std::string> player_names();
@@ -64,9 +64,10 @@ namespace chess
 
         void attach_to_game();
         void detach_from_game();
-        int player_points();
         void backup();
+        void write_player_meta(bool puzzle = false);
         error_e restore(error_e err = e_none);
+        std::map<color_e, int32_t> player_skills_nolock();
 
         std::map<color_e, std::shared_ptr<chessplayer>> mp_players_backup;
         std::shared_ptr<chessgame> mp_game_backup;

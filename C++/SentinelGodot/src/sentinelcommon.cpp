@@ -224,7 +224,7 @@ ChessPlayer::ChessPlayer(std::shared_ptr<chessplayer> p)
     }
 }
 
-ChessPlayer::ChessPlayer(chessplayerdata &pd)
+ChessPlayer::ChessPlayer(const chessplayerdata &pd)
 {
     m_playerdata = pd;
     m_playercolor = c_none;
@@ -251,10 +251,14 @@ void ChessPlayer::_bind_methods()
     ClassDB::bind_method(D_METHOD("guid"), &ChessPlayer::guid);
     ClassDB::bind_method(D_METHOD("fullname"), &ChessPlayer::fullname);
     ClassDB::bind_method(D_METHOD("puzzlepoints"), &ChessPlayer::puzzlepoints);
-    ClassDB::bind_method(D_METHOD("gamepoints"), &ChessPlayer::gamepoints);
-    ClassDB::bind_method(D_METHOD("persistent"), &ChessPlayer::persistent);
-    ClassDB::bind_method(D_METHOD("avatar"), &ChessPlayer::avatar);
+    ClassDB::bind_method(D_METHOD("get_persistent"), &ChessPlayer::get_persistent);
+    ClassDB::bind_method(D_METHOD("set_persistent"), &ChessPlayer::set_persistent);
+    ClassDB::add_property("ChessPlayer", PropertyInfo(Variant::BOOL, "Persistent"), "set_persistent", "get_persistent");
+    ClassDB::bind_method(D_METHOD("get_avatar"), &ChessPlayer::get_avatar);
+    ClassDB::bind_method(D_METHOD("set_avatar", "uuenc"), &ChessPlayer::set_avatar);
+    ClassDB::add_property("ChessPlayer", PropertyInfo(Variant::STRING, "Avatar"), "set_avatar", "get_avatar");
     ClassDB::bind_method(D_METHOD("meta"), &ChessPlayer::meta);
+    ClassDB::bind_method(D_METHOD("copy"), &ChessPlayer::copy);
 
     // ChessPlayerType
     BIND_ENUM_CONSTANT(tNone);
@@ -318,19 +322,24 @@ int ChessPlayer::puzzlepoints()
     return m_playerdata.puzzlepoints;
 }
 
-int ChessPlayer::gamepoints()
-{
-    return m_playerdata.gamepoints;
-}
-
-bool ChessPlayer::persistent()
+bool ChessPlayer::get_persistent()
 {
     return m_playerdata.persistent;
 }
 
-String ChessPlayer::avatar()
+void ChessPlayer::set_persistent(const bool b)
+{
+    m_playerdata.persistent = b;
+}
+
+String ChessPlayer::get_avatar()
 {
     return String(m_playerdata.avatar.c_str());
+}
+
+void ChessPlayer::set_avatar(const String s)
+{
+    m_playerdata.avatar = s.ascii().get_data();
 }
 
 String ChessPlayer::meta()
@@ -338,9 +347,15 @@ String ChessPlayer::meta()
     return String(m_playerdata.meta.c_str());
 }
 
+Ref<ChessPlayer> ChessPlayer::copy()
+{
+    Ref<ChessPlayer> cp(memnew(ChessPlayer(m_playerdata)));
+    return cp;
+}
+
 int ChessPlayer::refresh()
 {
-    return chessengine::get_or_register_player(m_playerdata);
+    return chessengine::hub_get_or_register_player(m_playerdata);
 }
 
 chessplayerdata ChessPlayer::get()
@@ -472,33 +487,49 @@ ChessMeta::ChessMeta()
 {
     m_puzzle = false;
     m_hints = 0;
-    m_points = 0;
-    m_w_points = 0;
-    m_b_points = 0;
     m_turns = 0;
     m_playno = 0;
 }
 
+std::string winlosedraw(color_e col, bool puzzle, chesslobby &l)
+{
+    int32_t win = 0;
+    int32_t lose = 0;
+    int32_t draw = 0;
+    l.potential_points(col, win, lose, draw);
+    std::string ret = std::to_string(win) + "/" + std::to_string(lose);
+    if (!puzzle)
+        ret += "/" + std::to_string(draw);
+    return ret;
+}
+
 ChessMeta::ChessMeta(std::shared_ptr<chessgame> g, chesslobby &l)
 {
+    bool puzzle = false;
     if (g != NULL)
     {
         m_title = g->title();
         m_puzzle = g->puzzle();
-        m_points = g->points();
         m_hints = g->hints();
         m_turns = g->playmax();
         m_playno = g->playno();
         m_eco = g->eco();
         m_open_title = g->open_title();
+        puzzle = g->puzzle();
     }
-    m_w_points = l.win_points(c_white);
-    m_b_points = l.win_points(c_black);
+    m_w_points = winlosedraw(c_white, puzzle, l);
+    m_b_points = winlosedraw(c_black, puzzle, l);
     std::map<color_e, std::shared_ptr<chessplayer>> pl = l.players();
     if (pl.count(c_white))
+    {
+        pl[c_white]->refresh();
         m_white = pl[c_white]->playerdata();
+    }
     if (pl.count(c_black))
+    {
+        pl[c_black]->refresh();
         m_black = pl[c_black]->playerdata();
+    }
 }
 
 ChessMeta::~ChessMeta()
@@ -512,7 +543,6 @@ void ChessMeta::_bind_methods()
     ClassDB::bind_method(D_METHOD("black"), &ChessMeta::black);
     ClassDB::bind_method(D_METHOD("puzzle"), &ChessMeta::puzzle);
     ClassDB::bind_method(D_METHOD("hints"), &ChessMeta::hints);
-    ClassDB::bind_method(D_METHOD("points"), &ChessMeta::points);
     ClassDB::bind_method(D_METHOD("white_points"), &ChessMeta::white_points);
     ClassDB::bind_method(D_METHOD("black_points"), &ChessMeta::black_points);
     ClassDB::bind_method(D_METHOD("turns"), &ChessMeta::turns);
@@ -548,19 +578,14 @@ int ChessMeta::hints()
     return m_hints;
 }
 
-int ChessMeta::points()
+String ChessMeta::white_points()
 {
-    return m_points;
+    return String(m_w_points.c_str());
 }
 
-int ChessMeta::white_points()
+String ChessMeta::black_points()
 {
-    return m_w_points;
-}
-
-int ChessMeta::black_points()
-{
-    return m_b_points;
+    return String(m_b_points.c_str());
 }
 
 int ChessMeta::turns()

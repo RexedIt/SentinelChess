@@ -2,7 +2,6 @@ extends CanvasLayer
 
 @onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var game_manager : SentinelChess = get_parent().get_node('SentinelChess')
-
 @onready var pnlScore : Panel = get_node('pnlScore')
 @onready var lblTitle : Label = get_node('lblTitle')
 @onready var lblEco : Label = get_node('lblEco')
@@ -43,9 +42,6 @@ var PauseTexture : Texture2D
 var meta : ChessMeta = null
 var puzzle : bool = false
 var hints : int = 0
-var points : int = 0
-var white_points : int = 0
-var black_points : int = 0
 var voice_queue = []
 var do_voice : bool = false
 var do_sfx : bool = false
@@ -125,11 +121,11 @@ func update_players(turnc : SentinelChess.ChessColor):
 	else:
 		botc = game_manager.preferred_board_color()
 	if botc == SentinelChess.White:
-		pnlPlayerTop.refreshplayer(SentinelChess.Black, meta.black())
-		pnlPlayerBottom.refreshplayer(botc, meta.white())
+		pnlPlayerTop.refreshplayer(SentinelChess.Black, meta.black(), puzzle)
+		pnlPlayerBottom.refreshplayer(botc, meta.white(), puzzle)
 	else:
-		pnlPlayerTop.refreshplayer(SentinelChess.White, meta.white())
-		pnlPlayerBottom.refreshplayer(botc, meta.black())
+		pnlPlayerTop.refreshplayer(SentinelChess.White, meta.white(), puzzle)
+		pnlPlayerBottom.refreshplayer(botc, meta.black(), puzzle)
 	
 func initialize(msg : String):
 	meta = game_manager.get_meta()
@@ -138,12 +134,14 @@ func initialize(msg : String):
 	setEcoValues(meta.eco(), meta.open_title())
 	puzzle = meta.puzzle()
 	hints = meta.hints()
-	points = meta.points()
-	white_points = meta.white_points()
-	black_points = meta.black_points()
+	var white_points : String = meta.white_points()
+	var black_points : String = meta.black_points()
 	pnlScore.visible = true
 	if puzzle:
-		pnlScore.setPuzzleValues(points,hints,true)
+		var puzzle_points : String = white_points
+		if game_manager.lone_local_color() == SentinelChess.ChessColor.Black:
+			puzzle_points = black_points
+		pnlScore.setPuzzleValues(puzzle_points,hints,true)
 	else:
 		pnlScore.setScoreValues(white_points,black_points);
 	btnHint.disabled = (not puzzle) or hints <= 0
@@ -362,7 +360,7 @@ func handle_advance() -> bool:
 
 func refreshhints():
 	hints = game_manager.hints()
-	points = game_manager.win_points(SentinelChess.cNone)
+	var points : String = game_manager.win_points(game_manager.lone_local_color())
 	btnHint.disabled =(not puzzle) or hints <= 0
 	pnlScore.setPuzzleValues(points,hints,false)
 
@@ -457,8 +455,14 @@ func possible_move(p0 : ChessCoord, p1 : ChessCoord) -> bool:
 			return true
 	return false
 
+func append_extension(filename, ext) -> String:
+	var final : String = filename
+	if final.to_upper().ends_with(ext.to_upper()):
+		return final
+	return final + ext
+	
 func handle_load(filename: String) -> bool:
-	var toload : String = filename + '.chs'
+	var toload : String = append_extension(filename,'.chs')
 	var err : int = game_manager.load_game(toload)
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
@@ -469,12 +473,12 @@ func handle_load(filename: String) -> bool:
 	return true
 
 func handle_save(filename: String) -> bool:
-	var tosave : String = filename + '.chs'
-	var err : int = game_manager.save_game(tosave)
+	var toSave : String = append_extension(filename,'.chs')
+	var err : int = game_manager.save_game(toSave)
 	if err != 0:
 		show_error('!' + game_manager.errorstr(err))
 		return false
-	append_history('Save Game - ' + tosave)
+	append_history('Save Game - ' + toSave)
 	return true
 	
 func incorrectmove():
@@ -512,7 +516,6 @@ func clock_turn(col : SentinelChess.ChessColor, wt : int, bt : int):
 		countdown = float(wt) / 1000.0
 	if col == SentinelChess.Black:
 		countdown = float(bt) / 1000.0
-	print('clock_turn called')
 		
 func clock_update(delta : float):
 	if countdown>=0.0:
@@ -542,6 +545,11 @@ func gamestate(gs):
 		do_voice = game_manager.has_local()
 		do_sfx = do_voice
 		
+func update_points(wp: int, bp: int):
+	meta = game_manager.get_meta()
+	# do some sound or animation indicating the gain in points
+	update_players(game_manager.turn_color())
+	
 func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
 	append_history(game_manager.gamestatestr(s))
 	countdown = -1.0

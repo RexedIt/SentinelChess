@@ -50,7 +50,9 @@ namespace chess
         int16_t playno();
         bool puzzle();
         int hints();
-        int points();
+        bool awarded();
+        void potential_points(color_e col, int32_t &win, int32_t &lose, int32_t &draw);
+        int32_t award_points(color_e col);
 
         chessmove hint();
         std::string hintstr();
@@ -105,8 +107,6 @@ namespace chess
         error_e chat(std::string, color_e);
         error_e consider(chessmove, color_e, int8_t pct = -1);
 
-        void set_points(const int);
-
     private:
         void set_state(game_state_e g, bool force_notify = false);
         void set_turn_to(int idx, bool activate = false);
@@ -122,6 +122,7 @@ namespace chess
         void signal_on_consider(chessmove, color_e, int8_t pct = -1);
         void signal_on_turn(bool refreshtime = false);
         void signal_on_state();
+        void signal_on_points();
         void signal_chat(std::string, color_e);
 
         void add_clock(const chessclock_s &);
@@ -135,7 +136,8 @@ namespace chess
         int m_play_pos;
         bool m_puzzle;
         int m_hints;
-        int m_points;
+        float m_puzzle_mult;
+        bool m_awarded;
 
         color_e m_win_color;
 

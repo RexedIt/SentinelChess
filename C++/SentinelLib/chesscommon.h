@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdlib>
 #include <vector>
+#include <map>
 
 namespace chess
 {
@@ -13,6 +14,10 @@ namespace chess
         v = o[k];             \
     else                      \
         v = d;
+
+#define JSON_LOADIF(o, k, v) \
+    if (o.contains(k))       \
+        v = o[k];
 
 #define JSON_GET(o, k, d) \
     (o.contains(k) ? o[k] : d)
@@ -72,6 +77,9 @@ namespace chess
         e_user_not_found,
         e_no_player_hub,
         e_no_guid,
+        e_no_username,
+        e_cannot_register,
+        e_points_awarded
     } error_e;
 
     std::string errorstr(error_e num);
@@ -196,7 +204,8 @@ namespace chess
         cl_none,
         cl_computer,
         cl_user,
-        cl_clock
+        cl_clock,
+        cl_lobby
     } chessgamelistenertype;
 
     class chessmove;
@@ -224,6 +233,9 @@ namespace chess
     std::string time_str(int32_t t);
     bool is_color(unsigned char cell, color_e color);
     color_e other(color_e c);
+
+    // Elo point possibilities
+    void calc_elo_points(color_e col, std::map<color_e, int32_t> elo, int32_t &win, int32_t &lose, int32_t &draw);
 
     float get_rand();
     int get_rand_int(int min, int max);

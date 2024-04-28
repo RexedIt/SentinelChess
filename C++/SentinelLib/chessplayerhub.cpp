@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include "chessplayerhub.h"
 #include "chessplayer.h"
@@ -11,14 +12,13 @@ namespace chess
 
     chessplayerdata::chessplayerdata()
     {
-        elo = 500;
+        elo = 100;
         ptype = t_none;
         puzzlepoints = 0;
-        gamepoints = 0;
         persistent = false;
     }
 
-    chessplayerdata::chessplayerdata(std::string _guid, std::string _username, int32_t _elo, chessplayertype_e _ptype, bool _persistent, std::string _meta)
+    chessplayerdata::chessplayerdata(std::string _guid, std::string _username, int32_t _elo, chessplayertype_e _ptype, bool _persistent, std::string _meta, int32_t _puzzlepoints)
     {
         guid = _guid;
         username = _username;
@@ -26,14 +26,14 @@ namespace chess
         ptype = _ptype;
         persistent = _persistent;
         meta = _meta;
-        elo = 0;
-        puzzlepoints = 0;
-        gamepoints = 0;
+        puzzlepoints = _puzzlepoints;
     }
 
-    chessplayerdata::chessplayerdata(json j)
+    chessplayerdata::chessplayerdata(json j, chessplayertype_e _ptype)
     {
         load_json(j);
+        if (_ptype != t_none)
+            ptype = _ptype;
     }
 
     error_e chessplayerdata::load_json(json j)
@@ -46,10 +46,15 @@ namespace chess
         JSON_LOAD(j, "ptype", ptypestr, "None");
         ptype = playertypefromstring(ptypestr);
         JSON_LOAD(j, "puzzlepoints", puzzlepoints, 0);
-        JSON_LOAD(j, "gamepoints", gamepoints, 0);
         JSON_LOAD(j, "persistent", persistent, true);
         JSON_LOAD(j, "avatar", avatar, "");
-        JSON_LOAD(j, "meta", meta, "");
+
+        if (j.contains("meta"))
+        {
+            auto mj = j["meta"];
+            meta = mj.dump();
+        }
+
         return e_none;
     }
 
@@ -64,10 +69,15 @@ namespace chess
         {
             j["fullname"] = fullname;
             j["puzzlepoints"] = puzzlepoints;
-            j["gamepoints"] = gamepoints;
             j["avatar"] = avatar;
         }
-        j["meta"] = meta;
+        if (meta != "")
+        {
+            auto mj = json::object();
+            std::istringstream ifs(meta);
+            ifs >> mj;
+            j["meta"] = mj;
+        }
         return e_none;
     }
 
@@ -84,9 +94,9 @@ namespace chess
         return str;
     }
 
-    chessplayerdata new_computer_player(std::string username, int32_t elo, std::string meta)
+    chessplayerdata new_computer_player(std::string guid, std::string username, int32_t elo, std::string meta)
     {
-        return chessplayerdata(new_guid(), username, elo, t_computer, false, meta);
+        return chessplayerdata(guid, username, elo, t_computer, false, meta);
     }
 
     chessplayerdata new_human_player(std::string username, int32_t elo, std::string meta)
@@ -94,9 +104,9 @@ namespace chess
         return chessplayerdata(new_guid(), username, elo, t_human, false, meta);
     }
 
-    chessplayerdata new_puzzle_player(std::string username, int32_t elo, std::string meta)
+    chessplayerdata new_puzzle_player(std::string username, int32_t puzzlepoints, std::string meta)
     {
-        return chessplayerdata(new_guid(), username, elo, t_puzzle, false, meta);
+        return chessplayerdata(new_guid(), username, puzzlepoints, t_puzzle, false, meta, puzzlepoints);
     }
 
     chessplayerhub::chessplayerhub()
@@ -106,17 +116,16 @@ namespace chess
             std::cerr << " *** SINGLETON ERROR *** - chessplayerhub already running!" << std::endl;
         }
         p_hub = this;
-        initialize();
     }
 
     chessplayerhub::~chessplayerhub()
     {
         save_json();
-        m_players.clear();
+        m_humans.clear();
         p_hub = NULL;
     }
 
-    error_e chessplayerhub::load_json(std::string filename)
+    error_e chessplayerhub::load_players(std::string filename)
     {
         m_filename = filename;
         try
@@ -133,7 +142,7 @@ namespace chess
             clear_players();
 
             for (auto player : players)
-                register_data(chessplayerdata(player));
+                register_data(chessplayerdata(player, t_human));
 
             return e_none;
         }
@@ -144,7 +153,34 @@ namespace chess
         }
     }
 
-    error_e chessplayerhub::save_json()
+    error_e chessplayerhub::load_computers(std::string filename)
+    {
+        try
+        {
+            std::ifstream is;
+            is.open(filename, std::ios::binary | std::ios::in);
+            if (!is.is_open())
+                return e_loading;
+            json jsonf;
+            is >> jsonf;
+            is.close();
+
+            auto players = jsonf["Players"];
+            m_computers.clear();
+
+            for (auto player : players)
+                register_data(chessplayerdata(player, t_computer));
+
+            return e_none;
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
+            return e_loading;
+        }
+    }
+
+    error_e chessplayerhub::save_json(bool persistent)
     {
         // do not lock this with mutex as it will be called by locked functions
         if (m_filename == "")
@@ -156,11 +192,12 @@ namespace chess
 
             auto players = json::array();
 
-            for (std::map<std::string, chessplayerdata>::iterator it = m_players.begin(); it != m_players.end(); ++it)
+            for (std::map<std::string, chessplayerdata>::iterator it = m_humans.begin(); it != m_humans.end(); ++it)
             {
                 auto player = json::object();
-                if (it->second.persistent)
+                if (it->second.persistent == persistent)
                     it->second.save_json(player);
+                players.push_back(player);
             }
 
             jsonf["Players"] = players;
@@ -181,41 +218,73 @@ namespace chess
     void chessplayerhub::clear_players()
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        m_players.clear();
-    }
-
-    void chessplayerhub::initialize()
-    {
-        register_data(new_computer_player("Hank", 500, ""));
-        register_data(new_computer_player("Veronica", 1000, ""));
-        register_data(new_computer_player("Julian", 1500, ""));
-        register_data(new_computer_player("Hal", 2000, ""));
-        register_data(new_computer_player("DeepDrew", 2500, ""));
+        m_humans.clear();
     }
 
     error_e chessplayerhub::register_data(chessplayerdata data)
+    {
+        if (data.ptype == t_human)
+            return register_player(data);
+        else if (data.ptype == t_computer)
+            return register_computer(data);
+        else
+            return e_cannot_register;
+    }
+
+    error_e chessplayerhub::register_player(chessplayerdata data)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         data.username = trim(data.username);
         if (data.guid == "")
             return e_no_guid;
-        m_players[data.guid] = data;
+        if (data.username == "")
+            return e_no_username;
+        if (data.ptype != t_human)
+            return e_cannot_register;
+        if (m_humans.count(data.guid))
+            return e_player_already_registered;
+        for (auto kv : m_humans)
+            if (kv.first != data.guid)
+                if (uppercase(kv.second.username) == uppercase(data.username))
+                    return e_player_already_registered;
+        m_humans[data.guid] = data;
         if (data.persistent)
             save_json();
         return e_none;
     }
 
-    error_e chessplayerhub::get_or_register_player(std::string username, int32_t elo, chessplayertype_e ptype, chessplayerdata &data)
+    error_e chessplayerhub::register_computer(chessplayerdata data)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        data.username = trim(data.username);
+        if (data.guid == "")
+            return e_no_guid;
+        if (data.username == "")
+            return e_no_username;
+        if (data.ptype != t_computer)
+            return e_cannot_register;
+        if (m_computers.count(data.guid))
+            return e_player_already_registered;
+        for (auto kv : m_computers)
+            if (uppercase(kv.second.username) == uppercase(data.username))
+                return e_player_already_registered;
+        m_computers[data.guid] = data;
+        return e_none;
+    }
+
+    error_e chessplayerhub::get_or_register_player(chessplayerdata &data, std::string username, int32_t elo, chessplayertype_e ptype)
     {
         error_e err = e_none;
+        if (ptype == t_computer)
+            return get_matching_computer_player(data, username, elo);
+        // Humans
         if ((data.guid != "") && (data.username == username))
         {
-            err = find_by_id(data.guid, data);
+            err = find_by_id(data, data.guid);
             if (err == e_none)
                 return e_none;
         }
-
-        err = find_by_user(username, ptype, data);
+        err = find_player_by_username(data, username, ptype);
         if (err == e_player_not_found)
         {
             data.guid = new_guid();
@@ -229,33 +298,45 @@ namespace chess
 
     error_e chessplayerhub::get_or_register_player(chessplayerdata &data)
     {
-        return get_or_register_player(data.username, data.elo, data.ptype, data);
+        return get_or_register_player(data, data.username, data.elo, data.ptype);
     }
 
-    error_e chessplayerhub::get_matching_computer_player(int32_t elo, chessplayerdata &data)
+    error_e chessplayerhub::get_matching_computer_player(chessplayerdata &data, std::string username, int32_t _elo)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         std::vector<std::string> matches;
-        for (std::map<std::string, chessplayerdata>::iterator it = m_players.begin(); it != m_players.end(); ++it)
-            if (it->second.ptype == t_computer)
-                if (abs(it->second.elo - elo) >= 250)
-                    matches.push_back(it->second.guid);
+        std::string uusername = uppercase(username);
+        int32_t elo = _elo;
+        if (elo < 100)
+            elo = 100;
+        if (elo > 2000)
+            elo = 2000;
+        for (std::map<std::string, chessplayerdata>::iterator it = m_computers.begin(); it != m_computers.end(); ++it)
+        {
+            if ((uusername != "") && (uusername == uppercase(it->second.username)))
+            {
+                data = it->second;
+                return e_none;
+            }
+            if (abs(it->second.elo - elo) <= 300)
+                matches.push_back(it->second.guid);
+        }
         if (matches.size() == 0)
             return e_player_not_found;
         size_t idx = (size_t)get_rand_int(0, (int)(matches.size() - 1));
-        data = m_players[matches[idx]];
+        data = m_computers[matches[idx]];
         return e_none;
     }
 
     error_e chessplayerhub::unregister(std::string guid)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        std::map<std::string, chessplayerdata>::iterator it = m_players.find(guid);
+        std::map<std::string, chessplayerdata>::iterator it = m_humans.find(guid);
         bool persistent = false;
-        if (it != m_players.end())
+        if (it != m_humans.end())
         {
             persistent = it->second.persistent;
-            m_players.erase(it);
+            m_humans.erase(it);
             if (persistent)
                 save_json();
             return e_none;
@@ -263,22 +344,27 @@ namespace chess
         return e_player_not_found;
     }
 
-    error_e chessplayerhub::find_by_id(std::string guid, chessplayerdata &data)
+    error_e chessplayerhub::find_by_id(chessplayerdata &data, std::string guid)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        if (m_players.count(guid))
+        if (m_humans.count(guid))
         {
-            data = m_players[guid];
+            data = m_humans[guid];
+            return e_none;
+        }
+        if (m_computers.count(guid))
+        {
+            data = m_computers[guid];
             return e_none;
         }
         return e_player_not_found;
     }
 
-    error_e chessplayerhub::find_by_user(std::string username, chessplayertype_e ptype, chessplayerdata &data)
+    error_e chessplayerhub::find_player_by_username(chessplayerdata &data, std::string username, chessplayertype_e ptype)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         std::string uusername = trim(uppercase(username));
-        for (std::map<std::string, chessplayerdata>::iterator it = m_players.begin(); it != m_players.end(); ++it)
+        for (std::map<std::string, chessplayerdata>::iterator it = m_humans.begin(); it != m_humans.end(); ++it)
         {
             if (it->second.ptype == ptype)
                 if (uppercase(it->second.username) == uusername)
@@ -288,6 +374,160 @@ namespace chess
                 }
         }
         return e_player_not_found;
+    }
+
+    std::vector<std::string> chessplayerhub::usernames(chessplayertype_e ptype, int32_t elo)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        std::vector<std::string> ret;
+        if (ptype == t_human)
+        {
+            for (std::map<std::string, chessplayerdata>::iterator it = m_humans.begin(); it != m_humans.end(); ++it)
+            {
+                bool match = true;
+                if (elo > 0)
+                {
+                    int32_t celo = it->second.elo;
+                    match = ((celo >= elo - 250) && (celo <= elo + 250));
+                }
+                if (match)
+                    ret.push_back(it->second.username);
+            }
+        }
+        else if (ptype == t_computer)
+        {
+            for (std::map<std::string, chessplayerdata>::iterator it = m_computers.begin(); it != m_computers.end(); ++it)
+            {
+                bool match = true;
+                if (elo > 0)
+                {
+                    int32_t celo = it->second.elo;
+                    match = ((celo >= elo - 250) && (celo <= elo + 250));
+                }
+                if (match)
+                    ret.push_back(it->second.username);
+            }
+        }
+        std::sort(ret.begin(), ret.end());
+        return ret;
+    }
+
+    std::vector<chessplayerdata> chessplayerhub::players(chessplayertype_e ptype, bool include_avatars, int32_t elo, bool sort_elo)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        std::vector<chessplayerdata> ret;
+        if (ptype == t_human)
+        {
+            for (std::map<std::string, chessplayerdata>::iterator it = m_humans.begin(); it != m_humans.end(); ++it)
+            {
+                chessplayerdata pd = it->second;
+                bool match = true;
+                if (elo > 0)
+                {
+                    int32_t celo = pd.elo;
+                    match = ((celo >= elo - 250) && (celo <= elo + 250));
+                }
+                if (match)
+                {
+                    if (include_avatars == false)
+                        pd.avatar = "";
+                    ret.push_back(pd);
+                }
+            }
+        }
+        else if (ptype == t_computer)
+        {
+            for (std::map<std::string, chessplayerdata>::iterator it = m_computers.begin(); it != m_computers.end(); ++it)
+            {
+                chessplayerdata pd = it->second;
+                bool match = true;
+                if (elo > 0)
+                {
+                    int32_t celo = pd.elo;
+                    match = ((celo >= elo - 250) && (celo <= elo + 250));
+                }
+                if (match)
+                {
+                    if (include_avatars == false)
+                        pd.avatar = "";
+                    ret.push_back(pd);
+                }
+            }
+        }
+        if (sort_elo)
+        {
+            sort(ret.begin(), ret.end(),
+                 [](const chessplayerdata &a, const chessplayerdata &b)
+                 {
+                     return a.elo < b.elo;
+                 });
+        }
+        else
+        {
+            sort(ret.begin(), ret.end(),
+                 [](const chessplayerdata &a, const chessplayerdata &b)
+                 {
+                     return a.username < b.username;
+                 });
+        }
+        return ret;
+    }
+
+    error_e chessplayerhub::refresh_player(chessplayerdata &data)
+    {
+        return find_by_id(data, data.guid);
+    }
+
+    error_e chessplayerhub::update_player(chessplayerdata data)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        chessplayerdata d = data;
+        std::string guid = d.guid;
+        if (guid == "")
+            return e_no_guid;
+        d.username = trim(d.username);
+        if (d.username == "")
+            return e_no_username;
+        if (d.ptype != t_human)
+            return e_cannot_register;
+        for (auto kv : m_humans)
+            if (kv.first != d.guid)
+                if (uppercase(kv.second.username) == uppercase(d.username))
+                    return e_player_already_registered;
+        if (m_humans.count(guid))
+        {
+            chessplayerdata ed = m_humans[guid];
+            d.puzzlepoints = ed.puzzlepoints;
+            d.elo = ed.elo;
+        }
+        m_humans[guid] = d;
+        save_json();
+        return e_none;
+    }
+
+    error_e chessplayerhub::update_points(std::string guid, int32_t pts, bool puzzle)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if (guid == "")
+            return e_no_guid;
+        if (m_humans.count(guid) == 0)
+            return e_player_not_found;
+        chessplayerdata d = m_humans[guid];
+        if (puzzle)
+        {
+            d.puzzlepoints += pts;
+            if (d.puzzlepoints < 0)
+                d.puzzlepoints = 0;
+        }
+        else
+        {
+            d.elo += pts;
+            if (d.elo < 100)
+                d.elo = 100;
+        }
+        m_humans[guid] = d;
+        save_json();
+        return e_none;
     }
 
 }

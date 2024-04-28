@@ -1,4 +1,5 @@
 #include "chessplayer.h"
+#include "chessengine.h"
 
 namespace chess
 {
@@ -60,6 +61,11 @@ namespace chess
     {
     }
 
+    std::string chessplayer::playerguid()
+    {
+        return m_data.guid;
+    }
+
     color_e chessplayer::playercolor()
     {
         return m_color;
@@ -86,9 +92,19 @@ namespace chess
         return m_data.elo;
     }
 
+    int32_t chessplayer::playerpuzzlepoints()
+    {
+        return m_data.puzzlepoints;
+    }
+
     chessplayerdata chessplayer::playerdata()
     {
         return m_data;
+    }
+
+    error_e chessplayer::refresh()
+    {
+        return chessengine::hub_refresh_player(m_data);
     }
 
     bool chessplayer::is(color_e c)

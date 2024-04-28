@@ -6,7 +6,10 @@ var _white : ChessPlayer
 var _black : ChessPlayer
 var _clock : ChessClock
 
+@onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var txtTitle : TextEdit = get_node("MC/VC/HC/txtTitle")
+@onready var WhitePlayer : HBoxContainer = get_node('MC/VC/WhitePlayer')
+@onready var BlackPlayer : HBoxContainer = get_node('MC/VC/BlackPlayer')
 @onready var btnCancel : Button = get_node("btnCancel")
 @onready var btnOK : Button = get_node("btnOK")
 @onready var optNone : CheckBox = get_node("MC/VC/Clock/HC/VC/optNone")
@@ -20,6 +23,9 @@ var _clock : ChessClock
 @onready var AddWhite : HBoxContainer = get_node("MC/VC/Clock/HC/TVC/AddWhite")
 @onready var AddBlack : HBoxContainer = get_node("MC/VC/Clock/HC/TVC/AddBlack")
 @onready var TVC : VBoxContainer = get_node("MC/VC/Clock/HC/TVC")
+
+var loaded : bool = false
+var skinned : bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -36,7 +42,16 @@ func _ready():
 	_white = ChessPlayer.new()
 	_black = ChessPlayer.new()
 	_clock = ChessClock.new()
-	pass # Replace with function body.
+	loaded = true
+	if not skinned:
+		applyskin()
+
+func applyskin():
+	if loaded:
+		set_theme(skin.theme)
+		WhitePlayer.applyskin()
+		BlackPlayer.applyskin()
+		skinned = true
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -48,14 +63,14 @@ signal on_closed(_cancelled, _text, _white, _black, _clock)
 func _VisibilityChanged():
 	if (visible):
 		txtTitle.text = "New Game"
-		initializePlayer('White','',600,'Human')
-		initializePlayer('Black','Computer',600,'Computer')
+		WhitePlayer.initialize(SentinelChess.ChessColor.White,'Human',600,ChessPlayer.ChessPlayerType.Human)
+		BlackPlayer.initialize(SentinelChess.ChessColor.Black,'Computer',600,ChessPlayer.ChessPlayerType.Computer)
 		initializeClock(ChessClock.ccNone, 60, 10)
 		cancelled = false
 	else:
 		_title = txtTitle.text
-		readPlayer(_white,'White')
-		readPlayer(_black,'Black')
+		_white = WhitePlayer.read()
+		_black = BlackPlayer.read()
 		readClock(_clock)
 		on_closed.emit(cancelled, _title, _white, _black, _clock)
 	
@@ -91,19 +106,6 @@ func _OnType(ch):
 	AddWhite.visible = optIncrement.button_pressed or optBronstein.button_pressed or optSimple.button_pressed
 	AddBlack.visible = AddWhite.visible and chkSame.button_pressed
 	
-func initializePlayer(c, n, s, t):
-	var base = 'MC/VC/' + c + 'Player/'
-	var txtName : TextEdit = get_node(base + 'txtName')
-	var	lvlSkill : HSlider = get_node(base + 'lvlSkill')
-	var	optHuman : CheckBox = get_node(base + 'HC/optHuman')
-	var optComputer : CheckBox = get_node(base + 'HC/optComputer')
-	txtName.text = n
-	lvlSkill.value = s
-	if t == 'Human':
-		optHuman.button_pressed = true
-	else:
-		optComputer.button_pressed = true
-
 func initializeClock(cc, al, ad):
 	chkSame.button_pressed = true
 	match cc:
@@ -122,19 +124,6 @@ func initializeClock(cc, al, ad):
 	AddWhite.set_slider(ad)
 	AddBlack.set_slider(ad)
 	
-func readPlayer(p, c):
-	var base = 'MC/VC/' + c + 'Player/'
-	var txtName : TextEdit = get_node(base + 'txtName')
-	var	lvlSkill : HSlider = get_node(base + 'lvlSkill')
-	var	optHuman : CheckBox = get_node(base + 'HC/optHuman')
-	var optComputer : CheckBox = get_node(base + 'HC/optComputer')
-	p.Name = txtName.text
-	p.Skill = lvlSkill.value
-	if optHuman.button_pressed:
-		p.PlayerType = ChessPlayer.ChessPlayerType.Human
-	else:
-		p.PlayerType = ChessPlayer.ChessPlayerType.Computer
-
 func readClock(c):
 	if optNone.button_pressed:
 		_clock.ClockType = ChessClock.ccNone

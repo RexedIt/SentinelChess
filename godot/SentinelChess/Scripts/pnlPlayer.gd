@@ -15,7 +15,7 @@ func applyskin():
 	lblName.set_theme(skin.theme)
 	lblSkill.set_theme(skin.theme)
 
-func refreshplayer(col : SentinelChess.ChessColor, player : ChessPlayer):
+func refreshplayer(col : SentinelChess.ChessColor, player : ChessPlayer, puzzle : bool):
 	if player:
 		if col == SentinelChess.ChessColor.White:
 			sprType.region_rect = Rect2(200, 0, 40, 40)
@@ -29,7 +29,10 @@ func refreshplayer(col : SentinelChess.ChessColor, player : ChessPlayer):
 		lblName.set('theme_override_colors/font_color', crgb)	
 		lblSkill.set('theme_override_colors/font_color', crgb)	
 		lblName.text = player.Name
-		lblSkill.text = str(player.Skill)
+		if puzzle:
+			lblSkill.text = str(player.puzzlepoints())
+		else:
+			lblSkill.text = str(player.Skill)
 	else:
 		sprType.region_rect = Rect2(240, 40, 40, 40)
 		lblName.text = ''

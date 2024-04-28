@@ -15,6 +15,7 @@ namespace chess
     typedef void (*on_consider_cb)(chessmove, color_e, int8_t pct);
     typedef void (*on_turn_cb)(int16_t, chessmove, bool, chessboard &, color_e, game_state_e, color_e, int32_t, int32_t, std::string);
     typedef void (*on_state_cb)(game_state_e, color_e);
+    typedef void (*on_points_cb)(int32_t, int32_t);
     typedef void (*chat_cb)(std::string, color_e);
 
     typedef enum chesseventtype
@@ -24,6 +25,7 @@ namespace chess
         ce_consider,
         ce_turn,
         ce_state,
+        ce_points,
         ce_chat
     } chesseventtype;
 
@@ -46,6 +48,8 @@ namespace chess
         int8_t percent = 0;
         int32_t wt = 0;
         int32_t bt = 0;
+        int32_t wp = 0;
+        int32_t bp = 0;
         std::string cmt;
         std::string msg;
     } chessevent;
@@ -61,11 +65,12 @@ namespace chess
         friend class chesslobby;
 
     protected:
-        virtual void signal_refresh_board(int16_t, chessboard &) = 0;
-        virtual void signal_on_consider(chessmove, color_e, int8_t pct = -1) = 0;
-        virtual void signal_on_turn(int16_t, chessmove, bool, chessboard &, color_e, game_state_e, color_e, int32_t, int32_t, std::string) = 0;
-        virtual void signal_on_state(game_state_e, color_e) = 0;
-        virtual void signal_chat(std::string, color_e) = 0;
+        virtual void signal_refresh_board(int16_t, chessboard &) { ; }
+        virtual void signal_on_consider(chessmove, color_e, int8_t pct = -1) { ; }
+        virtual void signal_on_turn(int16_t, chessmove, bool, chessboard &, color_e, game_state_e, color_e, int32_t, int32_t, std::string) { ; }
+        virtual void signal_on_state(game_state_e, color_e) { ; }
+        virtual void signal_on_points(int32_t, int32_t) { ; }
+        virtual void signal_chat(std::string, color_e) { ; }
 
         int id();
         chessgamelistenertype listenertype();
@@ -84,6 +89,7 @@ namespace chess
             on_consider_cb p_on_consider_cb = NULL,
             on_turn_cb p_on_turn_cb = NULL,
             on_state_cb p_on_state_cb = NULL,
+            on_points_cb p_on_points_cb = NULL,
             chat_cb p_chat_cb = NULL);
 
     protected:
@@ -91,6 +97,7 @@ namespace chess
         virtual void signal_on_consider(chessmove, color_e, int8_t pct = -1);
         virtual void signal_on_turn(int16_t, chessmove, bool, chessboard &, color_e, game_state_e, color_e, int32_t, int32_t, std::string);
         virtual void signal_on_state(game_state_e, color_e);
+        virtual void signal_on_points(int32_t, int32_t);
         virtual void signal_chat(std::string, color_e);
 
     private:
@@ -98,6 +105,7 @@ namespace chess
         on_consider_cb mp_on_consider_cb;
         on_turn_cb mp_on_turn_cb;
         on_state_cb mp_on_state_cb;
+        on_points_cb mp_on_points_cb;
         chat_cb mp_chat_cb;
     };
 
@@ -115,6 +123,7 @@ namespace chess
         virtual void signal_on_consider(chessmove, color_e, int8_t pct = -1);
         virtual void signal_on_turn(int16_t, chessmove, bool, chessboard &, color_e, game_state_e, color_e, int32_t, int32_t, std::string);
         virtual void signal_on_state(game_state_e, color_e);
+        virtual void signal_on_points(int32_t, int32_t);
         virtual void signal_chat(std::string, color_e);
 
     private:

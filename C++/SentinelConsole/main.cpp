@@ -105,6 +105,150 @@ bool load_game(std::string cmd, chesslobby &lobby)
     return true;
 }
 
+chessplayerdata get_hub_player(int32_t elo = 0)
+{
+    // is going to return a player object
+    chessplayerdata pd;
+    while (true)
+    {
+        std::cout << "\r\nHuman Players:\r\n--------------" << std::endl;
+        std::vector<chessplayerdata> vec;
+        error_e err = chessengine::hub_players(vec, t_human, elo);
+        if (err != e_none)
+        {
+            print_error(err);
+            return pd;
+        }
+        int i = 0;
+        for (chessplayerdata pd : vec)
+            std::cout << ++i << ". " << pd.username << "\t" << pd.elo << std::endl;
+        std::cout << "--------------" << std::endl;
+        std::cout << "Type Index, (D)EL Index, or (Q)UIT, (A)DD username, skill [,perm]" << std::endl;
+        std::cout << " where skill=1-2500, perm=1 is optional and means permanent" << std::endl;
+        std::cout << "Player: ";
+        std::string cmd;
+        std::getline(std::cin, cmd);
+        std::vector<std::string> args = get_args(cmd, ',');
+        if (cmd == "")
+            continue;
+        int index = atoi(cmd.c_str());
+        if ((index < 0) || (index > (int)vec.size() + 1))
+        {
+            std::cout << " *** Invalid Index" << std::endl;
+            continue;
+        }
+        else if (index > 0)
+        {
+            return vec[index - 1];
+        }
+        std::string cmdu = uppercase(cmd);
+        std::string cmdl = cmdu.substr(0, 1);
+        if (cmdl == "Q")
+        {
+            return pd;
+        }
+        if (cmdl == "A")
+        {
+            if ((args.size() < 2) || (args.size() > 3))
+            {
+                std::cout << " *** Invalid arguments, specify username (no spaces) and elo" << std::endl;
+                continue;
+            }
+            std::vector<std::string> au = get_args(args[0], ' ');
+            if (au.size() != 2)
+            {
+                std::cout << " *** Invalid arguments, specify username (no spaces) and elo" << std::endl;
+                continue;
+            }
+            std::string name = au[1];
+            int32_t skill = atoi(args[1].c_str());
+            if ((skill < 100) || (skill > 2500))
+            {
+                print_error("Skill/elo must be 100-2500");
+                continue;
+            }
+            bool perm = false;
+            if (args.size() == 3)
+                perm = atoi(args[2].c_str()) != 0;
+            chessplayerdata pd = new_human_player(name, skill);
+            pd.persistent = perm;
+            err = chessengine::hub_register_player(pd);
+            if (err != e_none)
+            {
+                print_error(err);
+                continue;
+            }
+        }
+        if (cmdl == "D")
+        {
+            if (args.size() != 2)
+            {
+                std::cout << " *** Invalid arguments, specify index of user to delete" << std::endl;
+                continue;
+            }
+            int index = atoi(args[1].c_str());
+            if ((index < 0) || (index > (int)vec.size() + 1))
+            {
+                std::cout << " *** Invalid Index" << std::endl;
+                continue;
+            }
+            else if (index > 0)
+            {
+                err = chessengine::hub_unregister(vec[index - 1].guid);
+                if (err != e_none)
+                {
+                    print_error(err);
+                    continue;
+                }
+            }
+        }
+    }
+    return pd;
+}
+
+chessplayerdata get_hub_computer(int32_t elo = 0)
+{
+    // is going to return a player data
+    chessplayerdata pd;
+    while (true)
+    {
+        std::cout << "\r\nComputer Players:\r\n-----------------" << std::endl;
+        std::vector<chessplayerdata> vec;
+        error_e err = chessengine::hub_players(vec, t_computer, elo);
+        if (err != e_none)
+        {
+            print_error(err);
+            return pd;
+        }
+        int i = 0;
+        for (chessplayerdata pd : vec)
+            std::cout << ++i << ". " << pd.username << "\t" << pd.elo << std::endl;
+        std::cout << "-----------------" << std::endl;
+        std::cout << "Type Number, or (Q)UIT" << std::endl;
+        std::cout << "Computer: ";
+        std::string cmd;
+        std::getline(std::cin, cmd);
+        std::vector<std::string> args = get_args(cmd, ',');
+        if (cmd == "")
+            continue;
+        int index = atoi(cmd.c_str());
+        if ((index < 0) || (index > (int)vec.size() + 1))
+        {
+            std::cout << " *** Invalid Index" << std::endl;
+            continue;
+        }
+        else if (index > 0)
+        {
+            return vec[index - 1];
+        }
+        std::string cmdu = uppercase(cmd);
+        std::string cmdl = cmdu.substr(0, 1);
+        if (cmdl == "Q")
+            break;
+    }
+    return pd;
+}
+
 bool load_puzzle(std::string userfile, chesslobby &lobby)
 {
     std::string filename = userfile;
@@ -113,7 +257,8 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
     std::string name = "Human";
     int skill = 600;
     int rating = 700;
-    std::cout << "\r\nEnter Player Options: name, skill, puzzle rating, keywords\r\n"
+    std::cout << "\r\nEnter Player Options: name, skill, puzzle rating, keywords" << std::endl;
+    std::cout << "  *** use HUB for name along with type to select.\r\n"
               << std::endl;
     std::cout << "Player: ";
     std::string cmd;
@@ -137,7 +282,21 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
     }
 
     chessplayerdata player;
-    error_e err = chessengine::get_or_register_player(name, skill, t_human, player);
+    error_e err = e_none;
+    if (uppercase(name) == "HUB")
+    {
+        player = get_hub_player(skill);
+        if (player.guid == "")
+        {
+            std::cout << "Try Again.\r\n\r\n";
+            return false;
+        }
+    }
+    else
+    {
+        err = chessengine::hub_get_or_register_player(player, name, skill, t_human);
+    }
+
     if (err != e_none)
         return print_error(err);
 
@@ -147,11 +306,19 @@ bool load_puzzle(std::string userfile, chesslobby &lobby)
 
     refresh_data(lobby);
     std::cout << p_game->title() << std::endl;
-    int p = p_game->points();
-    std::cout << "Worth up to " << p << " points. ";
+
+    int32_t win = 0;
+    int32_t lose = 0;
+    int32_t draw = 0;
+
+    color_e me = lobby.local_players().count(c_white) > 0 ? c_white : c_black;
+    lobby.potential_points(me, win, lose, draw);
+
+    std::cout << "Value of Game: W:" << win << " L:" << lose << " points. ";
     int n = p_game->hints();
     if (n > 0)
         std::cout << "You have " << n << " hints.";
+
     std::cout << std::endl;
     return true;
 }
@@ -171,14 +338,15 @@ bool add_player(chesslobby &lobby, color_e color)
 {
     while (true)
     {
-        std::cout << color_str(color) << " Player: ";
+        std::cout << "\r\n"
+                  << color_str(color) << " Player: ";
         std::string cmd;
         std::getline(std::cin, cmd);
         std::vector<std::string> args = get_args(cmd, ',');
         if (args.size() > 3)
             continue;
         std::string name = "Computer";
-        int skill = 500;
+        int skill = 100;
         chessplayertype_e ptype = t_computer;
 
         if (args.size() >= 1)
@@ -198,21 +366,45 @@ bool add_player(chesslobby &lobby, color_e color)
         if (args.size() >= 3)
         {
             skill = atoi(args[2].c_str());
-            if ((skill < 0) || (skill > 2000))
+            if ((skill < 100) || (skill > 2500))
             {
-                print_error("Skill must be 0-2000");
+                print_error("Skill/elo must be 100-2500");
                 continue;
             }
         }
 
         chessplayerdata player;
-        error_e err = chessengine::get_or_register_player(name, skill, ptype, player);
+        error_e err = e_none;
+        if (uppercase(name) == "HUB")
+        {
+            if (ptype == t_human)
+                player = get_hub_player(skill);
+            else
+                player = get_hub_computer(skill);
+            if (player.guid == "")
+            {
+                std::cout << "Try Again.\r\n\r\n";
+                continue;
+            }
+        }
+        else
+        {
+            if (ptype == t_human)
+                err = chessengine::hub_get_or_register_player(player, name, skill, ptype);
+            else
+                chessengine::hub_get_matching_computer_player(player, name, skill);
+        }
+
         if (err != e_none)
         {
             print_error(err);
             return false;
         }
 
+        if (ptype == t_computer)
+        {
+            std::cout << ">>>> FOUND: " << player.username << " ELO: " << player.elo << std::endl;
+        }
         err = lobby.add_player(color, player);
         if (err != e_none)
         {
@@ -292,9 +484,9 @@ chessclock_s get_clock_options()
 bool new_game(chesslobby &lobby)
 {
     std::cout << "\r\nEnter Player Options: name [,type] [,skill]" << std::endl;
-    std::cout << "where type [optional] can be either Human or Computer" << std::endl;
-    std::cout << "and skill [optional] can be 0-2000\r\n"
-              << std::endl;
+    std::cout << "  where type [optional] can be either Human or Computer" << std::endl;
+    std::cout << "  and skill [optional] can be 0-2000" << std::endl;
+    std::cout << "  *** use HUB for name along with type to select.\r\n\r\n";
     lobby.clear_players();
     if (!add_player(lobby, c_white))
         return false;
@@ -309,7 +501,6 @@ bool new_game(chesslobby &lobby)
     is_idle = false;
     return true;
 }
-
 void refresh_board(int16_t t, chessboard &b)
 {
     color_e bottom = c_white;
@@ -392,6 +583,18 @@ void on_state(game_state_e g, color_e c)
         is_idle = true;
 }
 
+void on_points(int32_t wp, int32_t bp)
+{
+    std::cout << "--- Awarded: ";
+    if (locals.count(c_white))
+        std::cout << "W:" << wp;
+    if (locals.count(c_black))
+        std::cout << " B:" << bp;
+    if (p_game->puzzle())
+        std::cout << " puzzle";
+    std::cout << " points." << std::endl;
+}
+
 void on_chat(std::string msg, color_e c)
 {
 }
@@ -414,6 +617,9 @@ void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
             break;
         case ce_state:
             on_state(e.game_state, e.win_color);
+            break;
+        case ce_points:
+            on_points(e.wp, e.bp);
             break;
         case ce_chat:
             on_chat(e.msg, e.color);

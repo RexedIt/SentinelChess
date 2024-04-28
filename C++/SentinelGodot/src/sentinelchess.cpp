@@ -84,6 +84,12 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("playno"), &SentinelChess::playno);
     ClassDB::bind_method(D_METHOD("playmax"), &SentinelChess::playmax);
 
+    // Chessengine helpers
+    ClassDB::bind_method(D_METHOD("hub_usernames", "ptype", "elo"), &SentinelChess::hub_usernames, DEFVAL(0));
+    ClassDB::bind_method(D_METHOD("hub_players", "ptype", "include_avatars", "elo", "sort_elo"), &SentinelChess::hub_players, DEFVAL(false), DEFVAL(0), DEFVAL(false));
+    ClassDB::bind_method(D_METHOD("hub_update_player", "pdata"), &SentinelChess::hub_update_player);
+    ClassDB::bind_method(D_METHOD("hub_unregister", "guid"), &SentinelChess::hub_unregister);
+
     // Colors
     BIND_ENUM_CONSTANT(cNone);
     BIND_ENUM_CONSTANT(White);
@@ -366,6 +372,50 @@ Dictionary SentinelChess::player_names()
     return d;
 }
 
+Array SentinelChess::hub_usernames(ChessPlayerType ptype, int elo)
+{
+    Array a;
+    std::vector<std::string> vec;
+    int err = chessengine::hub_usernames(vec, (chessplayertype_e)ptype, elo);
+    if (err == 0)
+    {
+        for (const std::string sn : vec)
+        {
+            String s(sn.c_str());
+            a.push_back(s);
+        }
+    }
+    return a;
+}
+
+Array SentinelChess::hub_players(ChessPlayerType ptype, bool include_avatars, int elo, bool sort_elo)
+{
+    Array a;
+    std::vector<chessplayerdata> vec;
+    int err = chessengine::hub_players(vec, (chessplayertype_e)ptype, include_avatars, elo, sort_elo);
+    if (err == 0)
+    {
+        for (const chessplayerdata pd : vec)
+        {
+            Ref<ChessPlayer> cp(memnew(ChessPlayer(pd)));
+            a.push_back(cp);
+        }
+    }
+    return a;
+}
+
+int SentinelChess::hub_update_player(const Ref<ChessPlayer> &pdata)
+{
+    if (pdata.is_valid())
+        return chessengine::hub_update_player(pdata->get());
+    return e_invalid_reference;
+}
+
+int SentinelChess::hub_unregister(String guid)
+{
+    return chessengine::hub_unregister(guid.ascii().get_data());
+}
+
 ChessColor SentinelChess::preferred_board_color()
 {
     std::set<color_e> locals = m_lobby.local_players();
@@ -439,9 +489,17 @@ String SentinelChess::hintstr()
     return "";
 }
 
-int SentinelChess::win_points(ChessColor col)
+String SentinelChess::win_points(ChessColor col)
 {
-    return m_lobby.win_points((color_e)col);
+    int32_t win = 0;
+    int32_t lose = 0;
+    int32_t draw = 0;
+    m_lobby.potential_points((color_e)col, win, lose, draw);
+    std::string winlosedraw = std::to_string(win) + "/" + std::to_string(lose);
+    if (mp_game)
+        if (!mp_game->puzzle())
+            winlosedraw += "/" + std::to_string(draw);
+    return String(winlosedraw.c_str());
 }
 
 int SentinelChess::initialize(const String &d)
@@ -657,6 +715,8 @@ void ChessEvent::_bind_methods()
     ClassDB::bind_method(D_METHOD("game_state"), &ChessEvent::game_state);
     ClassDB::bind_method(D_METHOD("white_time"), &ChessEvent::white_time);
     ClassDB::bind_method(D_METHOD("black_time"), &ChessEvent::black_time);
+    ClassDB::bind_method(D_METHOD("white_points"), &ChessEvent::white_points);
+    ClassDB::bind_method(D_METHOD("black_points"), &ChessEvent::black_points);
     ClassDB::bind_method(D_METHOD("move"), &ChessEvent::move);
     ClassDB::bind_method(D_METHOD("board"), &ChessEvent::board);
     ClassDB::bind_method(D_METHOD("percent"), &ChessEvent::percent);
@@ -669,6 +729,7 @@ void ChessEvent::_bind_methods()
     BIND_ENUM_CONSTANT(ceConsider);
     BIND_ENUM_CONSTANT(ceTurn);
     BIND_ENUM_CONSTANT(ceState);
+    BIND_ENUM_CONSTANT(cePoints);
     BIND_ENUM_CONSTANT(ceChat);
 }
 
@@ -715,6 +776,16 @@ int ChessEvent::white_time()
 int ChessEvent::black_time()
 {
     return m_event.bt;
+}
+
+int ChessEvent::white_points()
+{
+    return m_event.wp;
+}
+
+int ChessEvent::black_points()
+{
+    return m_event.bp;
 }
 
 Ref<ChessMove> ChessEvent::move()

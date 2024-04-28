@@ -139,6 +139,7 @@ namespace chess
 
     std::string move_str(chessmove m, chessboard &b)
     {
+        std::string bs = b.save_xfen();
         chesspiece p(b.get(m.p0));
 
         std::string ms = "";

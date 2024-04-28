@@ -1,4 +1,4 @@
-[gd_scene load_steps=50 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=53 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="PackedScene" uid="uid://b3vb7tg7wpihs" path="res://Skins/Skin.tscn" id="2_rnrr5"]
@@ -16,9 +16,12 @@
 [ext_resource type="ButtonGroup" uid="uid://ddxnnfxmo2csx" path="res://BlackPlayerType.tres" id="11_ikrfp"]
 [ext_resource type="ButtonGroup" uid="uid://3jisntyevh10" path="res://ClockType.tres" id="11_vfgdq"]
 [ext_resource type="Script" path="res://Scripts/TimeSlider.gd" id="12_jf3ul"]
+[ext_resource type="Texture2D" uid="uid://cs15an43lt8d" path="res://Skins/Common/Sprites/Empty.png" id="14_5ke6l"]
 [ext_resource type="Script" path="res://Scripts/popPuzzle.gd" id="14_s72vn"]
+[ext_resource type="Script" path="res://Scripts/playerSelect.gd" id="15_cyr67"]
 [ext_resource type="Script" path="res://Scripts/pnlPlayer.gd" id="17_di116"]
 [ext_resource type="Script" path="res://Scripts/pnlScore.gd" id="18_m2w67"]
+[ext_resource type="Script" path="res://Scripts/popImage.gd" id="18_o8re0"]
 [ext_resource type="Script" path="res://Scripts/popSettings.gd" id="18_vfrru"]
 [ext_resource type="ButtonGroup" uid="uid://dimdhq82k5jrx" path="res://SkinSelection.tres" id="19_608yc"]
 [ext_resource type="Texture2D" uid="uid://dttgcrag5dcgu" path="res://Skins/RetroWood/Sprites/PuzzlePiece.png" id="20_bw7a2"]
@@ -99,7 +102,7 @@ texture = ExtResource("8_45ksi")
 
 [node name="popNew" type="Window" parent="."]
 title = "New Game Options"
-position = Vector2i(585, 231)
+position = Vector2i(580, 226)
 size = Vector2i(750, 640)
 visible = false
 popup_window = true
@@ -124,142 +127,177 @@ layout_mode = 2
 text = "Title"
 
 [node name="txtTitle" type="TextEdit" parent="popNew/MC/VC/HC"]
-custom_minimum_size = Vector2(565, 24)
+custom_minimum_size = Vector2(565, 26)
 layout_mode = 2
 
-[node name="SeparatorTitle" type="Label" parent="popNew/MC/VC"]
-custom_minimum_size = Vector2(0, 40)
+[node name="HSeparator" type="HSeparator" parent="popNew/MC/VC"]
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
-text = "____________________________________________________________________________
-"
-horizontal_alignment = 1
-clip_text = true
 
-[node name="WhitePlayer" type="GridContainer" parent="popNew/MC/VC"]
+[node name="WhitePlayer" type="HBoxContainer" parent="popNew/MC/VC"]
+layout_mode = 2
+script = ExtResource("15_cyr67")
+
+[node name="Avatar" type="TextureRect" parent="popNew/MC/VC/WhitePlayer"]
+layout_mode = 2
+texture = ExtResource("14_5ke6l")
+
+[node name="Spacer" type="Label" parent="popNew/MC/VC/WhitePlayer"]
+custom_minimum_size = Vector2(12, 0)
+layout_mode = 2
+
+[node name="GC" type="GridContainer" parent="popNew/MC/VC/WhitePlayer"]
 layout_mode = 2
 theme_override_constants/h_separation = 20
 theme_override_constants/v_separation = 20
 columns = 2
 
-[node name="lblWhite" type="Label" parent="popNew/MC/VC/WhitePlayer"]
+[node name="lblName" type="Label" parent="popNew/MC/VC/WhitePlayer/GC"]
 layout_mode = 2
 text = "White
 "
 
-[node name="txtName" type="TextEdit" parent="popNew/MC/VC/WhitePlayer"]
-custom_minimum_size = Vector2(425, 24)
+[node name="optName" type="OptionButton" parent="popNew/MC/VC/WhitePlayer/GC"]
+custom_minimum_size = Vector2(445, 28)
 layout_mode = 2
 
-[node name="lblSkill" type="Label" parent="popNew/MC/VC/WhitePlayer"]
-custom_minimum_size = Vector2(250, 0)
+[node name="txtName" type="TextEdit" parent="popNew/MC/VC/WhitePlayer/GC/optName"]
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
-text = "Skill (0-2500)
+offset_left = 3.0
+offset_right = 428.0
+offset_bottom = 28.0
+
+[node name="lblSkill" type="Label" parent="popNew/MC/VC/WhitePlayer/GC"]
+layout_mode = 2
+text = "Skill
 "
-horizontal_alignment = 2
 
-[node name="lvlSkill" type="HSlider" parent="popNew/MC/VC/WhitePlayer"]
-custom_minimum_size = Vector2(300, 0)
+[node name="lvlSkill" type="HSlider" parent="popNew/MC/VC/WhitePlayer/GC"]
+custom_minimum_size = Vector2(425, 0)
 layout_mode = 2
 max_value = 2500.0
 step = 50.0
 value = 600.0
 rounded = true
 
-[node name="lblPlayerType" type="Label" parent="popNew/MC/VC/WhitePlayer"]
+[node name="lblPlayerType" type="Label" parent="popNew/MC/VC/WhitePlayer/GC"]
 layout_mode = 2
-text = "Player Type
+text = "type
 "
-horizontal_alignment = 2
 
-[node name="HC" type="HBoxContainer" parent="popNew/MC/VC/WhitePlayer"]
+[node name="HC" type="HBoxContainer" parent="popNew/MC/VC/WhitePlayer/GC"]
+custom_minimum_size = Vector2(425, 0)
 layout_mode = 2
 theme_override_constants/separation = 30
 alignment = 1
 
-[node name="optHuman" type="CheckBox" parent="popNew/MC/VC/WhitePlayer/HC"]
+[node name="optHuman" type="CheckBox" parent="popNew/MC/VC/WhitePlayer/GC/HC"]
 layout_mode = 2
 button_pressed = true
 button_group = ExtResource("10_8y1dj")
 text = "Human"
 alignment = 2
 
-[node name="optComputer" type="CheckBox" parent="popNew/MC/VC/WhitePlayer/HC"]
+[node name="optComputer" type="CheckBox" parent="popNew/MC/VC/WhitePlayer/GC/HC"]
 layout_mode = 2
 button_group = ExtResource("10_8y1dj")
 text = "Computer
 "
 
-[node name="Separator" type="Label" parent="popNew/MC/VC"]
-custom_minimum_size = Vector2(0, 40)
+[node name="chkSave" type="CheckButton" parent="popNew/MC/VC/WhitePlayer/GC/HC"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
-text = "____________________________________________________________________________"
-horizontal_alignment = 1
-clip_text = true
+text = "Save "
 
-[node name="BlackPlayer" type="GridContainer" parent="popNew/MC/VC"]
+[node name="HSeparator2" type="HSeparator" parent="popNew/MC/VC"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="BlackPlayer" type="HBoxContainer" parent="popNew/MC/VC"]
+layout_mode = 2
+script = ExtResource("15_cyr67")
+
+[node name="Avatar" type="TextureRect" parent="popNew/MC/VC/BlackPlayer"]
+layout_mode = 2
+texture = ExtResource("14_5ke6l")
+
+[node name="Spacer" type="Label" parent="popNew/MC/VC/BlackPlayer"]
+custom_minimum_size = Vector2(12, 0)
+layout_mode = 2
+
+[node name="GC" type="GridContainer" parent="popNew/MC/VC/BlackPlayer"]
 layout_mode = 2
 theme_override_constants/h_separation = 20
 theme_override_constants/v_separation = 20
 columns = 2
 
-[node name="lblBlack" type="Label" parent="popNew/MC/VC/BlackPlayer"]
+[node name="lblName" type="Label" parent="popNew/MC/VC/BlackPlayer/GC"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = "Black
 "
-vertical_alignment = 2
 
-[node name="txtName" type="TextEdit" parent="popNew/MC/VC/BlackPlayer"]
-custom_minimum_size = Vector2(425, 24)
+[node name="optName" type="OptionButton" parent="popNew/MC/VC/BlackPlayer/GC"]
+custom_minimum_size = Vector2(445, 28)
 layout_mode = 2
 
-[node name="lblSkill" type="Label" parent="popNew/MC/VC/BlackPlayer"]
-custom_minimum_size = Vector2(250, 0)
+[node name="txtName" type="TextEdit" parent="popNew/MC/VC/BlackPlayer/GC/optName"]
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
-text = "Skill (0-2500)
+offset_left = 3.0
+offset_right = 428.0
+offset_bottom = 28.0
+
+[node name="lblSkill" type="Label" parent="popNew/MC/VC/BlackPlayer/GC"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "Skill
 "
-horizontal_alignment = 2
 
-[node name="lvlSkill" type="HSlider" parent="popNew/MC/VC/BlackPlayer"]
-custom_minimum_size = Vector2(300, 0)
+[node name="lvlSkill" type="HSlider" parent="popNew/MC/VC/BlackPlayer/GC"]
+custom_minimum_size = Vector2(425, 0)
 layout_mode = 2
 max_value = 2500.0
 step = 50.0
 value = 600.0
 rounded = true
 
-[node name="lblPlayerType" type="Label" parent="popNew/MC/VC/BlackPlayer"]
+[node name="lblPlayerType" type="Label" parent="popNew/MC/VC/BlackPlayer/GC"]
 layout_mode = 2
-text = "Player Type
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "type
 "
-horizontal_alignment = 2
 
-[node name="HC" type="HBoxContainer" parent="popNew/MC/VC/BlackPlayer"]
+[node name="HC" type="HBoxContainer" parent="popNew/MC/VC/BlackPlayer/GC"]
+custom_minimum_size = Vector2(425, 0)
 layout_mode = 2
 theme_override_constants/separation = 30
 alignment = 1
 
-[node name="optHuman" type="CheckBox" parent="popNew/MC/VC/BlackPlayer/HC"]
+[node name="optHuman" type="CheckBox" parent="popNew/MC/VC/BlackPlayer/GC/HC"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+button_pressed = true
 button_group = ExtResource("11_ikrfp")
 text = "Human"
 alignment = 2
 
-[node name="optComputer" type="CheckBox" parent="popNew/MC/VC/BlackPlayer/HC"]
+[node name="optComputer" type="CheckBox" parent="popNew/MC/VC/BlackPlayer/GC/HC"]
 layout_mode = 2
-button_pressed = true
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
 button_group = ExtResource("11_ikrfp")
 text = "Computer
 "
 
-[node name="Separator2" type="Label" parent="popNew/MC/VC"]
-custom_minimum_size = Vector2(0, 40)
+[node name="chkSave" type="CheckButton" parent="popNew/MC/VC/BlackPlayer/GC/HC"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.144063, 0.144063, 0.144063, 1)
-text = "____________________________________________________________________________"
-horizontal_alignment = 1
+text = "Save "
+
+[node name="HSeparator3" type="HSeparator" parent="popNew/MC/VC"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
 
 [node name="Clock" type="GridContainer" parent="popNew/MC/VC"]
 layout_mode = 2
@@ -455,7 +493,7 @@ text = " Cancel "
 [node name="popPuzzle" type="Window" parent="."]
 title = "Load Puzzle"
 position = Vector2i(585, 429)
-size = Vector2i(750, 240)
+size = Vector2i(750, 290)
 visible = false
 script = ExtResource("14_s72vn")
 
@@ -465,44 +503,100 @@ offset_top = 20.0
 offset_right = 715.0
 offset_bottom = 124.0
 
-[node name="Player" type="GridContainer" parent="popPuzzle/MC"]
+[node name="HC" type="VBoxContainer" parent="popPuzzle/MC"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Player" type="HBoxContainer" parent="popPuzzle/MC/HC"]
+layout_mode = 2
+script = ExtResource("15_cyr67")
+humanOnly = true
+
+[node name="Avatar" type="TextureRect" parent="popPuzzle/MC/HC/Player"]
+layout_mode = 2
+texture = ExtResource("14_5ke6l")
+
+[node name="Spacer" type="Label" parent="popPuzzle/MC/HC/Player"]
+custom_minimum_size = Vector2(12, 0)
+layout_mode = 2
+
+[node name="GC" type="GridContainer" parent="popPuzzle/MC/HC/Player"]
 layout_mode = 2
 theme_override_constants/h_separation = 20
 theme_override_constants/v_separation = 20
 columns = 2
 
-[node name="lblName" type="Label" parent="popPuzzle/MC/Player"]
+[node name="lblName" type="Label" parent="popPuzzle/MC/HC/Player/GC"]
 layout_mode = 2
-text = "Name
+text = "White
 "
 
-[node name="txtName" type="TextEdit" parent="popPuzzle/MC/Player"]
-custom_minimum_size = Vector2(425, 24)
+[node name="optName" type="OptionButton" parent="popPuzzle/MC/HC/Player/GC"]
+custom_minimum_size = Vector2(445, 28)
 layout_mode = 2
 
-[node name="lblSkill" type="Label" parent="popPuzzle/MC/Player"]
-custom_minimum_size = Vector2(250, 0)
+[node name="txtName" type="TextEdit" parent="popPuzzle/MC/HC/Player/GC/optName"]
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
-text = "Skill (0-2500)
+offset_left = 3.0
+offset_right = 428.0
+offset_bottom = 28.0
+
+[node name="lblSkill" type="Label" parent="popPuzzle/MC/HC/Player/GC"]
+layout_mode = 2
+text = "Skill
 "
-horizontal_alignment = 2
 
-[node name="lvlSkill" type="HSlider" parent="popPuzzle/MC/Player"]
-custom_minimum_size = Vector2(300, 0)
+[node name="lvlSkill" type="HSlider" parent="popPuzzle/MC/HC/Player/GC"]
+custom_minimum_size = Vector2(425, 0)
 layout_mode = 2
 max_value = 2500.0
 step = 50.0
 value = 600.0
 rounded = true
 
-[node name="lblRating" type="Label" parent="popPuzzle/MC/Player"]
+[node name="lblPlayerType" type="Label" parent="popPuzzle/MC/HC/Player/GC"]
+layout_mode = 2
+text = "type
+"
+
+[node name="HC" type="HBoxContainer" parent="popPuzzle/MC/HC/Player/GC"]
+custom_minimum_size = Vector2(425, 0)
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="optHuman" type="CheckBox" parent="popPuzzle/MC/HC/Player/GC/HC"]
+layout_mode = 2
+button_pressed = true
+button_group = ExtResource("10_8y1dj")
+text = "Human"
+alignment = 2
+
+[node name="optComputer" type="CheckBox" parent="popPuzzle/MC/HC/Player/GC/HC"]
+layout_mode = 2
+button_group = ExtResource("10_8y1dj")
+text = "Computer
+"
+
+[node name="chkSave" type="CheckButton" parent="popPuzzle/MC/HC/Player/GC/HC"]
+layout_mode = 2
+text = "Save "
+
+[node name="GC" type="GridContainer" parent="popPuzzle/MC/HC"]
+layout_mode = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 2
+
+[node name="lblRating" type="Label" parent="popPuzzle/MC/HC/GC"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 text = "Rating (0-2500)
 "
 horizontal_alignment = 2
 
-[node name="lvlRating" type="HSlider" parent="popPuzzle/MC/Player"]
+[node name="lvlRating" type="HSlider" parent="popPuzzle/MC/HC/GC"]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 max_value = 2500.0
@@ -510,14 +604,14 @@ step = 50.0
 value = 600.0
 rounded = true
 
-[node name="lblKeywords" type="Label" parent="popPuzzle/MC/Player"]
+[node name="lblKeywords" type="Label" parent="popPuzzle/MC/HC/GC"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 text = "Keywords (,)
 "
 horizontal_alignment = 2
 
-[node name="txtKeywords" type="TextEdit" parent="popPuzzle/MC/Player"]
+[node name="txtKeywords" type="TextEdit" parent="popPuzzle/MC/HC/GC"]
 custom_minimum_size = Vector2(425, 24)
 layout_mode = 2
 
@@ -558,6 +652,16 @@ file_mode = 0
 access = 2
 filters = PackedStringArray("*.chs ; Chess File", "*.pgn; PGN File")
 script = ExtResource("10_we7ge")
+
+[node name="popImage" type="FileDialog" parent="."]
+title = "Open a File"
+position = Vector2i(693, 309)
+size = Vector2i(640, 480)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.jpg ; JPEG File", "*.png; PNG File")
+script = ExtResource("18_o8re0")
 
 [node name="popSave" type="FileDialog" parent="."]
 position = Vector2i(640, 320)
@@ -1108,6 +1212,8 @@ offset_bottom = 168.0
 
 [connection signal="canceled" from="popLoad" to="popLoad" method="_on_canceled"]
 [connection signal="confirmed" from="popLoad" to="popLoad" method="_on_confirmed"]
+[connection signal="canceled" from="popImage" to="popImage" method="_on_canceled"]
+[connection signal="confirmed" from="popImage" to="popImage" method="_on_confirmed"]
 [connection signal="canceled" from="popSave" to="popSave" method="_on_canceled"]
 [connection signal="confirmed" from="popSave" to="popSave" method="_on_confirmed"]
 [connection signal="pressed" from="GameUI/btnNew" to="GameUI" method="_on_btn_new_pressed"]

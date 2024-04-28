@@ -16,19 +16,48 @@
 namespace chess
 {
     // *** SINGLETON ***
-    std::string _data_folder = "..\\ChessData\\";
+    std::string _data_folder = "..//ChessData/";
     std::string _user_folder = "";
+    std::string _test_folder = "./test/TestData/";
 
     chessecodb *p_eco = NULL;
     chessecodb _co;
     chessplayerhub *p_hub = NULL;
     chessplayerhub _ph;
 
-    error_e chessengine::initialize(std::string f)
+    error_e chessengine::initialize(int argc, char **argv)
     {
-        if (!get_dir_exists(f))
-            return e_data_not_found;
-        _data_folder = f;
+        std::string datapath = "";
+        std::string testpath = "";
+        for (int i = 1; i < argc; i++)
+        {
+            std::string arg = argv[i];
+            bool has_next = i + 1 < argc;
+            if (arg == "--chessdata")
+            {
+                if (has_next)
+                    datapath = fix_path(argv[(i++) + 1]);
+            }
+            else if (arg == "--testdata")
+            {
+                if (has_next)
+                    testpath = fix_path(argv[(i++) + 1]);
+            }
+        }
+        return initialize(datapath, testpath);
+    }
+
+    error_e chessengine::initialize(std::string f, std::string t)
+    {
+        if (f != "")
+        {
+            if (!get_dir_exists(f))
+                return e_data_not_found;
+            _data_folder = f;
+        }
+
+        if (t != "")
+            _test_folder = t;
 
         error_e err = _co.load_binary(data_file("scid.bin"));
         if (err)
@@ -39,7 +68,9 @@ namespace chess
             if (!get_dir_exists(uf))
                 if (_mkdir(uf.c_str()) != 0)
                     return e_user_not_found;
-            err = _ph.load_json(user_file("playdata.json"));
+            err = _ph.load_players(user_file("playdata.json"));
+            if (err == e_none)
+                err = _ph.load_computers(data_file("compdata.json"));
             return err;
         }
         catch (const std::exception &e)
@@ -78,6 +109,11 @@ namespace chess
 #endif
     }
 
+    std::string chessengine::test_folder()
+    {
+        return _test_folder;
+    }
+
     std::string chessengine::user_file(std::string f)
     {
         return fix_path(user_folder() + "\\" + f);
@@ -91,34 +127,97 @@ namespace chess
         return e_no_openings;
     }
 
-    error_e chessengine::preferredecos(color_e col, std::vector<std::string> &ecos)
-    {
-        if (p_eco)
-            return p_eco->preferredecos(col, ecos);
-        return e_no_openings;
-    }
-
     // static chessplayerhub calls
-    error_e chessengine::get_or_register_player(std::string username, int32_t elo, chessplayertype_e ptype, chessplayerdata &data)
+    error_e chessengine::hub_register_data(chessplayerdata data)
     {
         if (p_hub)
-            return p_hub->get_or_register_player(username, elo, ptype, data);
+            return p_hub->register_data(data);
         return e_no_player_hub;
     }
 
-    error_e chessengine::get_or_register_player(chessplayerdata &data)
+    error_e chessengine::hub_register_player(chessplayerdata data)
+    {
+        if (p_hub)
+            return p_hub->register_player(data);
+        return e_no_player_hub;
+    }
+
+    error_e chessengine::hub_register_computer(chessplayerdata data)
+    {
+        if (p_hub)
+            return p_hub->register_computer(data);
+        return e_no_player_hub;
+    }
+
+    error_e chessengine::hub_unregister(std::string guid)
+    {
+        if (p_hub)
+            return p_hub->unregister(guid);
+        return e_no_player_hub;
+    }
+
+    error_e chessengine::hub_get_or_register_player(chessplayerdata &data, std::string username, int32_t elo, chessplayertype_e ptype)
+    {
+        if (p_hub)
+            return p_hub->get_or_register_player(data, username, elo, ptype);
+        return e_no_player_hub;
+    }
+
+    error_e chessengine::hub_get_or_register_player(chessplayerdata &data)
     {
         if (p_hub)
             return p_hub->get_or_register_player(data);
         return e_no_player_hub;
     }
 
-    error_e chessengine::get_matching_computer_player(int32_t elo, chessplayerdata &data)
+    error_e chessengine::hub_get_matching_computer_player(chessplayerdata &data, std::string username, int32_t elo)
     {
         if (p_hub)
-            return p_hub->get_matching_computer_player(elo, data);
+            return p_hub->get_matching_computer_player(data, username, elo);
         return e_no_player_hub;
     }
+
+    error_e chessengine::hub_usernames(std::vector<std::string> &vec, chessplayertype_e ptype, int32_t elo)
+    {
+        if (p_hub)
+        {
+            vec = p_hub->usernames(ptype, elo);
+            return e_none;
+        }
+        return e_no_player_hub;
+    }
+
+    error_e chessengine::hub_players(std::vector<chessplayerdata> &vec, chessplayertype_e ptype, bool include_avatars, int32_t elo, bool sort_elo)
+    {
+        if (p_hub)
+        {
+            vec = p_hub->players(ptype, include_avatars, elo, sort_elo);
+            return e_none;
+        }
+        return e_no_player_hub;
+    }
+
+    error_e chessengine::hub_refresh_player(chessplayerdata &data)
+    {
+        if (p_hub)
+            return p_hub->refresh_player(data);
+        return e_no_player_hub;
+    }
+
+    error_e chessengine::hub_update_player(chessplayerdata data)
+    {
+        if (p_hub)
+            return p_hub->update_player(data);
+        return e_no_player_hub;
+    }
+
+    error_e chessengine::hub_update_points(std::string guid, int32_t pts, bool puzzle)
+    {
+        if (p_hub)
+            return p_hub->update_points(guid, pts, puzzle);
+        return e_no_player_hub;
+    }
+
 }
 
 #undef _CRT_SECURE_NO_WARNINGS

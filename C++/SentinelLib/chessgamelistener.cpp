@@ -26,6 +26,8 @@ namespace chess
         msg = e.msg;
         wt = e.wt;
         bt = e.bt;
+        wp = e.wp;
+        bp = e.bp;
         cmt = e.cmt;
     }
 
@@ -60,6 +62,7 @@ namespace chess
         on_consider_cb p_on_consider_cb,
         on_turn_cb p_on_turn_cb,
         on_state_cb p_on_state_cb,
+        on_points_cb p_on_points_cb,
         chat_cb p_chat_cb)
     {
         m_listenertype = listenertype;
@@ -67,6 +70,7 @@ namespace chess
         mp_on_consider_cb = p_on_consider_cb;
         mp_on_turn_cb = p_on_turn_cb;
         mp_on_state_cb = p_on_state_cb;
+        mp_on_points_cb = p_on_points_cb;
         mp_chat_cb = p_chat_cb;
     }
 
@@ -96,6 +100,13 @@ namespace chess
         std::lock_guard<std::mutex> guard(m_mutex);
         if (mp_on_state_cb)
             (*mp_on_state_cb)(g, w);
+    }
+
+    void chessgamelistener_direct::signal_on_points(int32_t wp, int32_t bp)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        if (mp_on_points_cb)
+            (*mp_on_points_cb)(wp, bp);
     }
 
     void chessgamelistener_direct::signal_chat(std::string msg, color_e c)
@@ -174,6 +185,15 @@ namespace chess
         e.game_state = g;
         e.color = w;
         e.win_color = w;
+        m_events.push(e);
+    }
+
+    void chessgamelistener_queue::signal_on_points(int32_t wp, int32_t bp)
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        chessevent e(ce_points);
+        e.wp = wp;
+        e.bp = bp;
         m_events.push(e);
     }
 

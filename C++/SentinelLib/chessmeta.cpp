@@ -48,7 +48,10 @@ namespace chess
             std::pair<std::string, std::string> pair = m_tags[i];
             if (pair.first == key)
             {
-                pair.second = value;
+                std::string v = value;
+                if (book_end(v, '\"', '\"'))
+                    v = v.substr(1, v.length() - 2);
+                pair.second = v;
                 m_tags[i] = pair;
                 return true;
             }
@@ -92,6 +95,17 @@ namespace chess
             m_comments[index] = val;
         else
             m_comments[index] = "{" + val + "}";
+    }
+
+    bool chessmeta::has_tag(std::string key)
+    {
+        for (size_t i = 0; i < m_tags.size(); i++)
+        {
+            std::pair<std::string, std::string> pair = m_tags[i];
+            if (pair.first == key)
+                return true;
+        }
+        return false;
     }
 
     std::string chessmeta::tag(std::string key)

@@ -3,6 +3,11 @@
 
 #include <chrono>
 #include <thread>
+#include <sstream>
+#include <iostream>
+
+#include "nlohmann/json.hpp"
+using namespace nlohmann;
 
 namespace chess
 {
@@ -19,6 +24,11 @@ namespace chess
         m_opening_weight = 0;
         m_opening_in_play = false;
         m_turn_no = 0;
+        m_kc_weight = 0.25f;
+        m_bp_weight = 0.5f;
+        m_eco_weight = 32;
+        m_chaos = 0.0;
+        m_turn_time = 5000;
     }
 
     chesscomputer::chesscomputer(color_e color, chessplayerdata data)
@@ -26,7 +36,7 @@ namespace chess
         m_color = color;
         m_data.ptype = t_computer;
         m_data = data;
-        m_level = m_data.elo / 500 + 2;
+        m_level = m_data.elo / 400 + 1;
         if (m_level < 1)
             m_level = 1;
         if (m_level > 6)
@@ -34,11 +44,18 @@ namespace chess
         if (m_level < 4)
             m_half_level = m_data.elo % 500 >= 250;
         m_listenertype = cl_computer;
+        m_thread_running = false;
         m_cancel = false;
         m_opening_weight = 0;
         m_opening_in_play = false;
         m_turn_no = 0;
-        m_thread_running = false;
+        m_kc_weight = 0.25f;
+        m_bp_weight = 0.5f;
+        m_eco_weight = 32;
+        m_chaos = 0.0;
+        m_turn_time = 5000;
+
+        load_meta(data.meta);
     }
 
     chesscomputer::~chesscomputer()
@@ -85,16 +102,14 @@ namespace chess
 
     float chesscomputer::weight(chessboard &board, color_e col)
     {
-        const float kc_weight = 0.25f;
-        const float bp_weight = 0.5f;
         board_metric_s bm = board.board_metric(col);
         int pw = 0;
         for (int i = 0; i < 7; i++)
             pw += bm.pc[i] * piece_default_weights[i] -
                   bm.opc[i] * piece_default_weights[i];
         return ((float)pw) +
-               ((float)bm.kc) * kc_weight +
-               ((float)bm.bp) * bp_weight;
+               ((float)bm.kc) * m_kc_weight +
+               ((float)bm.bp) * m_bp_weight;
     }
 
     error_e chesscomputer::computer_move(chessboard &board, int32_t wt, int32_t bt)
@@ -125,6 +140,8 @@ namespace chess
             {
                 float score = computer_move_min(b, other(m_color), -9999, 9999, rec - 1);
                 score += opening_weight(candidate);
+                if (m_chaos > 0.0001)
+                    score += get_rand() * m_chaos;
                 if (score >= maxval)
                 {
                     best = candidate;
@@ -195,17 +212,21 @@ namespace chess
     {
         if (m_opening == "")
         {
-            std::vector<std::string> ecos;
-            if (chessengine::preferredecos(m_color, ecos) == e_none)
+            std::vector<std::string> ecos = m_eco_favorites;
+            if (ecos.size())
             {
                 // Select one from random
                 size_t idx = (size_t)get_rand_int(0, (int)(ecos.size() - 1));
                 m_opening = ecos[idx];
             }
+            else
+            {
+                m_opening = "B21";
+            }
         }
         if (m_turn_no < 2)
             m_opening_in_play = true;
-        m_opening_weight = 32;
+        m_opening_weight = m_eco_weight;
         for (int i = 0; i < (m_turn_no + 1) / 2; i++)
         {
             m_opening_weight /= 2;
@@ -236,4 +257,49 @@ namespace chess
             return (float)m_opening_weight;
         return 0.0;
     }
+
+    error_e chesscomputer::load_meta(std::string m)
+    {
+        if (m != "")
+        {
+            try
+            {
+                std::istringstream ifs(m);
+                json jmeta;
+                ifs >> jmeta;
+                JSON_LOADIF(jmeta, "kc_weight", m_kc_weight);
+                JSON_LOADIF(jmeta, "bp_weight", m_bp_weight);
+                JSON_LOADIF(jmeta, "eco_weight", m_eco_weight);
+                JSON_LOADIF(jmeta, "chaos", m_chaos);
+                JSON_LOADIF(jmeta, "turn_time", m_turn_time);
+                JSON_LOADIF(jmeta, "eco_favorites", m_eco_favorites);
+                return e_none;
+            }
+            catch (const std::exception &)
+            {
+                return e_loading;
+            }
+        }
+        return e_none;
+    }
+
+    std::string chesscomputer::save_meta()
+    {
+        try
+        {
+            json jmeta;
+            jmeta["kc_weight"] = m_kc_weight;
+            jmeta["bp_weight"] = m_bp_weight;
+            jmeta["eco_weight"] = m_eco_weight;
+            jmeta["chaos"] = m_chaos;
+            jmeta["turn_time"] = m_turn_time;
+            jmeta["eco_favorites"] = m_eco_favorites;
+            return jmeta.dump();
+        }
+        catch (const std::exception &)
+        {
+        }
+        return "";
+    }
+
 }

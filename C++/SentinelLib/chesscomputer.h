@@ -19,9 +19,6 @@ namespace chess
     protected:
         virtual void signal_on_turn(int16_t, chessmove, bool, chessboard &, color_e, game_state_e, color_e, int32_t, int32_t, std::string);
         virtual void signal_on_state(game_state_e, color_e);
-        virtual void signal_refresh_board(int16_t, chessboard &) { ; }
-        virtual void signal_on_consider(chessmove, color_e, int8_t pct = -1) { ; }
-        virtual void signal_chat(std::string, color_e) { ; }
         virtual void stop_listening();
 
     private:
@@ -30,7 +27,8 @@ namespace chess
         float computer_move_max(chessboard &board, color_e turn_col, float _alpha, float _beta, int32_t rec);
         float computer_move_min(chessboard &board, color_e turn_col, float _alpha, float _beta, int32_t rec);
         void cancel_execution();
-
+        error_e load_meta(std::string);
+        std::string save_meta();
         void initialize_opening();
         float opening_weight(chessmove &m);
 
@@ -48,5 +46,11 @@ namespace chess
         std::vector<chessmove> m_next_opening_moves;
         int m_opening_weight;
         bool m_opening_in_play;
+        float m_kc_weight;
+        float m_bp_weight;
+        float m_chaos;
+        int m_eco_weight;
+        int32_t m_turn_time;
+        std::vector<std::string> m_eco_favorites;
     };
 }
