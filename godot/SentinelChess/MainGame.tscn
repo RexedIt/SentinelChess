@@ -100,6 +100,9 @@ modulate = Color(1, 1, 1, 0.376471)
 position = Vector2(-438, 438)
 texture = ExtResource("8_45ksi")
 
+[node name="HiLine" type="Line2D" parent="Board"]
+width = 20.0
+
 [node name="popNew" type="Window" parent="."]
 title = "New Game Options"
 position = Vector2i(580, 226)
@@ -809,7 +812,7 @@ offset_right = 396.0
 offset_bottom = 43.0
 theme_type_variation = &"LargeFont"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-text = "2400 Points"
+text = "           "
 horizontal_alignment = 2
 vertical_alignment = 1
 
@@ -821,7 +824,7 @@ offset_right = 397.0
 offset_bottom = 86.0
 theme_type_variation = &"LargeFont"
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-text = "1/2 Hints"
+text = "           "
 horizontal_alignment = 2
 vertical_alignment = 1
 
@@ -1225,7 +1228,7 @@ offset_bottom = 168.0
 [connection signal="pressed" from="GameUI/btnPause" to="GameUI" method="_on_btn_pause_pressed"]
 [connection signal="pressed" from="GameUI/btnAdvance" to="GameUI" method="_on_btn_advance_pressed"]
 [connection signal="pressed" from="GameUI/btnEnd" to="GameUI" method="_on_btn_end_pressed"]
-[connection signal="pressed" from="GameUI/btnForfeit" to="GameUI" method="_on_btn_hint_pressed"]
+[connection signal="pressed" from="GameUI/btnForfeit" to="GameUI" method="_on_btn_forfeit_pressed"]
 [connection signal="pressed" from="GameUI/btnHint" to="GameUI" method="_on_btn_hint_pressed"]
 [connection signal="pressed" from="GameUI/btnChat" to="GameUI" method="_on_btn_hint_pressed"]
 [connection signal="text_submitted" from="GameUI/txtCmd" to="GameUI" method="_on_txt_cmd_text_submitted"]

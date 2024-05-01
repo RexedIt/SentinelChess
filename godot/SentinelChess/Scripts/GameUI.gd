@@ -276,6 +276,9 @@ func _on_btn_puzzle_pressed():
 func _on_btn_hint_pressed():
 	handle_hint()
 
+func _on_btn_forfeit_pressed():
+	handle_forfeit()
+
 func _on_btn_settings_pressed():
 	game_manager._on_settings()
 
@@ -370,7 +373,13 @@ func handle_hint() -> bool:
 	append_history(h, 'darkgreen')
 	refreshhints()
 	return true
-	
+
+func handle_forfeit() -> bool:
+	var turnc: SentinelChess.ChessColor = game_manager.turn_color()
+	if game_manager.is_local_active(turnc):
+		return game_manager.forfeit(turnc) == 0
+	return true
+		
 func handle_pause():
 	if puzzle:
 		show_error('In Puzzle')
@@ -391,56 +400,60 @@ func handle_play():
 func _on_txt_cmd_text_submitted(new_text):
 	if new_text == '':
 		return
-	var cmd : String = new_text;
-	var ucmd1 : String = cmd.left(1).to_upper();
+	var cmd : String = new_text
+	var ucmd : String = new_text.to_upper()
+	var ucmd1 : String = ucmd.left(1)
 	var m : ChessMove
 	var handled : bool = false
-	match ucmd1:
-		'N':
-			_on_btn_new_pressed()
-			handled = true
-		'Z':
-			_on_btn_puzzle_pressed()
-			handled = true
-		'M':
-			handled = handle_move(cmd.get_slice(' ',1))
-		'L':
-			handled = handle_load(cmd.get_slice(' ',1))
-		'S':
-			handled = handle_save(cmd.get_slice(' ',1))
-		'T':
-			var s : String = cmd.get_slice(' ',1)
-			var turn_no : int = int(s)
-			if s == '':
-				show_error('Need Turn Number')
-			handled=handle_goto(turn_no)
-		'C':
-			var s = ''
-			var l : int = cmd.find(' ')
-			if l>=0:
-				s = cmd.substr(l+1).strip_edges(true,true)
-			game_manager.comment(game_manager.playno()+1, s)
-			handled=true
-		'[':
-			handled = handle_start()
-		'<':
-			handled = handle_rewind()
-		'>':
-			handled = handle_advance()
-		']':
-			handled = handle_end()
-		'P':
-			handled = handle_play()
-		'I':
-			handled = handle_pause()
-		'H':
-			if hints <=0:
-				show_error('No Hint Available')
-			else:
-				handled = handle_hint()
-		# a move?
-		_:
-			handled = handle_move(cmd)
+	m = game_manager.strmove(cmd,game_manager.turn_color())
+	if m != null:
+		handled = handle_move(cmd);
+	if !handled:
+		match ucmd1:
+			'N':
+				_on_btn_new_pressed()
+				handled = true
+			'Z':
+				_on_btn_puzzle_pressed()
+				handled = true
+			'M':
+				handled = handle_move(cmd.get_slice(' ',1))
+			'L':
+				handled = handle_load(cmd.get_slice(' ',1))
+			'S':
+				handled = handle_save(cmd.get_slice(' ',1))
+			'T':
+				var s : String = cmd.get_slice(' ',1)
+				var turn_no : int = int(s)
+				if s == '':
+					show_error('Need Turn Number')
+				handled=handle_goto(turn_no)
+			'C':
+				var s = ''
+				var l : int = cmd.find(' ')
+				if l>=0:
+					s = cmd.substr(l+1).strip_edges(true,true)
+				game_manager.comment(game_manager.playno()+1, s)
+				handled=true
+			'[':
+				handled = handle_start()
+			'<':
+				handled = handle_rewind()
+			'>':
+				handled = handle_advance()
+			']':
+				handled = handle_end()
+			'P':
+				handled = handle_play()
+			'I':
+				handled = handle_pause()
+		if ucmd == 'HINT':
+				if hints <=0:
+					show_error('No Hint Available')
+				else:
+					handled = handle_hint()
+		if ucmd == 'FORFEIT':
+			handled = handle_forfeit()
 	if handled:
 		txtCmd.text = ''		
 	else:
@@ -539,8 +552,8 @@ func gamestate(gs):
 		var puzzle = game_manager.puzzle()
 		btnHint.disabled = no_game or (not puzzle) or hints <= 0
 		btnSave.disabled = no_game
-		btnForfeit.disabled = no_game
-		btnChat.disabled = no_game
+		btnForfeit.disabled = no_game or puzzle
+		btnChat.disabled = no_game or puzzle
 		enableplaybuttons()
 		do_voice = game_manager.has_local()
 		do_sfx = do_voice

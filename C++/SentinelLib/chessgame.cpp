@@ -211,12 +211,9 @@ namespace chess
 
     error_e chessgame::move(color_e col, chessmove m0)
     {
-        std::unique_lock<std::mutex> guard(m_mutex);
+        std::lock_guard<std::mutex> guard(m_mutex);
         if (m_state != play_e)
-        {
-            guard.unlock();
             return e_invalid_game_state;
-        }
         if (col == m_board.turn_color())
         {
             chessmove m;
@@ -239,20 +236,17 @@ namespace chess
                     {
                         m_hints--;
                         m_puzzle_mult *= 0.5f;
-                        guard.unlock();
                         return m.error;
                     }
                 }
             }
             if (m.error == e_none)
                 m = m_board.attempt_move(col, m0);
-            guard.unlock();
             if (m.error == e_none)
                 push_new_turn(m);
             set_state(is_game_over(col, m));
             return m.error;
         }
-        guard.unlock();
         return e_out_of_turn;
     }
 
@@ -847,9 +841,8 @@ namespace chess
 
     error_e chessgame::end_game(game_state_e end_state, color_e win_color)
     {
-        std::unique_lock<std::mutex> guard(m_mutex);
+        std::lock_guard<std::mutex> guard(m_mutex);
         m_win_color = win_color;
-        guard.unlock();
         set_state(end_state, true);
         return e_none;
     }

@@ -56,6 +56,12 @@ std::vector<std::string> get_args(std::string cmdu, char sep)
     return split_string(cmdu, sep);
 }
 
+bool is_move(std::string cmdu, color_e c, chessboard b, chessmove &m)
+{
+    error_e err = str_move(cmdu, c, b, m);
+    return err == e_none;
+}
+
 bool get_move(std::string cmdu, color_e c, chessboard b, chessmove &m)
 {
     error_e err = str_move(cmdu, c, b, m);
@@ -719,12 +725,39 @@ int main(int argc, char *argv[])
             std::getline(std::cin, cmd);
             std::string cmdu = uppercase(cmd);
             std::string cmdl = cmdu.substr(0, 1);
+            color_e whose_turn = p_game->turn_color();
+            // FIRST, evaluate if this is a move.
+            if (!is_idle)
+            {
+                chessmove m;
+                if (is_move(cmd, whose_turn, p_game->board(), m))
+                {
+                    error_e err = p_game->move(whose_turn, m);
+                    if (err == e_invalid_move_needs_promote)
+                    {
+                        if (!get_promotion(m))
+                        {
+                            print_error("You need to select a promotion piece for this move, try again.");
+                            continue;
+                        }
+                        else
+                        {
+                            p_game->move(whose_turn, m);
+                        }
+                    }
+                    if (err != e_none)
+                    {
+                        print_error(err);
+                    }
+                    continue;
+                }
+            }
             if ((cmdu == "?") || (cmdu == "HELP") || (cmdu == "H"))
             {
                 std::cout << "\r\nCommands: (N)EW, (L)OAD Filename, (S)AVE FileName, PU(Z)ZLE FileName Difficulty, " << std::endl;
                 std::cout << "\t(P)LAY, (I)DLE, (Q)UIT, ";
                 if (!is_idle)
-                    std::cout << "(M)OVE MoveStr, HINT, ";
+                    std::cout << "MoveStr, (F)ORFEIT, HINT, ";
                 std::cout << "[, <, >, ], T Turn PIECE Coord Piece, - [Coord], (X)FEN [String] (C)OMMENT [String]" << std::endl;
                 continue;
             }
@@ -894,33 +927,9 @@ int main(int argc, char *argv[])
                             std::cout << n << "hints remain.\r\n\r\n";
                         continue;
                     }
-                    if (cmdl == "M")
+                    if (cmdu == "FORFEIT")
                     {
-                        cmd = get_arg(cmd);
-                        if (cmd == "")
-                        {
-                            print_error(e_missing_move);
-                            continue;
-                        }
-                    }
-                    chessmove m;
-                    if (!get_move(cmd, p_game->turn_color(), p_game->board(), m))
-                        continue;
-                    color_e whose_turn = p_game->turn_color();
-                    error_e err = p_game->move(whose_turn, m);
-                    if (err == e_invalid_move_needs_promote)
-                        if (!get_promotion(m))
-                        {
-                            print_error("You need to select a promotion piece for this move, try again.");
-                            continue;
-                        }
-                        else
-                        {
-                            p_game->move(whose_turn, m);
-                        }
-                    if (err != e_none)
-                    {
-                        print_error(err);
+                        p_game->forfeit(whose_turn);
                         continue;
                     }
                 }

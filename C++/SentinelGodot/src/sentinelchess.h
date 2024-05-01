@@ -30,6 +30,7 @@ private:
     String errorstr(int num);
     String gamestatestr(ChessGameState state);
     String movestr(int t, const Ref<ChessMove> &m);
+    Ref<ChessMove> strmove(String s, ChessColor c);
 
     int new_game(String title, const Ref<ChessPlayer> &white, const Ref<ChessPlayer> &black, const Ref<ChessClock> &clock);
     int load_puzzle(const Ref<ChessPlayer> &player, String keywords, const int rating);

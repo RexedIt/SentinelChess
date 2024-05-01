@@ -26,6 +26,7 @@ void SentinelChess::_bind_methods()
     ClassDB::bind_method(D_METHOD("errorstr", "num"), &SentinelChess::errorstr);
     ClassDB::bind_method(D_METHOD("gamestatestr", "state"), &SentinelChess::gamestatestr);
     ClassDB::bind_method(D_METHOD("movestr", "n", "m"), &SentinelChess::movestr);
+    ClassDB::bind_method(D_METHOD("strmove", "s", "c"), &SentinelChess::strmove);
     ClassDB::bind_method(D_METHOD("new_game", "white", "black"), &SentinelChess::new_game);
     ClassDB::bind_method(D_METHOD("save_game", "filename"), &SentinelChess::save_game);
     ClassDB::bind_method(D_METHOD("load_game", "filename"), &SentinelChess::load_game);
@@ -137,6 +138,25 @@ String SentinelChess::movestr(int t, const Ref<ChessMove> &m)
         return String(::move_str(cm, mp_game->board(t - 1)).c_str());
     }
     return "";
+}
+
+Ref<ChessMove> SentinelChess::strmove(String s, ChessColor c)
+{
+    if (s != "")
+    {
+        if (mp_game)
+        {
+            chessmove m;
+            chessboard b = mp_game->board();
+            error_e err = str_move(s.ascii().get_data(), (color_e)c, b, m);
+            if (err == e_none)
+            {
+                Ref<ChessMove> cm(memnew(ChessMove(m)));
+                return cm;
+            }
+        }
+    }
+    return nullptr;
 }
 
 bool SentinelChess::hasevent()

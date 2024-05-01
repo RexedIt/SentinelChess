@@ -4,7 +4,7 @@ extends Sprite2D
 @onready var game : SentinelChess = get_parent().get_node('SentinelChess')
 @onready var PieceProto : Area2D = get_node('Piece')
 @onready var HiLight : Sprite2D = get_node('HiLight')
-
+@onready var HiLine : Line2D = get_node('HiLine')
 var piece_arr = []
 var cell_arr = []
 var last_drag_y : int
@@ -14,6 +14,7 @@ var loaded : bool = false
 var skinned : bool = false
 
 var y_offset : int = 0
+var line_hold : float = 0.0
 
 @export var board_x0 : int = -560 # 156
 @export var board_y0 : int = 386 # 126
@@ -41,7 +42,15 @@ func applyskin():
 		
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	pass
+	if line_hold > 0.0:
+		line_hold = line_hold - delta;
+	if line_hold <= 0.0:
+		var a : float = HiLine.modulate.a
+		if a > 0.0:
+			a = a - delta/4.0
+			if a < 0.0:
+				a = 0.0
+			HiLine.modulate.a = a
 
 func setup(_color):
 	if (_color == SentinelChess.ChessColor.White):
@@ -163,6 +172,25 @@ func move_piece(p0 : ChessCoord, p1 : ChessCoord):
 	piece_arr[p1.y*8+p1.x] = pc
 	pc.position.y = screen_y(p1.y)
 	pc.position.x = screen_x(p1.x)
+	draw_move_line(p0, p1)
+	
+func draw_move_line(p0 : ChessCoord, p1 : ChessCoord):
+	HiLine.default_color = Color.WHITE
+	HiLine.clear_points()
+	var pd = piece_arr[p1.y*8+p1.x]
+	var knight : bool = false
+	if pd != null:
+		if pd.piececolor == SentinelChess.ChessColor.Black:
+			HiLine.default_color = Color.BLACK
+		if game.is_local(pd.piececolor):
+			return
+		knight = pd.piecetype == SentinelChess.ChessPiece.Knight
+	HiLine.add_point(Vector2(screen_x(p0.x), screen_y(p0.y)))
+	if knight:
+		HiLine.add_point(Vector2(screen_x(p0.x), screen_y(p1.y)))
+	HiLine.add_point(Vector2(screen_x(p1.x), screen_y(p1.y)))
+	HiLine.modulate.a = 0.25
+	line_hold = 3.0
 	
 func handle_error(err : int):
 	game._on_error(err)

@@ -87,8 +87,6 @@ namespace chess
         color_e turn_color();
         uint32_t hash();
 
-        void cancel(bool c) { m_cancel = c; }
-
         friend class chesscomputer;
 
     protected:
@@ -117,10 +115,8 @@ namespace chess
         void add_captured(unsigned char dest);
         void update_kill_bits();
         void update_check(color_e col);
-        void thinking(chessmove, int pct);
         uint32_t m_hash;
         bool m_kill_updated;
-        volatile bool m_cancel;
     };
 
 }
