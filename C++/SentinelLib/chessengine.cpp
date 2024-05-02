@@ -52,8 +52,21 @@ namespace chess
         if (f != "")
         {
             if (!get_dir_exists(f))
-                return e_data_not_found;
-            _data_folder = f;
+            {
+                // try an alternative;
+                if (get_dir_exists(".\\ChessData\\"))
+                {
+                    _data_folder = ".\\ChessData\\";
+                }
+                else
+                {
+                    return e_data_not_found;
+                }
+            }
+            else
+            {
+                _data_folder = f;
+            }
         }
 
         if (t != "")

@@ -1,0 +1,37 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug SentinelChess in Godot",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/../../godot/SentinelChess",
+            "program": "${env:GODOT_EDITOR}", // Probably have to change this per PC
+            "args": [
+                // "--editor", IF you want to actually debug the editor
+                "--path",
+                "${workspaceFolder}/../../godot/SentinelChess"
+            ],
+            "symbolSearchPath": "${workspaceFolder}/../../godot/SentinelChess/bin",
+            "logging": {
+                "moduleLoad": false,
+                "trace": true
+            }
+        },
+        {
+            "name": "Debug SentinelChess Release Export",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/../../godot/Export",
+            "program": "${workspaceFolder}/../../godot/Export/SentinelChess.exe", // Probably have to change this per PC
+            "symbolSearchPath": "${workspaceFolder}/../../godot/Export",
+            "logging": {
+                "moduleLoad": false,
+                "trace": true
+            }
+        }
+    ]
+}
