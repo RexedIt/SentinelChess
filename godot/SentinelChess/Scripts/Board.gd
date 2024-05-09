@@ -3,7 +3,6 @@ extends Sprite2D
 @onready var skin : Node = get_node('/root/MainGame/Skin')
 @onready var game : SentinelChess = get_parent().get_node('SentinelChess')
 @onready var PieceProto : Area2D = get_node('Piece')
-@onready var HiLight : Sprite2D = get_node('HiLight')
 @onready var HiLine : Line2D = get_node('HiLine')
 var piece_arr = []
 var cell_arr = []
@@ -12,6 +11,7 @@ var last_drag_x : int
 var possible_moves : Array
 var loaded : bool = false
 var skinned : bool = false
+var has_local : bool = false
 
 var y_offset : int = 0
 var line_hold : float = 0.0
@@ -25,7 +25,6 @@ var line_hold : float = 0.0
 func _ready():
 	loaded = true
 	piece_arr.resize(64)
-	HiLight.visible = false
 	if not skinned:
 		applyskin()
 
@@ -57,9 +56,9 @@ func setup(_color):
 		rotation_degrees = 0
 	else:
 		rotation_degrees = 180
+	has_local = game.has_local()
 	
 func refreshpieces(b : ChessBoard):
-	thinking(null)
 	for y in 8:
 		for x in 8:
 			var pc : SentinelChess.ChessColor = b.color_(y,x)
@@ -182,7 +181,7 @@ func draw_move_line(p0 : ChessCoord, p1 : ChessCoord):
 	if pd != null:
 		if pd.piececolor == SentinelChess.ChessColor.Black:
 			HiLine.default_color = Color.BLACK
-		if game.is_local(pd.piececolor):
+		if has_local == false or game.is_local(pd.piececolor):
 			return
 		knight = pd.piecetype == SentinelChess.ChessPiece.Knight
 	HiLine.add_point(Vector2(screen_x(p0.x), screen_y(p0.y)))
@@ -222,16 +221,9 @@ func _on_animated(p0 : ChessCoord, p1 : ChessCoord):
 	# print('_on_animated ' + coordstr(p0) + ' to ' + coordstr(p1))
 	game._on_animated()			
 
-func thinking(p1 : ChessCoord):
-	if p1 == null:
-		HiLight.visible = false
-	else:
-		HiLight.visible = true
-		HiLight.position = screen_v(p1)
-		
 func set_idle(b : bool):
-	thinking(null)
-
+	pass
+	
 func finish_game(s : SentinelChess.ChessGameState, w : SentinelChess.ChessColor):
 	print('Board: Finish Game *** TODO ***')
 

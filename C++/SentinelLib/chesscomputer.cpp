@@ -15,7 +15,6 @@ namespace chess
     chesscomputer::chesscomputer()
     {
         m_level = 3;
-        m_half_level = false;
         m_data.username = "Computer";
         m_data.ptype = t_computer;
         m_listenertype = cl_computer;
@@ -28,7 +27,12 @@ namespace chess
         m_bp_weight = 0.5f;
         m_eco_weight = 32;
         m_chaos = 0.0;
-        m_turn_time = 5000;
+        m_min_turn = 750;
+        m_turn_time = 4000;
+        m_max_time = 0;
+        m_min_time = 0;
+        m_last_pct = -1;
+        m_human_opponent = false;
     }
 
     chesscomputer::chesscomputer(color_e color, chessplayerdata data)
@@ -41,8 +45,6 @@ namespace chess
             m_level = 1;
         if (m_level > 6)
             m_level = 6;
-        if (m_level < 4)
-            m_half_level = m_data.elo % 500 >= 250;
         m_listenertype = cl_computer;
         m_thread_running = false;
         m_cancel = false;
@@ -53,8 +55,12 @@ namespace chess
         m_bp_weight = 0.5f;
         m_eco_weight = 32;
         m_chaos = 0.0;
-        m_turn_time = 5000;
-
+        m_min_turn = 750;
+        m_turn_time = 4000;
+        m_max_time = 0;
+        m_min_time = 0;
+        m_last_pct = -1;
+        m_human_opponent = false;
         load_meta(data.meta);
     }
 
@@ -79,6 +85,8 @@ namespace chess
         game_state_e cur_state = mp_game->state();
         if ((!m_thread_running) && (cur_state == play_e) && (color == m_color))
         {
+            m_human_opponent = human_opponent();
+            start_time(wt, bt);
             m_turn_no = turn_no;
             m_board = board;
             m_thread_running = true;
@@ -86,6 +94,82 @@ namespace chess
             m_thread_id = background.get_id();
             background.detach();
         }
+    }
+
+    int32_t chesscomputer::elapsed()
+    {
+        std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+        std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_start_tp);
+        return (int32_t)ms.count();
+    }
+
+    void chesscomputer::start_time(int32_t wt, int32_t bt)
+    {
+        m_min_time = 0;
+        m_max_time = 0;
+        m_last_pct = -1;
+        if (m_human_opponent)
+        {
+            m_min_time = m_min_turn;
+            m_max_time = m_turn_time;
+            int32_t game_time = m_color == c_white ? wt : bt;
+            game_time -= 500;
+            if (game_time < 0)
+                game_time = 0;
+            if ((game_time > 0) && (game_time < m_max_time))
+                m_max_time = game_time;
+            if (m_max_time > m_turn_time)
+                m_max_time = m_turn_time;
+            if (m_min_time > m_max_time)
+                m_min_time = m_max_time;
+            if (m_max_time > 0)
+                m_start_tp = std::chrono::steady_clock::now();
+        }
+    }
+
+    bool chesscomputer::out_of_time()
+    {
+        // Do not watch the clock if low level, no human opponent, or no max time calculated
+        if ((m_max_time == 0) || (m_level <= 3))
+            return false;
+        return elapsed() >= m_max_time;
+    }
+
+    void chesscomputer::pad_time()
+    {
+        if (m_min_time > 0)
+        {
+            while ((elapsed() < m_min_time) && (!m_cancel))
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                int8_t tpct = (int8_t)(elapsed() * 100 / m_min_time);
+                if (tpct > 100)
+                    tpct = 100;
+                if (tpct != m_last_pct)
+                {
+                    m_last_pct = tpct;
+                    chessplayer::consider(tpct);
+                }
+            }
+        }
+    }
+
+    error_e chesscomputer::consider(int8_t pct)
+    {
+        if ((m_max_time == 0) && (pct != m_last_pct))
+        {
+            m_last_pct = pct;
+            return chessplayer::consider(pct);
+        }
+        int8_t tpct = (int8_t)(elapsed() * 100 / m_max_time);
+        if (tpct > 100)
+            tpct = 100;
+        if (tpct != m_last_pct)
+        {
+            m_last_pct = tpct;
+            return chessplayer::consider(tpct);
+        }
+        return e_none;
     }
 
     void chesscomputer::signal_on_state(game_state_e game_state, color_e win_color)
@@ -116,17 +200,55 @@ namespace chess
     {
         m_cancel = false;
         int rec = m_level;
-        chessmove best;
+        m_percent = -1;
 
-        if (m_half_level)
-            if ((m_turn_no / 2) % 2 == 1)
-                rec++;
+        chessmove best;
+        float best_score = 0.0;
 
         std::vector<chessmove> possible = board.possible_moves(m_color);
+        int processed = 0;
+
         initialize_opening();
 
+        // Throttle back minmax if following an opening.
+        if (m_opening_in_play)
+            rec = 3;
+
+        error_e err = computer_move_calc(board, possible, rec, best, best_score, processed, true);
+        // If our difficulty level is > 3 and we ran out of time, let's alternate.
+        if ((err == e_out_of_time) && (rec > 3))
+        {
+            chessmove second;
+            float second_score = 0.0;
+            err = computer_move_calc(board, possible, 3, second, second_score, processed, false);
+            if (second_score > best_score)
+            {
+                // We found a better alternate than found so far in main loop
+                best = second;
+                // Make an adjustment back if our percent processed was less than 50% complete.
+                if (processed < possible.size() / 2)
+                {
+                    m_level--;
+                    if (m_level < 3)
+                        m_level = 3;
+                }
+            }
+        }
+
+        // We call move on the best outcome as it will not actually move if not valid but evaluate end of game.
+        pad_time();
+        m_thread_running = false; // This is called FIRST so that the callback we get for state change does not loop
+        err = move(best);
+        return err;
+    }
+
+    error_e chesscomputer::computer_move_calc(chessboard &board, std::vector<chessmove> &possible, int rec, chessmove &best, float &best_score, int &processed, bool watch_clock)
+    {
         // Figure move?
         float maxval = -9999;
+        processed = 0;
+        best_score = maxval;
+
         for (size_t i = 0; i < possible.size(); i++)
         {
             if (m_cancel)
@@ -146,14 +268,16 @@ namespace chess
                 {
                     best = candidate;
                     maxval = score;
+                    best_score = score;
                 }
             }
-            consider(candidate, (int8_t)(i * 100 / possible.size()));
+            processed++;
+            if (watch_clock)
+                if (out_of_time())
+                    return e_out_of_time;
+            consider((int8_t)(processed * 100 / possible.size()));
         }
-        // We call move on the best outcome as it will not actually move if not valid but evaluate end of game.
-        m_thread_running = false; // This is called FIRST so that the callback we get for state change does not loop
-        error_e err = move(best);
-        return err;
+        return e_none;
     }
 
     float chesscomputer::computer_move_max(chessboard &board, color_e turn_col, float _alpha, float beta, int32_t rec)
@@ -272,6 +396,7 @@ namespace chess
                 JSON_LOADIF(jmeta, "eco_weight", m_eco_weight);
                 JSON_LOADIF(jmeta, "chaos", m_chaos);
                 JSON_LOADIF(jmeta, "turn_time", m_turn_time);
+                JSON_LOADIF(jmeta, "min_turn", m_min_turn);
                 JSON_LOADIF(jmeta, "eco_favorites", m_eco_favorites);
                 return e_none;
             }
@@ -293,6 +418,7 @@ namespace chess
             jmeta["eco_weight"] = m_eco_weight;
             jmeta["chaos"] = m_chaos;
             jmeta["turn_time"] = m_turn_time;
+            jmeta["min_turn"] = m_min_turn;
             jmeta["eco_favorites"] = m_eco_favorites;
             return jmeta.dump();
         }

@@ -4,6 +4,7 @@
 #include <fstream>
 
 #define LICHESS_COLUMNS 9
+#define LICHESS_PUZZLE_ID_COLUMN 0
 #define LICHESS_RATING_COLUMN 3
 #define LICHESS_THEMES_COLUMN 7
 
@@ -59,7 +60,7 @@ namespace chess
         return e_none;
     }
 
-    error_e chesspuzzle::load_random(std::string filename, std::string keywords, int rating)
+    error_e chesspuzzle::load_random(std::string filename, std::string keywords, int rating, std::set<std::string> visited)
     {
         try
         {
@@ -94,6 +95,11 @@ namespace chess
                                 keymatch = false;
                                 break;
                             }
+                        }
+                        if (keymatch)
+                        {
+                            if (visited.count(vals[LICHESS_PUZZLE_ID_COLUMN]) > 0)
+                                keymatch = false;
                         }
                         if (keymatch)
                         {

@@ -63,6 +63,7 @@ namespace chess
         // relating to opening move system
         std::string eco();
         std::string open_title();
+        std::string puzzle_id();
         int possible_opening_count();
         error_e next_opening_moves(color_e col, std::string eco, std::vector<chessmove> &m);
 
@@ -105,7 +106,7 @@ namespace chess
         error_e unlisten(int);
         error_e end_game(game_state_e, color_e);
         error_e chat(std::string, color_e);
-        error_e consider(chessmove, color_e, int8_t pct = -1);
+        error_e consider(color_e, int8_t pct = -1);
 
     private:
         void set_state(game_state_e g, bool force_notify = false);
@@ -119,7 +120,7 @@ namespace chess
 
         // Signallers
         void signal_refresh_board();
-        void signal_on_consider(chessmove, color_e, int8_t pct = -1);
+        void signal_on_consider(color_e, int8_t pct = -1);
         void signal_on_turn(bool refreshtime = false);
         void signal_on_state();
         void signal_on_points();

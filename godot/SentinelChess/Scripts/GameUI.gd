@@ -131,7 +131,7 @@ func initialize(msg : String):
 	meta = game_manager.get_meta()
 	var tc = game_manager.turn_color()
 	lblTitle.text = meta.title()
-	setEcoValues(meta.eco(), meta.open_title())
+	setEcoValues(0, meta.eco(), meta.open_title())
 	puzzle = meta.puzzle()
 	hints = meta.hints()
 	var white_points : String = meta.white_points()
@@ -142,6 +142,7 @@ func initialize(msg : String):
 		if game_manager.lone_local_color() == SentinelChess.ChessColor.Black:
 			puzzle_points = black_points
 		pnlScore.setPuzzleValues(puzzle_points,hints,true)
+		print('Puzzle ID: ' + meta.puzzle_id())
 	else:
 		pnlScore.setScoreValues(white_points,black_points);
 	btnHint.disabled = (not puzzle) or hints <= 0
@@ -153,13 +154,15 @@ func initialize(msg : String):
 	#update_players(tc)
 	announceTurn(tc)
 	
-func setEcoValues(eco : String, open_title : String):
-	var s : String = eco
-	if open_title != '':
-		if s != '':
-			s = s + ' - '
-		s = s + open_title
-	lblEco.text = s
+func setEcoValues(turn_no : int, eco : String, open_title : String):
+	if turn_no <= 2:
+		lblEco.text = ''
+	else:
+		var s : String = eco
+		if open_title != '':
+			if s != '':
+				s = s + ' - '
+			s = s + open_title
 	
 func clear_history():
 	lblHistory.clear()
@@ -223,6 +226,10 @@ func refreshPrompt(col : SentinelChess.ChessColor):
 	lblCmd.set('theme_override_colors/font_color', crgb)	
 	update_players(col)
 	
+func thinking(col : SentinelChess.ChessColor, pct : int):
+	pnlPlayerTop.thinking(col,pct)
+	pnlPlayerBottom.thinking(col,pct)
+	
 func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.ChessColor, cmt : String):
 	var color : String = 'white'
 	if col == SentinelChess.ChessColor.Black:
@@ -235,7 +242,7 @@ func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.Che
 	if (b.check_state(SentinelChess.White)):
 		append_history('White in Check.', 'white')
 		add_voice('Check')
-	setEcoValues(game_manager.eco(), game_manager.open_title())
+	setEcoValues(n, game_manager.eco(), game_manager.open_title())
 	
 # UI Handlers
 func show_error(msg : String):
@@ -372,7 +379,7 @@ func handle_hint() -> bool:
 	append_history('*** HINT ***', 'darkgreen')
 	append_history(h, 'darkgreen')
 	refreshhints()
-	return true
+	return handle_move(h)
 
 func handle_forfeit() -> bool:
 	var turnc: SentinelChess.ChessColor = game_manager.turn_color()

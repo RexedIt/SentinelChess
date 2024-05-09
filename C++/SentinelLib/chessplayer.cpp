@@ -128,6 +128,15 @@ namespace chess
         return mp_game->move(m_color, m0);
     }
 
+    bool chessplayer::human_opponent()
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        std::string key = color_str(other(m_color)) + "Type";
+        if (mp_game == NULL)
+            return false;
+        return (playertypefromstring(mp_game->tag(key)) == t_human);
+    }
+
     error_e chessplayer::move(coord_s p0, coord_s p1, piece_e promote)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
@@ -168,11 +177,14 @@ namespace chess
         return e_no_game;
     }
 
-    error_e chessplayer::consider(chessmove &m, int8_t p)
+    error_e chessplayer::consider(int8_t p)
     {
+        if (p == m_percent)
+            return e_none;
+        m_percent = p;
         if (mp_game != NULL)
         {
-            mp_game->consider(m, m_color, p);
+            mp_game->consider(m_color, p);
             return e_none;
         }
         return e_no_game;

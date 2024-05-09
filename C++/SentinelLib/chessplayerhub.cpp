@@ -48,6 +48,7 @@ namespace chess
         JSON_LOAD(j, "puzzlepoints", puzzlepoints, 0);
         JSON_LOAD(j, "persistent", persistent, true);
         JSON_LOAD(j, "avatar", avatar, "");
+        JSON_LOAD(j, "visited", visited, std::set<std::string>({}));
 
         if (j.contains("meta"))
         {
@@ -77,6 +78,10 @@ namespace chess
             std::istringstream ifs(meta);
             ifs >> mj;
             j["meta"] = mj;
+        }
+        if (visited.size())
+        {
+            j["visited"] = visited;
         }
         return e_none;
     }
@@ -505,7 +510,7 @@ namespace chess
         return e_none;
     }
 
-    error_e chessplayerhub::update_points(std::string guid, int32_t pts, bool puzzle)
+    error_e chessplayerhub::update_points(std::string guid, int32_t pts, std::string puzzle)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         if (guid == "")
@@ -513,8 +518,9 @@ namespace chess
         if (m_humans.count(guid) == 0)
             return e_player_not_found;
         chessplayerdata d = m_humans[guid];
-        if (puzzle)
+        if (puzzle != "")
         {
+            d.visited.insert(puzzle);
             d.puzzlepoints += pts;
             if (d.puzzlepoints < 0)
                 d.puzzlepoints = 0;

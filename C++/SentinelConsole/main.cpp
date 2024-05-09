@@ -529,7 +529,7 @@ void refresh_comment(std::string comment)
     std::cout << stripped << std::endl;
 }
 
-void on_consider(chessmove m, color_e c, int8_t p)
+void on_consider(color_e c, int8_t p)
 {
     std::cout << ".";
 }
@@ -616,7 +616,7 @@ void process_queue_listener(std::shared_ptr<chessgamelistener_queue> p_listener)
             refresh_board(e.turn_no, e.board);
             break;
         case ce_consider:
-            on_consider(e.move, e.color, e.percent);
+            on_consider(e.color, e.percent);
             break;
         case ce_turn:
             on_turn(e.turn_no, e.move, e.check, e.board, e.color, e.game_state, e.win_color, e.wt, e.bt, e.cmt);

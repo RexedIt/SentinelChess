@@ -23,7 +23,7 @@ func setPuzzleValues(points : String, hints : int, first : bool):
 	sprPuzzle.visible = true
 	lblPoints1.text = points
 	lblPoints2.visible = _maxhints > 0
-	lblPoints2.text = str(_maxhints-hints) + '/' + str(_maxhints) + ' Hints'
+	lblPoints2.text = str(hints) + ' Hints Remain' # str(_maxhints-hints) + '/' + str(_maxhints) + ' Hints'
 
 func setScoreValues(white : String, black : String):
 	sprPuzzle.visible = false

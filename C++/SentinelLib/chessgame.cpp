@@ -63,6 +63,11 @@ namespace chess
             return m_open_filter.title();
     }
 
+    std::string chessgame::puzzle_id()
+    {
+        return tag("puzzle_id");
+    }
+
     int chessgame::possible_opening_count()
     {
         // depends on state of eco database and move history
@@ -355,7 +360,10 @@ namespace chess
                 {
                     std::string pguid = tag(colbase + "Guid");
                     if (pguid != "")
-                        chessengine::hub_update_points(pguid, to_award, m_puzzle);
+                    {
+                        std::string puzzle_id = m_puzzle ? tag("puzzle_id") : "";
+                        chessengine::hub_update_points(pguid, to_award, puzzle_id);
+                    }
                 }
             }
         }
@@ -853,9 +861,9 @@ namespace chess
         return e_none;
     }
 
-    error_e chessgame::consider(chessmove m, color_e c, int8_t p)
+    error_e chessgame::consider(color_e c, int8_t p)
     {
-        signal_on_consider(m, c, p);
+        signal_on_consider(c, p);
         return e_none;
     }
 
@@ -947,10 +955,10 @@ namespace chess
             kv.second->signal_refresh_board(n, m_board);
     }
 
-    void chessgame::signal_on_consider(chessmove m, color_e c, int8_t p)
+    void chessgame::signal_on_consider(color_e c, int8_t p)
     {
         for (const auto &kv : mp_listeners)
-            kv.second->signal_on_consider(m, c, p);
+            kv.second->signal_on_consider(c, p);
     }
 
     void chessgame::signal_on_turn(bool refreshtime)

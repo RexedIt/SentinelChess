@@ -224,7 +224,7 @@ namespace chess
         return e_no_player_hub;
     }
 
-    error_e chessengine::hub_update_points(std::string guid, int32_t pts, bool puzzle)
+    error_e chessengine::hub_update_points(std::string guid, int32_t pts, std::string puzzle)
     {
         if (p_hub)
             return p_hub->update_points(guid, pts, puzzle);

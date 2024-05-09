@@ -62,7 +62,7 @@ func _physics_process(delta):
 				print('ceRefreshBoard')
 				refresh_board(ce.color(), ce.board())
 			ChessEvent.ChessEventType.ceConsider:
-				board.thinking(ce.move().p1)
+				gameUI.thinking(ce.color(), ce.percent())
 			ChessEvent.ChessEventType.ceTurn:
 				var n : int = ce.turn_no()
 				var m : ChessMove = ce.move()

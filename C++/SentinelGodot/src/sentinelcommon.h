@@ -229,6 +229,7 @@ public:
     int playno();
     String eco();
     String open_title();
+    String puzzle_id();
 
 private:
     std::string m_title;
@@ -242,6 +243,7 @@ private:
     int m_playno;
     std::string m_eco;
     std::string m_open_title;
+    std::string m_puzzle_id;
 
 protected:
     static void _bind_methods();

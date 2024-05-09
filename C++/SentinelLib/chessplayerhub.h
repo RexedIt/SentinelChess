@@ -2,6 +2,7 @@
 
 #include <map>
 #include <mutex>
+#include <set>
 
 #include "chesscommon.h"
 
@@ -28,6 +29,7 @@ namespace chess
         bool persistent;
         std::string avatar;
         std::string meta;
+        std::set<std::string> visited;
     };
 
     std::string new_guid();
@@ -58,7 +60,7 @@ namespace chess
 
         error_e refresh_player(chessplayerdata &data);
         error_e update_player(chessplayerdata data);
-        error_e update_points(std::string guid, int32_t pts, bool puzzle);
+        error_e update_points(std::string guid, int32_t pts, std::string puzzle);
 
         std::vector<std::string> usernames(chessplayertype_e ptype, int32_t elo = 0);
         std::vector<chessplayerdata> players(chessplayertype_e ptype, bool include_avatars = false, int32_t elo = 0, bool sort_elo = false);

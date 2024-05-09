@@ -121,6 +121,8 @@ namespace chess
             return "Cannot Register";
         case e_points_awarded:
             return "Points already awarded";
+        case e_out_of_time:
+            return "Out of time";
         default:
             return "Unknown Error";
         }
