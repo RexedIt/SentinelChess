@@ -1,4 +1,4 @@
-[gd_scene load_steps=53 format=3 uid="uid://dvuxnanwnc5st"]
+[gd_scene load_steps=54 format=3 uid="uid://dvuxnanwnc5st"]
 
 [ext_resource type="Script" path="res://Scripts/MainGame.gd" id="1_i2www"]
 [ext_resource type="PackedScene" uid="uid://b3vb7tg7wpihs" path="res://Skins/Skin.tscn" id="2_rnrr5"]
@@ -8,7 +8,6 @@
 [ext_resource type="Texture2D" uid="uid://bh65nhl2ddwer" path="res://Skins/RetroWood/Sprites/Board.png" id="5_a2ndy"]
 [ext_resource type="Script" path="res://Scripts/popNew.gd" id="5_bu5ts"]
 [ext_resource type="Script" path="res://Scripts/Piece.gd" id="6_d12bf"]
-[ext_resource type="Texture2D" uid="uid://baar561vrx208" path="res://Skins/Common/Sprites/Hilight.png" id="8_45ksi"]
 [ext_resource type="Script" path="res://Scripts/GameUI.gd" id="10_0mwoa"]
 [ext_resource type="ButtonGroup" uid="uid://egpcffpdie8w" path="res://WhitePlayerType.tres" id="10_8y1dj"]
 [ext_resource type="Script" path="res://Scripts/popLoad.gd" id="10_we7ge"]
@@ -55,6 +54,10 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3n8gr"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_i0ktc"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jq2rg"]
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1epvs"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_aqyli"]
@@ -93,12 +96,6 @@ step = 8
 shape = SubResource("RectangleShape2D_55xmw")
 
 [node name="Sprite" type="Sprite2D" parent="Board/Piece"]
-
-[node name="HiLight" type="Sprite2D" parent="Board"]
-visible = false
-modulate = Color(1, 1, 1, 0.376471)
-position = Vector2(-438, 438)
-texture = ExtResource("8_45ksi")
 
 [node name="HiLine" type="Line2D" parent="Board"]
 width = 20.0
@@ -850,12 +847,22 @@ vertical_alignment = 1
 autowrap_mode = 3
 
 [node name="pnlPlayerTop" type="Panel" parent="GameUI"]
-offset_left = 1528.0
+offset_left = 1527.0
 offset_top = 188.0
-offset_right = 1933.0
+offset_right = 1899.0
 offset_bottom = 228.0
 theme_override_styles/panel = SubResource("StyleBoxEmpty_3n8gr")
 script = ExtResource("17_di116")
+
+[node name="prgStatus" type="ProgressBar" parent="GameUI/pnlPlayerTop"]
+visible = false
+layout_mode = 0
+offset_top = 7.0
+offset_right = 370.0
+offset_bottom = 30.0
+theme_override_styles/background = SubResource("StyleBoxEmpty_i0ktc")
+theme_override_styles/fill = SubResource("StyleBoxFlat_jq2rg")
+show_percentage = false
 
 [node name="sprType" type="Sprite2D" parent="GameUI/pnlPlayerTop"]
 position = Vector2(1, 0)
@@ -883,12 +890,22 @@ horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="pnlPlayerBottom" type="Panel" parent="GameUI"]
-offset_left = 1528.0
+offset_left = 1527.0
 offset_top = 227.0
-offset_right = 1933.0
+offset_right = 1932.0
 offset_bottom = 267.0
 theme_override_styles/panel = SubResource("StyleBoxEmpty_1epvs")
 script = ExtResource("17_di116")
+
+[node name="prgStatus" type="ProgressBar" parent="GameUI/pnlPlayerBottom"]
+visible = false
+layout_mode = 0
+offset_top = 7.0
+offset_right = 373.0
+offset_bottom = 30.0
+theme_override_styles/background = SubResource("StyleBoxEmpty_i0ktc")
+theme_override_styles/fill = SubResource("StyleBoxFlat_jq2rg")
+show_percentage = false
 
 [node name="sprType" type="Sprite2D" parent="GameUI/pnlPlayerBottom"]
 position = Vector2(1, 0)

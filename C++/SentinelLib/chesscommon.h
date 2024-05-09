@@ -79,7 +79,8 @@ namespace chess
         e_no_guid,
         e_no_username,
         e_cannot_register,
-        e_points_awarded
+        e_points_awarded,
+        e_out_of_time
     } error_e;
 
     std::string errorstr(error_e num);

@@ -236,7 +236,7 @@ namespace chess
         if ((keywords.length()) && (keywords[0] == '!'))
             err = p.load_specific(filename, keywords.substr(1));
         else
-            err = p.load_random(filename, keywords, rating);
+            err = p.load_random(filename, keywords, rating, user.visited);
         if (err != e_none)
             return err;
         return load_puzzle(user, p);

@@ -13,6 +13,9 @@ namespace chess
         m_listenertype = cl_computer;
         m_cancel = false;
         m_thread_running = false;
+        m_min_time = 1000;
+        m_last_pct = -1;
+        m_human_opponent = false;
     }
 
     chesspuzzleplayer::chesspuzzleplayer(color_e color, chessplayerdata data)
@@ -23,6 +26,9 @@ namespace chess
         m_listenertype = cl_computer;
         m_cancel = false;
         m_thread_running = false;
+        m_min_time = 1000;
+        m_last_pct = -1;
+        m_human_opponent = false;
     }
 
     chesspuzzleplayer::~chesspuzzleplayer()
@@ -46,6 +52,8 @@ namespace chess
         game_state_e cur_state = mp_game->state();
         if ((!m_thread_running) && (cur_state == play_e) && (color == m_color))
         {
+            m_human_opponent = human_opponent();
+            start_time(wt, bt);
             m_board = board;
             m_moves = mp_game->player_moves(m_color);
             m_thread_running = true;
@@ -73,7 +81,10 @@ namespace chess
         if (moves.count(turn_no + 1) == 0)
             err = puzzle_solved(); // out of moves, player wins
         else
+        {
+            pad_time();
             err = move(moves[turn_no + 1]);
+        }
         m_thread_running = false;
         return err;
     }
@@ -84,6 +95,50 @@ namespace chess
         if (mp_game == NULL)
             return e_no_game;
         return mp_game->puzzle_solved(m_color);
+    }
+
+    int32_t chesspuzzleplayer::elapsed()
+    {
+        std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+        std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_start_tp);
+        return (int32_t)ms.count();
+    }
+
+    void chesspuzzleplayer::start_time(int32_t wt, int32_t bt)
+    {
+        m_min_time = 0;
+        m_last_pct = -1;
+        if (m_human_opponent)
+        {
+            m_min_time = 750;
+            int32_t game_time = m_color == c_white ? wt : bt;
+            game_time -= 500;
+            if (game_time < 0)
+                game_time = 0;
+            if ((game_time > 0) && (game_time < m_min_time))
+                m_min_time = game_time;
+            if (m_min_time > 0)
+                m_start_tp = std::chrono::steady_clock::now();
+        }
+    }
+
+    void chesspuzzleplayer::pad_time()
+    {
+        if (m_min_time > 0)
+        {
+            while ((elapsed() < m_min_time) && (!m_cancel))
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                int8_t tpct = (int8_t)(elapsed() * 100 / m_min_time);
+                if (tpct > 100)
+                    tpct = 100;
+                if (tpct != m_last_pct)
+                {
+                    m_last_pct = tpct;
+                    chessplayer::consider(tpct);
+                }
+            }
+        }
     }
 
 }

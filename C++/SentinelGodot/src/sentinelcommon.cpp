@@ -497,28 +497,27 @@ std::string winlosedraw(color_e col, bool puzzle, chesslobby &l)
     int32_t lose = 0;
     int32_t draw = 0;
     l.potential_points(col, win, lose, draw);
-    std::string ret = std::to_string(win) + "/" + std::to_string(lose);
+    std::string ret = "W:" + std::to_string(win) + " L:" + std::to_string(lose);
     if (!puzzle)
-        ret += "/" + std::to_string(draw);
+        ret += " D:" + std::to_string(draw);
     return ret;
 }
 
 ChessMeta::ChessMeta(std::shared_ptr<chessgame> g, chesslobby &l)
 {
-    bool puzzle = false;
     if (g != NULL)
     {
         m_title = g->title();
         m_puzzle = g->puzzle();
+        m_puzzle_id = g->puzzle_id();
         m_hints = g->hints();
         m_turns = g->playmax();
         m_playno = g->playno();
         m_eco = g->eco();
         m_open_title = g->open_title();
-        puzzle = g->puzzle();
     }
-    m_w_points = winlosedraw(c_white, puzzle, l);
-    m_b_points = winlosedraw(c_black, puzzle, l);
+    m_w_points = winlosedraw(c_white, m_puzzle, l);
+    m_b_points = winlosedraw(c_black, m_puzzle, l);
     std::map<color_e, std::shared_ptr<chessplayer>> pl = l.players();
     if (pl.count(c_white))
     {
@@ -549,6 +548,7 @@ void ChessMeta::_bind_methods()
     ClassDB::bind_method(D_METHOD("playno"), &ChessMeta::playno);
     ClassDB::bind_method(D_METHOD("eco"), &ChessMeta::eco);
     ClassDB::bind_method(D_METHOD("open_title"), &ChessMeta::open_title);
+    ClassDB::bind_method(D_METHOD("puzzle_id"), &ChessMeta::puzzle_id);
 }
 
 String ChessMeta::title()
@@ -606,4 +606,9 @@ String ChessMeta::eco()
 String ChessMeta::open_title()
 {
     return String(m_open_title.c_str());
+}
+
+String ChessMeta::puzzle_id()
+{
+    return String(m_puzzle_id.c_str());
 }

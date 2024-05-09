@@ -1,6 +1,7 @@
 #pragma once
 
 #include "chesscommon.h"
+#include <set>
 
 namespace chess
 {
@@ -13,7 +14,7 @@ namespace chess
         void operator=(const chesspuzzle &);
 
         error_e load_line(std::string line);
-        error_e load_random(std::string filename, std::string keywords, int rating);
+        error_e load_random(std::string filename, std::string keywords, int rating, std::set<std::string> visited);
         error_e load_specific(std::string filename, std::string puzzleid);
 
         std::string puzzleid;

@@ -31,6 +31,8 @@ func _ready():
 func _input_event(viewport: Object, event: InputEvent, shape_idx: int):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
+			if board == null:
+				return
 			# can/should we drag?  Is it our color and are there possible moves?
 			if (board.drag_start(y_ind,x_ind)):
 				dragstart = position

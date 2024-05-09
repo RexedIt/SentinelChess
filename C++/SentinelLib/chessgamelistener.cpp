@@ -81,11 +81,11 @@ namespace chess
             (mp_refresh_board_cb)(n, b);
     }
 
-    void chessgamelistener_direct::signal_on_consider(chessmove m, color_e c, int8_t p)
+    void chessgamelistener_direct::signal_on_consider(color_e c, int8_t p)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         if (mp_on_consider_cb)
-            (*mp_on_consider_cb)(m, c, p);
+            (*mp_on_consider_cb)(c, p);
     }
 
     void chessgamelistener_direct::signal_on_turn(int16_t n, chessmove m, bool ch, chessboard &b, color_e c, game_state_e g, color_e wc, int32_t wt, int32_t bt, std::string cmt)
@@ -148,13 +148,12 @@ namespace chess
         m_events.push(e);
     }
 
-    void chessgamelistener_queue::signal_on_consider(chessmove m, color_e c, int8_t p)
+    void chessgamelistener_queue::signal_on_consider(color_e c, int8_t p)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         if (m_events.size() == 0)
         {
             chessevent e(ce_consider);
-            e.move = m;
             e.color = c;
             e.percent = p;
             m_events.push(e);
