@@ -16,12 +16,19 @@ extends SentinelChess
 @onready var popSettings : Window = get_parent().get_node("popSettings")
 
 const GameState = preload("res://Scripts/GameState.gd").GameState_
+const PuzzleMode = preload("res://Scripts/PuzzleMode.gd").PuzzleMode_
 
 @export var gamestate : GameState = GameState.INIT
 var prepopgamestate : GameState = GameState.INIT
 @export var statewait : bool = false
 var filename : String
 var promotemove : ChessMove
+
+# for puzzle mode
+var puzzleplayer : ChessPlayer
+var puzzlekeys : String
+var puzzlerating : int
+var puzzlemode : PuzzleMode
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -248,14 +255,22 @@ func _on_closed_new(_cancelled, _title, _white, _black, _clock):
 	statewait = false
 	_gamestatereact(GameState.PLAY)
 
-func _on_closed_puzzle(_cancelled, _player, _keywords, _rating):
+func _on_closed_puzzle(_cancelled, _player, _keywords, _rating, _arcade):
 	print("on_closed_puzzle")
 	if _cancelled:
 		_gamestatereact(prepopgamestate)
 		return
 	# start new game
 	save_player(_player)
-	var err : int = load_puzzle(_player, _keywords, _rating)
+	puzzleplayer = _player
+	puzzlekeys = _keywords
+	puzzlerating = _rating
+	puzzlemode = _arcade
+	gameUI.arcade_start(puzzlemode)
+	_new_puzzle()
+	
+func _new_puzzle():
+	var err : int = load_puzzle(puzzleplayer, puzzlekeys, puzzlerating)
 	if err != 0:
 		_on_error(err)
 		_gamestatereact(prepopgamestate)
@@ -265,7 +280,7 @@ func _on_closed_puzzle(_cancelled, _player, _keywords, _rating):
 	DisplayServer.window_set_title(base_title + ' - Puzzle')
 	statewait = false
 	_gamestatereact(GameState.PLAY)
-		
+
 func _on_closed_load(_cancelled, _filename):
 	print("on_closed_load")
 	if _cancelled:

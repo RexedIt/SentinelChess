@@ -492,8 +492,8 @@ text = " Cancel "
 
 [node name="popPuzzle" type="Window" parent="."]
 title = "Load Puzzle"
-position = Vector2i(585, 429)
-size = Vector2i(750, 290)
+position = Vector2i(585, 365)
+size = Vector2i(750, 380)
 visible = false
 script = ExtResource("14_s72vn")
 
@@ -583,6 +583,9 @@ text = "Computer
 layout_mode = 2
 text = "Save "
 
+[node name="HSeparator" type="HSeparator" parent="popPuzzle/MC/HC"]
+layout_mode = 2
+
 [node name="GC" type="GridContainer" parent="popPuzzle/MC/HC"]
 layout_mode = 2
 theme_override_constants/h_separation = 16
@@ -614,6 +617,29 @@ horizontal_alignment = 2
 [node name="txtKeywords" type="TextEdit" parent="popPuzzle/MC/HC/GC"]
 custom_minimum_size = Vector2(425, 24)
 layout_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="popPuzzle/MC/HC"]
+layout_mode = 2
+
+[node name="HC" type="HBoxContainer" parent="popPuzzle/MC/HC"]
+layout_mode = 2
+
+[node name="lblArcade" type="Label" parent="popPuzzle/MC/HC/HC"]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+text = " Arcade Mode:"
+
+[node name="optArcade" type="OptionButton" parent="popPuzzle/MC/HC/HC"]
+custom_minimum_size = Vector2(425, 28)
+layout_mode = 2
+item_count = 3
+selected = 0
+popup/item_0/text = "None"
+popup/item_0/id = 0
+popup/item_1/text = "1 Minute Clock"
+popup/item_1/id = 1
+popup/item_2/text = "5 Minute Blitz"
+popup/item_2/id = 2
 
 [node name="btnOK" type="Button" parent="popPuzzle"]
 anchors_preset = 7

@@ -71,7 +71,7 @@ func refreshpieces(b : ChessBoard):
 			else:
 				var pt : SentinelChess.ChessPiece = b.piece(y,x)
 				if (po!=null):
-					po.refresh(pc,pt,rotation_degrees)
+					po.refresh(pc,pt,screen_y(y), rotation_degrees)
 				else:
 					po = PieceProto.duplicate()
 					add_child(po)
@@ -89,7 +89,10 @@ func screen_y(by : int) -> int:
 	var sy = board_y0 - by * board_dy
 	if sy < board_y0 - 8 * board_dy or sy > board_y0:
 		sy = board_y0
-	return sy - y_offset
+	if rotation_degrees == 180:
+		return sy + y_offset
+	else:
+		return sy - y_offset;
 
 func screen_x(bx : int) -> int:
 	var sx = board_x0 + bx * board_dx
@@ -109,6 +112,8 @@ func screen_v(b: ChessCoord) -> Vector2:
 	
 func board_y(sy : int) -> int:
 	var vsy = sy + y_offset
+	if rotation_degrees == 180:
+		vsy = sy - y_offset
 	var by = -1 * (vsy - board_y0) / board_dy
 	if by < 0 or by > 7:
 		by = -1

@@ -249,6 +249,8 @@ namespace chess
                 m = m_board.attempt_move(col, m0);
             if (m.error == e_none)
                 push_new_turn(m);
+            if (m.error == e_check)
+                return m.error;
             set_state(is_game_over(col, m));
             return m.error;
         }

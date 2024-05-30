@@ -440,6 +440,8 @@ namespace chess
         // for our color.
         possible = possible_moves(col);
         evaluate_check_and_mate(col, possible, m);
+        if (m.error == e_check)
+            return m;
         if (m.is_valid())
         {
             if (m.check)

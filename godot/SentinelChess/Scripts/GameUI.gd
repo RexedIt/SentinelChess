@@ -35,6 +35,7 @@ extends CanvasLayer
 @export var step : int
 
 const GameState = preload("res://Scripts/GameState.gd").GameState_
+const PuzzleMode = preload("res://Scripts/PuzzleMode.gd").PuzzleMode_
 
 var PlayTexture : Texture2D;
 var is_idle : bool = false
@@ -47,6 +48,7 @@ var do_voice : bool = false
 var do_sfx : bool = false
 var loaded: bool = false
 var skinned: bool = false
+var puzzlemode : PuzzleMode
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -147,7 +149,8 @@ func initialize(msg : String):
 		pnlScore.setScoreValues(white_points,black_points);
 	btnHint.disabled = (not puzzle) or hints <= 0
 	enableplaybuttons()
-	lblWhiteClock.visible = false
+	puzzlemode = game_manager.puzzlemode
+	lblWhiteClock.visible = puzzlemode != PuzzleMode.NONE
 	lblBlackClock.visible = false
 	clear_history()
 	append_history(msg)
@@ -246,9 +249,12 @@ func append_move(n : int, m : ChessMove, b : ChessBoard, col : SentinelChess.Che
 	
 # UI Handlers
 func show_error(msg : String):
-	errortime = 3
-	lblError.text = msg
-	lblError.modulate.a = 1.0
+	if msg.contains('in Check'):
+		add_voice('Check')
+	if errortime <=0:
+		errortime = 3
+		lblError.text = msg
+		lblError.modulate.a = 1.0
 	
 func _on_btn_new_pressed():
 	game_manager._on_new_game()
@@ -527,6 +533,8 @@ func time_str(t : int) -> String:
 		return ""
 	
 func clock_turn(col : SentinelChess.ChessColor, wt : int, bt : int):
+	if puzzlemode != PuzzleMode.NONE:
+		return
 	lblWhiteClock.visible = wt > 0
 	lblBlackClock.visible = bt > 0
 	lblWhiteClock.text = time_str(wt)
@@ -536,6 +544,23 @@ func clock_turn(col : SentinelChess.ChessColor, wt : int, bt : int):
 		countdown = float(wt) / 1000.0
 	if col == SentinelChess.Black:
 		countdown = float(bt) / 1000.0
+	
+func arcade_start(mode : PuzzleMode):
+	var wasarcade: bool = puzzlemode != PuzzleMode.NONE
+	puzzlemode = mode
+	match mode:
+		PuzzleMode.NONE:
+			lblWhiteClock.visible = false
+			lblBlackClock.visible = false
+			countdown = 0
+			return
+		PuzzleMode.TIMER1:
+			countdown = 60.0
+		PuzzleMode.BLITZ5:
+			if wasarcade == false:
+				countdown = 300.0	
+	countcol = SentinelChess.White
+	lblWhiteClock.visible = true
 		
 func clock_update(delta : float):
 	if countdown>=0.0:

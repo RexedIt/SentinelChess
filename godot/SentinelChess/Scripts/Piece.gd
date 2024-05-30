@@ -108,8 +108,9 @@ func applyskin():
 			SpriteName += 'King'
 	sprite.texture = skin.sprite(SpriteName + '.png')
 				
-func refresh(pc,pt,r):
+func refresh(pc,pt,y,r):
 	rotation_degrees = r
+	position.y = y
 	if pc != piececolor or pt != piecetype:
 		piececolor = pc
 		piecetype = pt
@@ -134,8 +135,7 @@ func initialize(pc, pt, yi, xi, y, x, r):
 	board = get_parent()
 	sprite = get_node('Sprite')
 	position.x = x
-	position.y = y
-	refresh(pc, pt, r)
+	refresh(pc, pt, y, r)
 
 func animate_move(p1 : ChessCoord):
 	animstart = position
